@@ -7,7 +7,7 @@
 
 ---
 
-## Bước 1 — Cài & kiểm tra MongoDB
+## Cài & kiểm tra MongoDB
 
 Sau khi cài MongoDB, mở PowerShell kiểm tra:
 ```powershell
@@ -18,47 +18,7 @@ Nếu `Stopped` thì chạy:
 Start-Service -Name MongoDB
 ```
 
----
-
-## Bước 2 — Import data mẫu
-
-M�� PowerShell **tại thư mục này**, chạy:
-```powershell
-.\import.ps1
-```
-
-> Script sẽ tự tạo database `AlertOpsDB` với đầy đủ data mẫu.
-
----
-
-## Bước 3 — Cấu hình Backend
-
-M�� file `AlertOpsBackend_fixed_v2/appsettings.json`, đảm bảo có các section sau:
-
-```json
-{
-  "AlertOpsDatabase": {
-    "ConnectionString": "mongodb://localhost:27017",
-    "DatabaseName": "AlertOpsDB",
-    "AlertsCollectionName": "Alerts",
-    "ProjectsCollectionName": "Projects",
-    "EscalationRulesCollectionName": "EscalationRules",
-    "NotificationHistoryCollectionName": "NotificationHistory"
-  },
-  "Jwt": {
-    "Key": "AlertOps_SuperSecret_Key_MinLength32Chars!",
-    "Issuer": "alertops",
-    "Audience": "alertops"
-  },
-  "Cors": {
-    "AllowedOrigins": ["http://localhost:3000"]
-  }
-}
-```
-
----
-
-## Bước 4 — Chạy Backend
+## Bước 1 — Chạy Backend
 
 ```powershell
 cd AlertOpsBackend_fixed
@@ -71,7 +31,7 @@ Swagger UI: `http://localhost:5000/swagger`
 
 ---
 
-## Bước 5 — Chạy Frontend
+## Bước 2 — Chạy Frontend
 
 M�� terminal mới:
 ```powershell
