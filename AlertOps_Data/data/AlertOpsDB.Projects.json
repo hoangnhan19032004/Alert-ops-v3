@@ -1,0 +1,36 @@
+[{
+  "_id": {
+    "$oid": "6a01821fae1806fb8d24a3ca"
+  },
+  "Name": "Frontend",
+  "Sev": "Resolved",
+  "Desc": "Thiết kế giao diện UI",
+  "Owner": "nam@fpt.com",
+  "Managers": [
+    "tinh@fpt.com",
+    "nhan@fpt.com"
+  ],
+  "Members": [
+    "nhan123@fpt.com"
+  ],
+  "Avatars": [],
+  "AlertCount": 0
+},
+{
+  "_id": {
+    "$oid": "6a0184b7ae1806fb8d24a3cc"
+  },
+  "Name": "Backend",
+  "Sev": "Resolved",
+  "Desc": "Tạo api tích hợp vào dựa án dùng nodejs",
+  "Owner": "nam@fpt.com",
+  "Managers": [
+    "tinh@fpt.com",
+    "nhan@fpt.com"
+  ],
+  "Members": [
+    "nhan123@fpt.com"
+  ],
+  "Avatars": [],
+  "AlertCount": 7
+}]

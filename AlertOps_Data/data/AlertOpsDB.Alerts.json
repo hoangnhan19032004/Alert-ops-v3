@@ -1,0 +1,75 @@
+[{
+  "_id": {
+    "$oid": "6a01825cae1806fb8d24a3cb"
+  },
+  "ProjectId": "6a01821fae1806fb8d24a3ca",
+  "Message": "Thực hiện tìm kiếm templete ",
+  "Status": "Open",
+  "Severity": "Info",
+  "Service": "ui",
+  "Env": "Production",
+  "Time": "2026-05-11T07:16:44.807Z",
+  "CreatedAt": {
+    "$date": "2026-05-11T07:16:44.824Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "6a0184e9ae1806fb8d24a3cd"
+  },
+  "ProjectId": "6a0184b7ae1806fb8d24a3cc",
+  "Message": "Check api , kiểm tra dịch vụ ",
+  "Status": "Escalated",
+  "Severity": "Info",
+  "Service": "sever",
+  "Env": "Production",
+  "Time": "2026-05-11T07:27:37.185Z",
+  "CreatedAt": {
+    "$date": "2026-05-11T07:27:37.190Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "6a018554ae1806fb8d24a3ce"
+  },
+  "ProjectId": "6a01821fae1806fb8d24a3ca",
+  "Message": "Thay đồi layout cho dự án ",
+  "Status": "Acknowledged",
+  "Severity": "Info",
+  "Service": "ui",
+  "Env": "Production",
+  "Time": "2026-05-11T07:29:24.569Z",
+  "CreatedAt": {
+    "$date": "2026-05-11T07:29:24.573Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "6a029580567df30878dcbf50"
+  },
+  "ProjectId": "6a0184b7ae1806fb8d24a3cc",
+  "Message": "Test-api ",
+  "Status": "Acknowledged",
+  "Severity": "Critical",
+  "Service": "backend",
+  "Env": "Staging",
+  "Time": "2026-05-12T02:50:40.641Z",
+  "CreatedAt": {
+    "$date": "2026-05-12T02:50:40.670Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "6a029ae4567df30878dcbf53"
+  },
+  "ProjectId": "6a01821fae1806fb8d24a3ca",
+  "Message": "Fix lại UI ",
+  "Status": "Resolved",
+  "Severity": "Info",
+  "Service": "Frontend",
+  "Env": "Production",
+  "Time": "2026-05-12T03:13:40.642Z",
+  "CreatedAt": {
+    "$date": "2026-05-12T03:13:40.671Z"
+  }
+}]

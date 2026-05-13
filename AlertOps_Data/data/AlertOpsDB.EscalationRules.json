@@ -1,0 +1,10 @@
+[{
+  "_id": {
+    "$oid": "6a02994b567df30878dcbf52"
+  },
+  "Project": "Frontend",
+  "Trigger": "404 × 2",
+  "Delay": "1 hour",
+  "Channel": "Slack + PagerDuty + Email",
+  "Active": true
+}]
