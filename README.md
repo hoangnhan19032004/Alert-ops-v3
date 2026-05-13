@@ -1,75 +1,89 @@
-# Nuxt Minimal Starter
+# 🚀 AlertOps — Hướng dẫn cài đặt & chạy
 
-Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
+## Yêu cầu
+- [.NET 10 SDK](https://dotnet.microsoft.com/download)
+- [MongoDB Community](https://www.mongodb.com/try/download/community)
+- [Node.js 18+](https://nodejs.org)
 
-## Setup
+---
 
-Make sure to install dependencies:
+## Bước 1 — Cài & kiểm tra MongoDB
 
-```bash
-# npm
+Sau khi cài MongoDB, mở PowerShell kiểm tra:
+```powershell
+Get-Service -Name MongoDB
+```
+Nếu `Stopped` thì chạy:
+```powershell
+Start-Service -Name MongoDB
+```
+
+---
+
+## Bước 2 — Import data mẫu
+
+M�� PowerShell **tại thư mục này**, chạy:
+```powershell
+.\import.ps1
+```
+
+> Script sẽ tự tạo database `AlertOpsDB` với đầy đủ data mẫu.
+
+---
+
+## Bước 3 — Cấu hình Backend
+
+M�� file `AlertOpsBackend_fixed_v2/appsettings.json`, đảm bảo có các section sau:
+
+```json
+{
+  "AlertOpsDatabase": {
+    "ConnectionString": "mongodb://localhost:27017",
+    "DatabaseName": "AlertOpsDB",
+    "AlertsCollectionName": "Alerts",
+    "ProjectsCollectionName": "Projects",
+    "EscalationRulesCollectionName": "EscalationRules",
+    "NotificationHistoryCollectionName": "NotificationHistory"
+  },
+  "Jwt": {
+    "Key": "AlertOps_SuperSecret_Key_MinLength32Chars!",
+    "Issuer": "alertops",
+    "Audience": "alertops"
+  },
+  "Cors": {
+    "AllowedOrigins": ["http://localhost:3000"]
+  }
+}
+```
+
+---
+
+## Bước 4 — Chạy Backend
+
+```powershell
+cd AlertOpsBackend_fixed
+dotnet restore
+dotnet run
+```
+
+Backend chạy tại: `http://localhost:5000`  
+Swagger UI: `http://localhost:5000/swagger`
+
+---
+
+## Bước 5 — Chạy Frontend
+
+M�� terminal mới:
+```powershell
+cd alert-ops-v3
 npm install
-
-# pnpm
-pnpm install
-
-# yarn
-yarn install
-
-# bun
-bun install
-```
-
-## Development Server
-
-Start the development server on `http://localhost:3000`:
-
-```bash
-# npm
 npm run dev
-
-# pnpm
-pnpm dev
-
-# yarn
-yarn dev
-
-# bun
-bun run dev
 ```
 
-## Production
+Frontend chạy tại: `http://localhost:3000`
 
-Build the application for production:
+---
 
-```bash
-# npm
-npm run build
+## ✅ Kiểm tra nhanh
 
-# pnpm
-pnpm build
-
-# yarn
-yarn build
-
-# bun
-bun run build
-```
-
-Locally preview production build:
-
-```bash
-# npm
-npm run preview
-
-# pnpm
-pnpm preview
-
-# yarn
-yarn preview
-
-# bun
-bun run preview
-```
-
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+M�� browser vào `http://localhost:3000` — nếu thấy dashboard với data là thành công!
