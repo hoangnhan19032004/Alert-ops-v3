@@ -2,7 +2,6 @@
 export default defineNuxtConfig({
   devtools: { enabled: true },
 
-  // 1. Khai báo các Module cần thiết
   modules: [
     '@nuxtjs/tailwindcss',
     '@pinia/nuxt',
@@ -10,10 +9,8 @@ export default defineNuxtConfig({
     '@nuxtjs/i18n'
   ],
 
-  // 2. Cấu hình CSS chính
   css: ['~/assets/css/main.css'],
 
-  // 3. Cấu hình Header và Font chữ
   app: {
     head: {
       title: 'AlertOps — FPT Telecom',
@@ -22,13 +19,11 @@ export default defineNuxtConfig({
         { name: 'viewport', content: 'width=device-width, initial-scale=1' },
       ],
       link: [
-        // Thêm Font DM Sans để giao diện đẹp như bản mẫu
         { rel: 'stylesheet', href: 'https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap' }
       ]
     },
   },
 
-  // 4. Sửa lỗi tối ưu hóa cho Chart.js (nếu bạn có dùng trang Analytics)
   vite: {
     optimizeDeps: {
       include: ['chart.js/auto']
@@ -39,12 +34,12 @@ export default defineNuxtConfig({
 
   // Runtime config - API base URL
   runtimeConfig: {
+    apiBase: 'http://localhost:5000',  // ← private, chỉ server đọc được
     public: {
-      apiBase: 'http://localhost:5000'
+      apiBase: 'http://localhost:5000' // ← public, client + server đều đọc được
     }
   },
 
-  // i18n config
   i18n: {
     locales: ['en', 'vi'],
     defaultLocale: 'en'
