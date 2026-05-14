@@ -11,7 +11,9 @@
           <span class="live-dot"></span> LIVE
         </span>
         <span v-else class="offline-badge">{{ t('offline') }}</span>
-        <button class="refresh-btn" @click="refreshAll" :disabled="loading">
+        <!-- Countdown hiển thị bao nhiêu giây nữa refresh -->
+        <span class="countdown-badge">{{ t('next') || 'Next' }}: {{ countdown }}s</span>
+        <button class="refresh-btn" @click="manualRefresh" :disabled="loading">
           <Icon name="lucide:refresh-ccw" :class="{ spinning: loading }" />
         </button>
       </div>
@@ -152,7 +154,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useI18n } from '~/composables/useI18n'
 import { useErrorStore } from '~/composables/useErrorStore'
 import { useProjects } from '~/composables/useProjects'
@@ -161,7 +163,46 @@ const { t } = useI18n()
 const { alerts, loading, apiConnected, loadAlerts } = useErrorStore()
 const { projects } = useProjects()
 
-const refreshAll = async () => { await loadAlerts() }
+// ── Auto-refresh config ──────────────────────────────────────────
+const AUTO_REFRESH_SECONDS = 30  // ← đổi số này nếu muốn interval khác
+
+const countdown = ref(AUTO_REFRESH_SECONDS)
+let refreshTimer = null
+let countdownTimer = null
+
+const doRefresh = async () => {
+  if (!loading.value) await loadAlerts()
+  countdown.value = AUTO_REFRESH_SECONDS  // reset đếm ngược sau mỗi lần refresh
+}
+
+const manualRefresh = async () => {
+  countdown.value = AUTO_REFRESH_SECONDS
+  clearInterval(refreshTimer)
+  clearInterval(countdownTimer)
+  await doRefresh()
+  startTimers()
+}
+
+const startTimers = () => {
+  // Đếm ngược hiển thị trên UI, tick mỗi giây
+  countdownTimer = setInterval(() => {
+    countdown.value = Math.max(0, countdown.value - 1)
+  }, 1_000)
+
+  // Refresh thực sự mỗi AUTO_REFRESH_SECONDS giây
+  refreshTimer = setInterval(doRefresh, AUTO_REFRESH_SECONDS * 1_000)
+}
+
+onMounted(async () => {
+  await loadAlerts()   // load ngay khi vào trang
+  startTimers()
+})
+
+onUnmounted(() => {
+  clearInterval(refreshTimer)
+  clearInterval(countdownTimer)
+})
+// ────────────────────────────────────────────────────────────────
 
 const totalAlerts    = computed(() => alerts.value.length)
 const openCount      = computed(() => alerts.value.filter(a => a.status === 'Open').length)
@@ -222,6 +263,13 @@ const projPillClass = sev => ({
 .live-dot { width: 6px; height: 6px; background: #3fb950; border-radius: 50%; animation: blink 1.5s infinite; }
 @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: .3; } }
 .offline-badge { font-size: 11px; color: #f85149; background: rgba(248,81,73,.12); padding: 4px 10px; border-radius: 20px; }
+
+/* Countdown badge */
+.countdown-badge {
+  font-size: 11px; color: #586069; background: #21262d;
+  border: 1px solid #30363d; padding: 4px 10px; border-radius: 20px;
+  font-variant-numeric: tabular-nums;
+}
 
 .refresh-btn {
   background: #21262d; border: 1px solid #30363d; border-radius: 6px;
