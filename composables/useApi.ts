@@ -1,20 +1,5 @@
 // composables/useApi.ts
-
-interface ApiResponse<T> {
-  data: T
-  success: boolean
-  message?: string
-}
-
-// 🔥 đổi tên cho đúng bản chất backend
-interface Alert {
-  id?: string
-  message: string
-  service: string
-  severity: string
-  time?: string
-  status?: string
-}
+import type { Alert, ApiResponse } from '~/types'
 
 export const useApi = () => {
   const config = useRuntimeConfig()
@@ -23,7 +8,7 @@ export const useApi = () => {
   const apiCall = async <T>(
     endpoint: string,
     options: {
-      method?: 'GET' | 'POST' | 'PUT' | 'DELETE'
+      method?: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH'
       body?: any
       headers?: Record<string, string>
     } = {}
@@ -40,13 +25,9 @@ export const useApi = () => {
         }
       })
 
-      return {
-        data: response,
-        success: true
-      }
+      return { data: response as T, success: true }
     } catch (error: any) {
       console.error('API Error:', error)
-
       return {
         data: null as T,
         success: false,
@@ -55,19 +36,14 @@ export const useApi = () => {
     }
   }
 
-  // ✅ ALERTS API (thay cho errors)
   const getAlerts = async (): Promise<ApiResponse<Alert[]>> => {
     return await apiCall<Alert[]>('/api/alerts')
   }
 
   const createAlert = async (alert: Omit<Alert, 'id'>): Promise<ApiResponse<Alert>> => {
-    return await apiCall<Alert>('/api/alerts', {
-      method: 'POST',
-      body: alert
-    })
+    return await apiCall<Alert>('/api/alerts', { method: 'POST', body: alert })
   }
 
-  // ✅ Health check (sửa lại luôn)
   const healthCheck = async (): Promise<boolean> => {
     try {
       await $fetch(`${baseURL}/api/alerts`, { method: 'GET' })
@@ -77,14 +53,5 @@ export const useApi = () => {
     }
   }
 
-  return {
-    apiCall,
-
-    // 🔥 dùng alerts thay vì errors
-    getAlerts,
-    createAlert,
-
-    healthCheck,
-    baseURL
-  }
+  return { apiCall, getAlerts, createAlert, healthCheck, baseURL }
 }
