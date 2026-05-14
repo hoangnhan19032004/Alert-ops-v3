@@ -1,16 +1,5 @@
-import { computed, onMounted } from 'vue'
-
-export interface Alert {
-  id: string
-  projectId?: string
-  message: string
-  service: string
-  severity: string
-  status?: string
-  createdAt?: string
-  env?: string
-  time?: string
-}
+import { computed } from 'vue'
+import type { Alert } from '~/types'
 
 // ─── Helper: normalize một item từ API thành Alert ───
 const mapAlert = (item: any): Alert => ({
@@ -29,8 +18,8 @@ export const useErrorStore = () => {
   const { apiCall, healthCheck } = useApi()
   const { success, error: showError } = useToast()
 
-  const alerts     = useState<Alert[]>('alerts',         () => [])
-  const loading    = useState<boolean>('alerts-loading', () => false)
+  const alerts      = useState<Alert[]>('alerts',         () => [])
+  const loading     = useState<boolean>('alerts-loading', () => false)
   const apiConnected = useState<boolean>('api-connected', () => false)
 
   // ===== LOAD =====
@@ -38,9 +27,8 @@ export const useErrorStore = () => {
     loading.value = true
     try {
       const res = await apiCall<any[]>('/api/alerts')
-
       if (res?.success && Array.isArray(res.data)) {
-        alerts.value    = res.data.map(mapAlert)
+        alerts.value      = res.data.map(mapAlert)
         apiConnected.value = true
       } else {
         apiConnected.value = false
@@ -58,23 +46,14 @@ export const useErrorStore = () => {
   // ===== CREATE =====
   const createAlert = async (data: Omit<Alert, 'id' | 'createdAt'>) => {
     try {
-      const res = await apiCall<any>('/api/alerts', {
-        method: 'POST',
-        body: data
-      })
-
+      const res = await apiCall<any>('/api/alerts', { method: 'POST', body: data })
       if (res?.success && res.data) {
-        // Backend trả về Alert object — normalize rồi đảm bảo projectId không bị mất
         const created = mapAlert(res.data)
-        // Nếu backend chưa có ProjectId field, fallback về giá trị frontend gửi lên
-        if (!created.projectId && data.projectId) {
-          created.projectId = data.projectId
-        }
+        if (!created.projectId && data.projectId) created.projectId = data.projectId
         alerts.value.unshift(created)
         success('Tạo alert thành công!')
         return true
       }
-
       showError('Tạo alert thất bại')
       return false
     } catch (err) {
@@ -89,11 +68,9 @@ export const useErrorStore = () => {
     const index = alerts.value.findIndex(a => a.id === id)
     if (index === -1) return false
 
-    // Optimistic update ngay lập tức để UI không bị lag
     const old = { ...alerts.value[index]! }
     alerts.value[index] = { ...old, ...data, id, createdAt: old.createdAt }
 
-    // Build full body — backend dùng ReplaceOne nên cần tất cả fields
     const current = alerts.value[index]!
     const fullBody = {
       message:   current.message,
@@ -103,21 +80,12 @@ export const useErrorStore = () => {
       env:       current.env,
       time:      current.time ?? '',
       createdAt: old.createdAt,
-      projectId: current.projectId ?? null,  // QUAN TRỌNG: phải gửi để không bị ReplaceOne xóa mất
+      projectId: current.projectId ?? null,
     }
 
     try {
-      const res = await apiCall(`/api/alerts/${id}`, {
-        method: 'PUT',
-        body: fullBody
-      })
-
-      // PUT trả về 204 NoContent → res.success = true, res.data = null — đây là đúng
-      if (res?.success) {
-        return true
-      }
-
-      // Rollback nếu API lỗi
+      const res = await apiCall(`/api/alerts/${id}`, { method: 'PUT', body: fullBody })
+      if (res?.success) return true
       alerts.value[index] = old
       showError('Cập nhật thất bại')
       return false
@@ -133,13 +101,11 @@ export const useErrorStore = () => {
   const deleteAlert = async (id: string) => {
     try {
       const res = await apiCall(`/api/alerts/${id}`, { method: 'DELETE' })
-
       if (res?.success) {
         alerts.value = alerts.value.filter(a => a.id !== id)
         success('Xoá thành công!')
         return true
       }
-
       return false
     } catch (err) {
       console.error(err)
@@ -163,15 +129,13 @@ export const useErrorStore = () => {
     alerts,
     loading,
     apiConnected,
-
     loadAlerts,
     createAlert,
     updateAlert,
     deleteAlert,
     checkConnection,
-
-    alertCount:    computed(() => alerts.value.length),
+    alertCount:     computed(() => alerts.value.length),
     criticalAlerts: computed(() => alerts.value.filter(a => a.severity === 'Critical')),
-    recentAlerts:  computed(() => alerts.value.slice(0, 10)),
+    recentAlerts:   computed(() => alerts.value.slice(0, 10)),
   }
 }

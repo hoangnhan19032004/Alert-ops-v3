@@ -5,13 +5,37 @@
   "Name": "Frontend",
   "Sev": "Resolved",
   "Desc": "Thiết kế giao diện UI",
-  "Owner": "nam@fpt.com",
+  "Owner": {
+    "Id": "nam@fpt.com",
+    "Name": "nam",
+    "Email": "nam@fpt.com",
+    "Role": "Owner",
+    "Avatar": "N"
+  },
   "Managers": [
-    "tinh@fpt.com",
-    "nhan@fpt.com"
+    {
+      "Id": "tinh@fpt.com",
+      "Name": "tinh",
+      "Email": "tinh@fpt.com",
+      "Role": "Manager",
+      "Avatar": "T"
+    },
+    {
+      "Id": "nhan@fpt.com",
+      "Name": "nhan",
+      "Email": "nhan@fpt.com",
+      "Role": "Manager",
+      "Avatar": "N"
+    }
   ],
   "Members": [
-    "nhan123@fpt.com"
+    {
+      "Id": "nhan123@fpt.com",
+      "Name": "nhan123",
+      "Email": "nhan123@fpt.com",
+      "Role": "Member",
+      "Avatar": "N"
+    }
   ],
   "Avatars": [],
   "AlertCount": 0
@@ -23,13 +47,37 @@
   "Name": "Backend",
   "Sev": "Resolved",
   "Desc": "Tạo api tích hợp vào dựa án dùng nodejs",
-  "Owner": "nam@fpt.com",
+  "Owner": {
+    "Id": "nam@fpt.com",
+    "Name": "nam",
+    "Email": "nam@fpt.com",
+    "Role": "Owner",
+    "Avatar": "N"
+  },
   "Managers": [
-    "tinh@fpt.com",
-    "nhan@fpt.com"
+    {
+      "Id": "tinh@fpt.com",
+      "Name": "tinh",
+      "Email": "tinh@fpt.com",
+      "Role": "Manager",
+      "Avatar": "T"
+    },
+    {
+      "Id": "nhan@fpt.com",
+      "Name": "nhan",
+      "Email": "nhan@fpt.com",
+      "Role": "Manager",
+      "Avatar": "N"
+    }
   ],
   "Members": [
-    "nhan123@fpt.com"
+    {
+      "Id": "nhan123@fpt.com",
+      "Name": "nhan123",
+      "Email": "nhan123@fpt.com",
+      "Role": "Member",
+      "Avatar": "N"
+    }
   ],
   "Avatars": [],
   "AlertCount": 7

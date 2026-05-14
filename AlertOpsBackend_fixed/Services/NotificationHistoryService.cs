@@ -10,7 +10,7 @@ namespace AlertOpsBackend.Services
         private readonly ILogger<NotificationHistoryService> _logger;
 
         public NotificationHistoryService(
-            AlertOpsDatabaseSettings settings, 
+            AlertOpsDatabaseSettings settings,
             IEmailService emailService,
             ILogger<NotificationHistoryService> logger)
         {
@@ -22,23 +22,19 @@ namespace AlertOpsBackend.Services
             _logger = logger;
         }
 
-        // Get all notifications for an alert
         public List<NotificationHistory> GetByAlertId(string alertId) =>
             _notifications.Find(n => n.AlertId == alertId)
                 .SortByDescending(n => n.CreatedAt)
                 .ToList();
 
-        // Get all notifications for a project
         public List<NotificationHistory> GetByProjectId(string projectId) =>
             _notifications.Find(n => n.ProjectId == projectId)
                 .SortByDescending(n => n.CreatedAt)
                 .ToList();
 
-        // Get single notification
         public NotificationHistory? Get(string id) =>
             _notifications.Find(n => n.Id == id).FirstOrDefault();
 
-        // Create new notification record (without sending)
         public NotificationHistory Create(NotificationHistory notification)
         {
             notification.CreatedAt = DateTime.UtcNow;
@@ -46,75 +42,73 @@ namespace AlertOpsBackend.Services
             return notification;
         }
 
-        // Send email and save to history
         public async Task<NotificationHistory> SendAndRecordAsync(
-            string? alertId, 
+            string? alertId,
             string projectId,
-            List<string> recipients, 
-            string subject, 
+            List<string> recipients,
+            string subject,
             string body,
             string type = "manual",
             string channel = "email")
         {
+            // Guard: cảnh báo rõ nếu alertId null thay vì log "(null)" khó hiểu
+            if (string.IsNullOrEmpty(alertId))
+                _logger.LogWarning("SendAndRecordAsync called with null/empty alertId for project {ProjectId}", projectId);
+
             var notification = new NotificationHistory
             {
-                AlertId = alertId,
-                ProjectId = projectId,
+                AlertId    = alertId,
+                ProjectId  = projectId,
                 Recipients = recipients,
-                Subject = subject,
-                Body = body,
-                Type = type,
-                Channel = channel,
-                Status = "pending",
-                CreatedAt = DateTime.UtcNow
+                Subject    = subject,
+                Body       = body,
+                Type       = type,
+                Channel    = channel,
+                Status     = "pending",
+                CreatedAt  = DateTime.UtcNow
             };
 
             try
             {
-                // Send email
                 var success = await _emailService.SendEmailAsync(recipients, subject, body);
-                
+
                 if (success)
                 {
                     notification.Status = "sent";
                     notification.SentAt = DateTime.UtcNow;
-                    _logger.LogInformation("Notification sent successfully for alert {alertId}", alertId);
+                    _logger.LogInformation(
+                        "Notification sent successfully for alert {AlertId}", alertId ?? "(no alertId)");
                 }
                 else
                 {
-                    notification.Status = "failed";
+                    notification.Status       = "failed";
                     notification.ErrorMessage = "Email service returned false";
-                    _logger.LogWarning("Email send failed for alert {alertId}", alertId);
+                    _logger.LogWarning("Email send failed for alert {AlertId}", alertId ?? "(no alertId)");
                 }
             }
             catch (Exception ex)
             {
-                notification.Status = "failed";
+                notification.Status       = "failed";
                 notification.ErrorMessage = ex.Message;
-                _logger.LogError(ex, "Exception sending notification for alert {alertId}", alertId);
+                _logger.LogError(ex, "Exception sending notification for alert {AlertId}", alertId ?? "(no alertId)");
             }
 
-            // Save to database
             _notifications.InsertOne(notification);
             return notification;
         }
 
-        // Update notification status
         public void Update(string id, NotificationHistory notificationIn) =>
             _notifications.ReplaceOne(n => n.Id == id, notificationIn);
 
-        // Delete notification
         public void Remove(string id) =>
             _notifications.DeleteOne(n => n.Id == id);
 
-        // Get recent notifications (for dashboard)
         public List<NotificationHistory> GetRecent(int limit = 20) =>
             _notifications.Find(_ => true)
                 .SortByDescending(n => n.CreatedAt)
                 .Limit(limit)
                 .ToList();
 
-        // Get failed notifications
         public List<NotificationHistory> GetFailed() =>
             _notifications.Find(n => n.Status == "failed")
                 .SortByDescending(n => n.CreatedAt)

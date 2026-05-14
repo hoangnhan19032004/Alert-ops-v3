@@ -1,30 +1,12 @@
 // composables/useAlertStore.ts
-// Nuxt useState (SSR-safe) - Load real data from API backend
-
-interface Project {
-  id?: string
-  name: string
-  desc: string
-  sev: string
-  avatars?: string[]
-  alertCount?: number
-}
-
-interface EscalationRule {
-  id?: string
-  project: string
-  trigger: string
-  delay: string
-  channel: string
-  active: boolean
-}
+import type { EscalationRule } from '~/types'
 
 // ========== ESCALATION RULES ==========
 export const useEscRules = () => {
   const { apiCall } = useApi()
   const { error: showError } = useToast()
-  
-  const escRules = useState<EscalationRule[]>('escRules', () => [])
+
+  const escRules        = useState<EscalationRule[]>('escRules', () => [])
   const escRulesLoading = useState('escRules-loading', () => false)
 
   // Load rules from API
@@ -69,10 +51,5 @@ export const useEscRules = () => {
     loadRules()
   }
 
-  return {
-    escRules,
-    escRulesLoading,
-    loadRules,
-    createRule
-  }
+  return { escRules, escRulesLoading, loadRules, createRule }
 }

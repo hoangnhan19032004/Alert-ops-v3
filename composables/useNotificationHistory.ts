@@ -1,29 +1,5 @@
 import { ref, computed } from 'vue'
-
-export interface NotificationHistoryItem {
-  id: string
-  alertId: string
-  projectId: string
-  recipients: string[]
-  subject?: string
-  body?: string
-  channel: string
-  type: 'auto' | 'manual'
-  status: 'pending' | 'sent' | 'failed'
-  errorMessage?: string
-  createdAt: string
-  sentAt?: string
-}
-
-export interface SendNotificationPayload {
-  alertId: string
-  projectId: string
-  recipients: string[]
-  subject: string
-  body: string
-  type?: 'auto' | 'manual'
-  channel?: string
-}
+import type { NotificationHistoryItem, SendNotificationPayload } from '~/types'
 
 export const useNotificationHistory = () => {
   const { apiCall } = useApi()
@@ -55,7 +31,7 @@ export const useNotificationHistory = () => {
         `/api/notificationhistory/send`,
         {
           method: 'POST',
-          body: JSON.stringify(payload)
+          body: payload  // ✅ object trực tiếp, không stringify
         }
       )
       if (res?.data || res) {
@@ -103,13 +79,8 @@ export const useNotificationHistory = () => {
     }
   }
 
-  // Computed properties
-  const sentCount = computed(() => 
-    notificationHistory.value.filter(n => n.status === 'sent').length
-  )
-  const failedCount = computed(() => 
-    notificationHistory.value.filter(n => n.status === 'failed').length
-  )
+  const sentCount   = computed(() => notificationHistory.value.filter(n => n.status === 'sent').length)
+  const failedCount = computed(() => notificationHistory.value.filter(n => n.status === 'failed').length)
 
   return {
     notificationHistory,
