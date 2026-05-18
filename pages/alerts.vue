@@ -76,24 +76,24 @@
             <input type="checkbox" @change="toggleSelectAll" :checked="allSelected" />
           </th>
           <th @click="toggleSort('id')" class="sortable">
-            ID <SortIcon :field="'id'" :active="sortField" :dir="sortDir" />
+            ID <Icon name="lucide:arrow-up-down" class="sort-icon" />
           </th>
           <th @click="toggleSort('projectId')" class="sortable">
-            PROJECT <SortIcon :field="'projectId'" :active="sortField" :dir="sortDir" />
+            PROJECT <Icon name="lucide:arrow-up-down" class="sort-icon" />
           </th>
           <th @click="toggleSort('severity')" class="sortable">
-            SEVERITY <SortIcon :field="'severity'" :active="sortField" :dir="sortDir" />
+            SEVERITY <Icon name="lucide:arrow-up-down" class="sort-icon" />
           </th>
           <th @click="toggleSort('status')" class="sortable">
-            STATUS <SortIcon :field="'status'" :active="sortField" :dir="sortDir" />
+            STATUS <Icon name="lucide:arrow-up-down" class="sort-icon" />
           </th>
           <th>{{ t('message').toUpperCase() }}</th>
           <th @click="toggleSort('service')" class="sortable">
-            SERVICE <SortIcon :field="'service'" :active="sortField" :dir="sortDir" />
+            SERVICE <Icon name="lucide:arrow-up-down" class="sort-icon" />
           </th>
           <th>{{ t('environment').toUpperCase().slice(0,3) }}</th>
           <th @click="toggleSort('createdAt')" class="sortable">
-            TIME <SortIcon :field="'createdAt'" :active="sortField" :dir="sortDir" />
+            TIME <Icon name="lucide:arrow-up-down" class="sort-icon" />
           </th>
           <th>{{ t('actions').toUpperCase() }}</th>
         </tr>
@@ -606,7 +606,13 @@ const envClass = (e) => e === 'Staging' ? 'env-staging' : 'env-production'
 .retry-btn:hover { border-color: #8b949e; }
 .add-alert-btn { background: #238636; border: 1px solid #238636; color: #fff; }
 .add-alert-btn:hover { background: #2ea043; }
-
+.sort-icon {
+  width: 14px;
+  height: 14px;
+  margin-left: 4px;
+  vertical-align: middle;
+  opacity: 0.7;
+}
 .search-box {
   padding: 7px 14px; border-radius: 6px; border: 1px solid #30363d;
   background: #161b22; color: #c9d1d9; font-size: 13px; width: 220px; outline: none;
