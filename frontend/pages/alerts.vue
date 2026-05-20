@@ -465,10 +465,9 @@ const onNewAlert = (alert: any) => {
     (a: any) => a.id === alert.id
   )
 
-  if (!exists) {
-    alerts.value.unshift(alert)
-  }
+  if (exists) return  // ✅ Thêm dòng này, bỏ qua nếu đã có
 
+  alerts.value.unshift(alert)
   success(`🚨 New alert: ${alert.message}`)
 }
 

@@ -50,7 +50,6 @@ export const useErrorStore = () => {
       if (res?.success && res.data) {
         const created = mapAlert(res.data)
         if (!created.projectId && data.projectId) created.projectId = data.projectId
-        alerts.value.unshift(created)
         success('Tạo alert thành công!')
         return true
       }
