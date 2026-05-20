@@ -43,10 +43,12 @@
     </nav>
 
     <div class="sidebar-user">
-      <div class="user-avatar">TN</div>
+      <!-- ✅ Avatar động theo tên user -->
+      <div class="user-avatar">{{ userAvatar }}</div>
       <div class="user-info">
-        <div class="user-name">trinm22</div>
-        <div class="user-role">Manager</div>
+        <div class="user-name">{{ currentUser?.name ?? 'Unknown' }}</div>
+        <!-- ✅ Role badge đổi màu theo role -->
+        <div class="user-role" :class="roleClass">{{ currentUser?.role ?? '—' }}</div>
       </div>
       <div class="settings-menu-container">
         <button class="settings-btn" aria-label="Settings" @click="toggleSettings">
@@ -75,23 +77,40 @@
 </template>
 
 <script setup>
-import { reactive, ref, onMounted, onUnmounted } from 'vue'
+import { reactive, ref, computed, onMounted, onUnmounted } from 'vue'
 import { useToast } from '~/composables/useToast'
 import { useI18n } from '~/composables/useI18n'
 import { useAuth } from '~/composables/useAuth'
 
 const router = useRouter()
-const { logout } = useAuth()
 
-// 👇 THÊM Ở ĐÂY
+// ✅ Lấy currentUser từ useAuth
+const { logout, currentUser } = useAuth()
+
+// ✅ Avatar: 2 ký tự đầu của name
+const userAvatar = computed(() => {
+  const label = currentUser.value?.name ?? ''
+  return label.slice(0, 2).toUpperCase() || '??'
+})
+
+// ✅ CSS class đổi màu theo role
+const roleClass = computed(() => {
+  switch (currentUser.value?.role) {
+    case 'Admin':    return 'role-admin'
+    case 'Manager':  return 'role-manager'
+    case 'Operator': return 'role-operator'
+    case 'Viewer':   return 'role-viewer'
+    default:         return ''
+  }
+})
+
 const menuItems = [
-  { key: 'alerts', to: '/alerts', icon: 'lucide:bell' },
+  { key: 'alerts',    to: '/alerts',    icon: 'lucide:bell' },
   { key: 'analytics', to: '/analytics', icon: 'lucide:bar-chart-3' },
-  { key: 'projects', to: '/projects', icon: 'lucide:folder' },
-  { key: 'escalation', to: '/escalation', icon: 'lucide:arrow-up-right' }
+  { key: 'projects',  to: '/projects',  icon: 'lucide:folder' },
+  { key: 'escalation',to: '/escalation',icon: 'lucide:arrow-up-right' }
 ]
 
-// 👇 State notification
 const notifications = reactive({
   alerts: 0,
   analytics: 0,
@@ -102,7 +121,7 @@ const notifications = reactive({
 const { t } = useI18n()
 const showSettings = ref(false)
 const showSettingsModal = ref(false)
-const { success, info } = useToast()
+const { info } = useToast()
 
 const toggleSettings = () => {
   showSettings.value = !showSettings.value
@@ -204,28 +223,25 @@ onUnmounted(() => {
   margin-bottom: 4px;
 }
 
-/* icon + text */
 .nav-content {
   display: flex;
   align-items: center;
   gap: 10px;
 }
 
-/* hover */
 .nav-item:hover {
   background: var(--bg-secondary);
   color: var(--text-secondary);
   transform: translateX(2px);
 }
 
-/* active */
 .nav-item.router-link-active {
   background: var(--bg-secondary);
   color: var(--accent-color);
   font-weight: 600;
 }
 
-/* ===== BADGE (UPDATED 🔥) ===== */
+/* ===== BADGE ===== */
 .badge {
   background: #f85149;
   color: #fff;
@@ -238,25 +254,18 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-
-  /* smooth */
   transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-/* hover effect */
-.nav-item:hover .badge {
-  transform: scale(1.1);
-}
-
-/* optional: pulse khi có alert */
-.badge {
   box-shadow: 0 0 0 rgba(248, 81, 73, 0.7);
   animation: pulse 1.6s infinite;
 }
 
+.nav-item:hover .badge {
+  transform: scale(1.1);
+}
+
 @keyframes pulse {
-  0% { box-shadow: 0 0 0 0 rgba(248, 81, 73, 0.6); }
-  70% { box-shadow: 0 0 0 6px rgba(248, 81, 73, 0); }
+  0%   { box-shadow: 0 0 0 0 rgba(248, 81, 73, 0.6); }
+  70%  { box-shadow: 0 0 0 6px rgba(248, 81, 73, 0); }
   100% { box-shadow: 0 0 0 0 rgba(248, 81, 73, 0); }
 }
 
@@ -280,21 +289,52 @@ onUnmounted(() => {
   font-size: 12px;
   font-weight: 700;
   color: #fff;
+  flex-shrink: 0;
+}
+
+.user-info {
+  flex: 1;
+  min-width: 0;
 }
 
 .user-name {
   font-size: 13px;
   font-weight: 600;
   color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
+/* ✅ Role base style */
 .user-role {
-  font-size: 11px;
-  color: var(--text-tertiary);
+  font-size: 10px;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 999px;
+  display: inline-block;
+  margin-top: 2px;
 }
 
-.user-info {
-  flex: 1;
+/* ✅ Màu theo từng role */
+.role-admin {
+  background: rgba(248, 81, 73, 0.15);
+  color: #f85149;
+}
+
+.role-manager {
+  background: rgba(58, 123, 213, 0.15);
+  color: #3a7bd5;
+}
+
+.role-operator {
+  background: rgba(63, 185, 80, 0.15);
+  color: #3fb950;
+}
+
+.role-viewer {
+  background: rgba(139, 148, 158, 0.15);
+  color: #8b949e;
 }
 
 /* ===== SETTINGS ===== */
@@ -312,7 +352,6 @@ onUnmounted(() => {
   color: var(--text-secondary);
 }
 
-/* dropdown */
 .settings-menu-container {
   position: relative;
 }
