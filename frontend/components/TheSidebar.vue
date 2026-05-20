@@ -128,8 +128,8 @@ const toggleSettings = () => {
 }
 
 const handleProfile = () => {
-  info(t('profileComingSoon'))
   showSettings.value = false
+  router.push('/profile')
 }
 
 const handlePreferences = () => {

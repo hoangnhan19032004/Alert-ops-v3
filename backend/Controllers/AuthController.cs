@@ -166,6 +166,36 @@ namespace AlertOpsBackend.Controllers
         }
 
         // ─────────────────────────────
+        // UPDATE PROFILE
+        // ─────────────────────────────
+        [HttpPut("profile")]
+        [Authorize]
+        public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileRequest dto)
+        {
+            var email = User.FindFirstValue(ClaimTypes.Email);
+            if (email == null) return Unauthorized();
+
+            var user = await _users.GetByEmailAsync(email);
+            if (user == null) return NotFound();
+
+            user.Name  = dto.Name;
+            user.Phone = dto.Phone;
+            user.Bio   = dto.Bio;
+
+            await _users.UpdateAsync(user.Id!, user);
+
+            return Ok(new
+            {
+                user.Id,
+                user.Name,
+                user.Email,
+                user.Role,
+                user.Phone,
+                user.Bio
+            });
+        }
+
+        // ─────────────────────────────
         // PRIVATE HELPERS
         // ─────────────────────────────
         private string GenerateJwt(User user)

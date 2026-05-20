@@ -23,5 +23,9 @@ namespace AlertOpsBackend.Models
 
         public DateTime CreatedAt { get; set; }
             = DateTime.UtcNow;
+
+        public string? Phone { get; set; }  // ← thêm
+        
+        public string? Bio   { get; set; }  // ← thêm
     }
 }

@@ -15,6 +15,8 @@ export interface AuthUser {
   name:  string
   email: string
   role:  'Admin' | 'Manager' | 'Operator' | 'Viewer'
+  phone?: string  // ← thêm
+  bio?:   string  // ← thêm
 }
 
 // ── Singleton state (in-memory) ──────────────────────────────
