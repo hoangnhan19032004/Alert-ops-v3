@@ -129,6 +129,8 @@
 </template>
 
 <script setup lang="ts">
+import type { AlertSeverity } from '~/types'
+
 const { baseURL } = useApi()
 
 const {
@@ -146,9 +148,14 @@ const testing = ref(false)
 const creating = ref(false)
 const mongoConnected = ref(false)
 
-const testError = ref({
+const testError = ref<{
+  service: string
+  severity: AlertSeverity
+  message: string
+  stackTrace: string
+}>({
   service: 'test-service',
-  severity: 'high',
+  severity: 'Error',
   message: 'This is a test error created from frontend',
   stackTrace: ''
 })
@@ -181,7 +188,9 @@ const createTestError = async () => {
     const ok = await createAlert({
       message: testError.value.message,
       service: testError.value.service,
-      severity: testError.value.severity
+      severity: testError.value.severity,
+      status: 'Open',        // ← thêm
+      env: 'Production'      // ← thêm
     })
 
     if (ok) {
