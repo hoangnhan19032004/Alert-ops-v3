@@ -1,108 +1,214 @@
-# AlertOps v3 — JWT Authentication Fix
+# 🚨 AlertOps v3
 
-## Tóm tắt các thay đổi
-
-### Backend (ASP.NET Core)
-
-| File | Fix |
-|------|-----|
-| `Controllers/AuthController.cs` | Thêm `POST /api/auth/logout` (xóa refresh token DB) + `GET /api/auth/me` + cleanup |
-| `Controllers/ProjectsController.cs` | Thêm `[Authorize]` + role policies (ManagerUp/AdminOnly) |
-| `Controllers/EscalationRulesController.cs` | Thêm `[Authorize]` + role policies |
-| `Controllers/NotificationHistoryController.cs` | Thêm `[Authorize]` + role policies |
-| `Program.cs` | Swagger Bearer UI, role-based policies, ClockSkew=0, JWT key null-check |
-| `appsettings.json` | Xóa key hardcode — dùng env var hoặc User Secrets |
-| `appsettings.Development.json` | Key mạnh hơn cho dev (không commit production key) |
-
-### Frontend (Nuxt 3)
-
-| File | Fix |
-|------|-----|
-| `composables/useAuth.ts` | Viết lại hoàn toàn — gọi API thực, lưu token đúng cách, auto-refresh |
-| `composables/useApi.ts` | Đính `Authorization: Bearer` + intercept 401 → auto-refresh → retry |
-| `middleware/auth.global.ts` | SSR-safe — dùng `useCookie` thay vì `localStorage` |
-| `plugins/signalr.client.ts` | `accessTokenFactory` truyền JWT cho SignalR hub |
-| `pages/login.vue` | Dùng email thay username, gọi API thực, set session cookie |
-| `pages/logout.vue` | Gọi `POST /api/auth/logout`, xóa cookie, hiển thị tên đúng |
+Hệ thống quản lý cảnh báo (Alert Operations) full-stack dành cho đội vận hành, hỗ trợ realtime, phân quyền theo vai trò, leo thang tự động và thống kê trực quan.
 
 ---
 
-## Cài đặt nhanh
+## 🛠 Tech Stack
 
-### 1. Cấu hình JWT Key an toàn
+| Layer | Công nghệ |
+|---|---|
+| Frontend | Nuxt 4 · Vue 3 · TypeScript · Pinia · Chart.js |
+| Backend | ASP.NET Core (.NET 10) · C# |
+| Database | MongoDB |
+| Realtime | SignalR |
+| Auth | JWT (Access Token + Refresh Token) |
+| Email | SMTP (HTML template) |
 
-**Development** — dùng User Secrets (không lưu vào file):
+---
+
+## ✅ Những gì đã làm được
+
+### 🔐 Xác thực & Phân quyền
+
+- **JWT hoàn chỉnh**: Access Token lưu in-memory (chống XSS) + Refresh Token 7 ngày lưu DB
+- **Auto-refresh**: Frontend tự động gia hạn token 60 giây trước khi hết hạn, intercept 401 → refresh → retry
+- **4 vai trò**: `Admin` · `Manager` · `Operator` · `Viewer`
+- **3 policy RBAC**: `AdminOnly` · `ManagerUp` · `OperatorUp` — gán đúng từng endpoint
+- **Endpoints Auth**: `/register` · `/login` · `/refresh` · `/logout` · `/me`
+- **SSR-safe middleware**: dùng `useCookie` thay `localStorage` để route guard hoạt động đúng trên server
+
+---
+
+### 📋 Quản lý Alerts
+
+- CRUD đầy đủ: tạo, xem, sửa, xóa alert
+- **Bulk actions**: chọn nhiều → xóa hàng loạt, đổi status hàng loạt (Acknowledge / Resolve / Escalate)
+- **Patch status**: PATCH endpoint riêng để cập nhật status mà không cần gửi toàn bộ object
+- **Stats endpoint**: tổng hợp số lượng theo status và severity
+- **Filter & Sort**: lọc theo status, severity, environment; sort multi-column
+- **Tự động cập nhật alertCount** của Project khi tạo/xóa alert
+- **Export**: xuất danh sách alert ra CSV hoặc JSON
+
+---
+
+### 🏗 Quản lý Projects
+
+- CRUD đầy đủ, phân quyền (tạo/sửa cần Manager+, xóa cần Admin)
+- Mỗi project có: Owner, danh sách Managers, danh sách Members (email)
+- AlertCount tự tăng/giảm theo alert được tạo/xóa trong project
+
+---
+
+### ⚡ Realtime với SignalR
+
+- `AlertOpsHub` yêu cầu xác thực JWT, truyền token qua query string `?access_token=`
+- Mỗi user được join vào group riêng (`user:{id}`) và group theo role (`role:{Admin}`)
+- Hỗ trợ join/leave group theo project
+- Phát sự kiện realtime:
+  - `alert:new` — có alert mới
+  - `alert:updated` — alert vừa được cập nhật
+  - `alert:deleted` — alert bị xóa
+  - `alerts:bulkDeleted` / `alerts:bulkUpdated` — thao tác hàng loạt
+- Admin có thể broadcast thông báo toàn hệ thống
+- Frontend hiển thị trạng thái **Live / Offline**, tự retry khi mất kết nối
+
+---
+
+### 🔔 Leo thang tự động (EscalationWorker)
+
+- Background service chạy **mỗi 30 giây**
+- Match alert với escalation rule theo: project, trigger (severity/keyword), delay time
+- Tự động gửi email khi alert chưa được giải quyết sau thời gian delay
+- Delay hỗ trợ: `Immediate` · `30 sec` · `1–30 min` · `1 hour`
+- Chống gửi trùng bằng `HashSet<ruleId:alertId>` in-memory
+- Email recipients lấy từ owner + managers + members của project
+
+---
+
+### 📧 Notification & Email
+
+- Gửi email qua SMTP cấu hình qua `appsettings.json` hoặc biến môi trường
+- Template email HTML responsive, dark-mode style
+- Lịch sử notification lưu vào DB, có thể lọc theo alert, project, recent, failed
+- Dev mode: log warning thay vì lỗi khi chưa cấu hình SMTP
+
+---
+
+### 📊 Analytics & Thống kê
+
+- **KPI cards**: Tổng alerts · Open · Escalated · Resolved · Critical · Resolve rate
+- **Alert Trend**: biểu đồ đường theo ngày (7 / 14 / 30 ngày)
+- **Donut chart**: phân bổ theo status
+- **Heatmap**: mật độ alert theo giờ trong ngày
+- Tất cả render bằng Chart.js, responsive
+
+---
+
+### 🌐 Giao diện Frontend
+
+- **Dark / Light theme** — lưu preference vào localStorage
+- **i18n**: hỗ trợ Tiếng Việt và English, toggle realtime
+- **Toast notification** — thông báo thành công/lỗi nhẹ nhàng
+- **Search history** — gợi ý lại các từ khóa đã tìm
+- **User Preferences** — lưu cài đặt cá nhân
+- **Swagger UI** với Bearer auth (chỉ chạy ở dev)
+- Sidebar navigation với icon, responsive
+
+---
+
+## 📁 Cấu trúc dự án
+
+```
+alert-ops-v3/
+├── backend/
+│   ├── Controllers/          # API endpoints
+│   ├── Services/             # Business logic, Email, Notification
+│   ├── Models/               # MongoDB models
+│   ├── DTOs/                 # Request/Response objects
+│   ├── Hubs/                 # SignalR hub
+│   └── Program.cs            # DI, JWT, CORS, Swagger setup
+└── frontend/
+    ├── pages/                # alerts · analytics · projects · escalation · profile
+    ├── components/           # Modals, Sidebar, Toast, AlertDetail
+    ├── composables/          # useAuth · useApi · useAlertStore · useI18n · ...
+    ├── stores/               # Pinia alert store
+    ├── plugins/              # SignalR client plugin
+    └── middleware/           # auth.global.ts (SSR-safe)
+```
+
+---
+
+## 🚀 Chạy nhanh
+
+### Yêu cầu
+- .NET 10 SDK
+- Node.js 20+
+- MongoDB (local hoặc Atlas)
+
+### Backend
+
 ```bash
-cd AlertOpsBackend_fixed
+cd backend
+
+# Cấu hình JWT key (dev)
 dotnet user-secrets set "Jwt:Key" "your-strong-random-key-min-32-chars"
+
+# Chạy
+dotnet run
+# → http://localhost:5000
+# → Swagger: http://localhost:5000/swagger
 ```
 
-**Production** — biến môi trường:
+### Frontend
+
 ```bash
-export Jwt__Key="your-strong-random-key-min-32-chars"
+cd frontend
+npm install
+npm run dev
+# → http://localhost:3000
 ```
 
-### 2. Tạo user đầu tiên (Admin)
+### Tạo user Admin đầu tiên
 
-Sau khi chạy backend, gọi endpoint register:
 ```bash
 curl -X POST http://localhost:5000/api/auth/register \
   -H "Content-Type: application/json" \
-  -d '{"name":"Admin User","email":"admin@company.com","password":"StrongPass123!","role":"Admin"}'
-```
-
-### 3. Chạy
-
-```bash
-# Backend
-cd AlertOpsBackend_fixed
-dotnet run
-
-# Frontend
-cd ..  # (thư mục Nuxt)
-npm install
-npm run dev
+  -d '{"name":"Admin","email":"admin@company.com","password":"StrongPass123!","role":"Admin"}'
 ```
 
 ---
 
-## Luồng JWT hoàn chỉnh
+## ⚙️ Cấu hình
 
-```
-Login (email+password)
-  → POST /api/auth/login
-  → Nhận accessToken (1h) + refreshToken (7 ngày)
-  → accessToken: in memory (useAuth)
-  → refreshToken: localStorage
-  → sessionCookie: cookie (SSR middleware)
+`backend/appsettings.Development.json`:
 
-Mỗi API request
-  → useApi.apiCall() tự đính Bearer header
-  → 401 → tự gọi /api/auth/refresh → retry
-
-Token sắp hết hạn (60s trước)
-  → scheduleRefresh() tự gọi silentRefresh()
-
-Logout
-  → POST /api/auth/logout (xóa refreshToken trên DB)
-  → Xóa localStorage + sessionCookie
-
-SignalR connect
-  → accessTokenFactory() cung cấp JWT qua ?access_token=...
+```json
+{
+  "AlertOpsDatabase": {
+    "ConnectionString": "mongodb://localhost:27017",
+    "DatabaseName": "AlertOps"
+  },
+  "Jwt": {
+    "Issuer": "AlertOpsBackend",
+    "Audience": "AlertOpsFrontend"
+  },
+  "EmailSettings": {
+    "SmtpHost": "smtp.gmail.com",
+    "SmtpPort": "587",
+    "SmtpUser": "your@email.com",
+    "SmtpPassword": "your-app-password",
+    "SenderEmail": "noreply@alertops.com",
+    "SenderName": "AlertOps"
+  }
+}
 ```
 
 ---
 
-## Role-based authorization
+## 🔑 Phân quyền
 
 | Role | Quyền |
-|------|-------|
-| `Admin` | Toàn quyền (AdminOnly + ManagerUp + Operator) |
-| `Manager` | Tạo/sửa project, rule, gửi notification; không xóa |
-| `Operator` | Đọc + sửa alert status |
-| `Viewer` | Chỉ đọc |
+|---|---|
+| `Admin` | Toàn quyền — xóa project, quản lý user |
+| `Manager` | Tạo/sửa project, rule, gửi notification |
+| `Operator` | Đọc + sửa status alert |
+| `Viewer` | Chỉ xem |
 
-Policies trong `Program.cs`:
-- `AdminOnly` — chỉ Admin
-- `ManagerUp` — Admin hoặc Manager
-- `OperatorUp` — Admin, Manager, hoặc Operator
+---
+
+## ⚠️ Lưu ý
+
+- `EscalationWorker` dùng HashSet in-memory để chống gửi trùng → **restart server sẽ reset**. Cần persist vào DB/Redis cho production.
+- Slack và PagerDuty hiện là **UI placeholder** — chưa tích hợp API thật.
+- Frontend `useAlertRealtime` cần đọc URL từ `runtimeConfig` thay vì hardcode trước khi deploy.
