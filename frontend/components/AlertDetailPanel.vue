@@ -164,7 +164,7 @@ const statusActions = [
   position: sticky; top: 0; background: var(--bg-secondary); z-index: 10;
 }
 .header-info { display: flex; flex-direction: column; gap: 8px; }
-.panel-id { font-family: 'Courier New', monospace; font-size: 18px; font-weight: 700; color: #58a6ff; }
+.panel-id { font-family: 'Courier New', monospace; font-size: 18px; font-weight: 700; color: var(--accent-color); }
 .close-btn {
   background: var(--bg-tertiary); border: 1px solid var(--border-color); color: var(--text-tertiary);
   cursor: pointer; width: 32px; height: 32px; border-radius: 6px;
@@ -182,19 +182,19 @@ const statusActions = [
 .meta-value.mono { font-family: 'Courier New', monospace; }
 
 .env-badge { padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
-.env-production { background: rgba(248,81,73,.15); color: #f85149; }
-.env-staging    { background: rgba(210,153,34,.15); color: #d29922; }
-.status-open { color: #3fb950; font-weight: 600; }
+.env-production { background: rgba(248,81,73,.15); color: var(--danger-color); }
+.env-staging    { background: rgba(210,153,34,.15); color: var(--warning-color); }
+.status-open { color: var(--success-color); font-weight: 600; }
 .status-ack  { color: #e3b341; font-weight: 600; }
-.status-esc  { color: #f85149; font-weight: 600; }
-.status-res  { color: #58a6ff; font-weight: 600; }
+.status-esc  { color: var(--danger-color); font-weight: 600; }
+.status-res  { color: var(--accent-color); font-weight: 600; }
 
 .badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; width: fit-content; }
 .badge-dot { width: 7px; height: 7px; border-radius: 50%; }
-.badge-critical { background: rgba(248,81,73,.12);  color: #f85149; } .badge-critical .badge-dot { background: #f85149; }
+.badge-critical { background: rgba(248,81,73,.12);  color: var(--danger-color); } .badge-critical .badge-dot { background: #f85149; }
 .badge-error    { background: rgba(227,179,65,.12); color: #e3b341; } .badge-error    .badge-dot { background: #e3b341; }
-.badge-warning  { background: rgba(210,153,34,.12); color: #d29922; } .badge-warning  .badge-dot { background: #d29922; }
-.badge-info     { background: rgba(88,166,255,.12); color: #58a6ff; } .badge-info     .badge-dot { background: #58a6ff; }
+.badge-warning  { background: rgba(210,153,34,.12); color: var(--warning-color); } .badge-warning  .badge-dot { background: #d29922; }
+.badge-info     { background: rgba(88,166,255,.12); color: var(--accent-color); } .badge-info     .badge-dot { background: #58a6ff; }
 
 .section { display: flex; flex-direction: column; gap: 10px; }
 .section-label { font-size: 11px; font-weight: 600; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: .06em; }
@@ -224,20 +224,20 @@ const statusActions = [
   cursor: pointer; border: 1px solid; transition: all .15s;
 }
 .action-btn:disabled { opacity: .35; cursor: default; }
-.btn-open { border-color: #586069; color: #8b949e; background: transparent; }
+.btn-open { border-color: var(--text-muted); color: var(--text-tertiary); background: transparent; }
 .btn-open:hover:not(:disabled) { background: rgba(255,255,255,.05); }
 .btn-ack  { border-color: #e3b341; color: #e3b341; background: rgba(227,179,65,.08); }
 .btn-ack:hover:not(:disabled)  { background: rgba(227,179,65,.18); }
-.btn-esc  { border-color: #f85149; color: #f85149; background: rgba(248,81,73,.08); }
+.btn-esc  { border-color: var(--danger-color); color: var(--danger-color); background: rgba(248,81,73,.08); }
 .btn-esc:hover:not(:disabled)  { background: rgba(248,81,73,.18); }
-.btn-res  { border-color: #3fb950; color: #3fb950; background: rgba(63,185,80,.08); }
+.btn-res  { border-color: var(--success-color); color: var(--success-color); background: rgba(63,185,80,.08); }
 .btn-res:hover:not(:disabled)  { background: rgba(63,185,80,.18); }
 
 /* Danger zone */
-.danger-zone { border-top: 1px solid #21262d; padding-top: 20px; }
+.danger-zone { border-top: 1px solid var(--border-color); padding-top: 20px; }
 .delete-btn {
   display: flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 7px;
-  background: transparent; border: 1px solid #f85149; color: #f85149;
+  background: transparent; border: 1px solid #f85149; color: var(--danger-color);
   font-size: 13px; font-weight: 600; cursor: pointer; transition: all .15s;
 }
 .delete-btn:hover { background: rgba(248,81,73,.1); }

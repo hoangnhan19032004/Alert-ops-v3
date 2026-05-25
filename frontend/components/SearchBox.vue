@@ -144,34 +144,34 @@ const formatTime = (timestamp: number) => {
   left: 12px;
   width: 16px;
   height: 16px;
-  color: #8b949e;
+  color: var(--text-tertiary);
   pointer-events: none;
 }
 
 .search-input {
   width: 100%;
   padding: 8px 12px 8px 36px;
-  background: #161b22;
+  background: var(--bg-secondary);
   border: 1px solid #1e2735;
   border-radius: 8px;
-  color: #c9d1d9;
+  color: var(--text-secondary);
   font-size: 13px;
   transition: all 0.15s;
 }
 
 .search-input:hover {
-  border-color: #30363d;
+  border-color: var(--input-border);
 }
 
 .search-input:focus {
   outline: none;
-  border-color: #58a6ff;
+  border-color: var(--accent-color);
   box-shadow: 0 0 0 2px rgba(88, 166, 255, 0.1);
-  background: #0d1117;
+  background: var(--bg-primary);
 }
 
 .search-input::placeholder {
-  color: #8b949e;
+  color: var(--text-tertiary);
 }
 
 .clear-btn {
@@ -179,7 +179,7 @@ const formatTime = (timestamp: number) => {
   right: 12px;
   background: none;
   border: none;
-  color: #8b949e;
+  color: var(--text-tertiary);
   cursor: pointer;
   padding: 4px;
   display: flex;
@@ -188,7 +188,7 @@ const formatTime = (timestamp: number) => {
 }
 
 .clear-btn:hover {
-  color: #c9d1d9;
+  color: var(--text-secondary);
 }
 
 .search-history {
@@ -196,7 +196,7 @@ const formatTime = (timestamp: number) => {
   top: 100%;
   left: 0;
   right: 0;
-  background: #161b22;
+  background: var(--bg-secondary);
   border: 1px solid #1e2735;
   border-top: none;
   border-radius: 0 0 8px 8px;
@@ -215,13 +215,13 @@ const formatTime = (timestamp: number) => {
   border-bottom: 1px solid #1e2735;
   position: sticky;
   top: 0;
-  background: #161b22;
+  background: var(--bg-secondary);
 }
 
 .history-title {
   font-size: 11px;
   font-weight: 700;
-  color: #8b949e;
+  color: var(--text-tertiary);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -229,7 +229,7 @@ const formatTime = (timestamp: number) => {
 .clear-history-btn {
   background: none;
   border: none;
-  color: #8b949e;
+  color: var(--text-tertiary);
   cursor: pointer;
   padding: 4px;
   display: flex;
@@ -238,7 +238,7 @@ const formatTime = (timestamp: number) => {
 }
 
 .clear-history-btn:hover {
-  color: #f85149;
+  color: var(--danger-color);
 }
 
 .history-item {
@@ -249,7 +249,7 @@ const formatTime = (timestamp: number) => {
   padding: 8px 12px;
   background: none;
   border: none;
-  color: #c9d1d9;
+  color: var(--text-secondary);
   cursor: pointer;
   font-size: 13px;
   text-align: left;
@@ -257,13 +257,13 @@ const formatTime = (timestamp: number) => {
 }
 
 .history-item:hover {
-  background: #0d1117;
+  background: var(--bg-primary);
 }
 
 .history-item svg {
   width: 14px;
   height: 14px;
-  color: #8b949e;
+  color: var(--text-tertiary);
   flex-shrink: 0;
 }
 
@@ -276,7 +276,7 @@ const formatTime = (timestamp: number) => {
 
 .history-time {
   font-size: 11px;
-  color: #8b949e;
+  color: var(--text-tertiary);
   white-space: nowrap;
   flex-shrink: 0;
 }
@@ -284,7 +284,7 @@ const formatTime = (timestamp: number) => {
 .remove-btn {
   background: none;
   border: none;
-  color: #8b949e;
+  color: var(--text-tertiary);
   cursor: pointer;
   padding: 4px;
   display: flex;
@@ -296,11 +296,11 @@ const formatTime = (timestamp: number) => {
 
 .history-item:hover .remove-btn {
   opacity: 1;
-  color: #f85149;
+  color: var(--danger-color);
 }
 
 .remove-btn:hover {
-  color: #f85149;
+  color: var(--danger-color);
 }
 
 .remove-btn svg {

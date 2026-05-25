@@ -458,9 +458,9 @@ onMounted(() => {
   gap: 6px;
   padding: 8px 14px;
   border-radius: 6px;
-  background: #21262d;
-  border: 1px solid #30363d;
-  color: #c9d1d9;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--input-border);
+  color: var(--text-secondary);
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
@@ -468,14 +468,14 @@ onMounted(() => {
 }
 
 .back-btn:hover {
-  border-color: #58a6ff;
-  color: #58a6ff;
+  border-color: var(--accent-color);
+  color: var(--accent-color);
 }
 
 .edit-title {
   font-size: 24px;
   font-weight: 700;
-  color: #e6edf3;
+  color: var(--text-primary);
   margin: 0;
 }
 
@@ -485,7 +485,7 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   padding: 60px 20px;
-  color: #8b949e;
+  color: var(--text-tertiary);
 }
 
 .loading-icon {
@@ -501,8 +501,8 @@ onMounted(() => {
 }
 
 .edit-form {
-  background: #161b22;
-  border: 1px solid #30363d;
+  background: var(--bg-secondary);
+  border: 1px solid var(--input-border);
   border-radius: 12px;
   padding: 24px;
 }
@@ -532,7 +532,7 @@ onMounted(() => {
   gap: 6px;
   font-size: 12px;
   font-weight: 600;
-  color: #c9d1d9;
+  color: var(--text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
@@ -541,9 +541,9 @@ onMounted(() => {
 .form-textarea {
   padding: 10px 12px;
   border-radius: 6px;
-  border: 1px solid #30363d;
-  background: #0d1117;
-  color: #c9d1d9;
+  border: 1px solid var(--input-border);
+  background: var(--bg-primary);
+  color: var(--text-secondary);
   font-size: 13px;
   font-family: inherit;
   outline: none;
@@ -552,13 +552,13 @@ onMounted(() => {
 
 .form-input:focus,
 .form-textarea:focus {
-  border-color: #58a6ff;
+  border-color: var(--accent-color);
   box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.1);
 }
 
 .form-input.error,
 .form-textarea.error {
-  border-color: #f85149;
+  border-color: var(--danger-color);
 }
 
 .form-textarea {
@@ -568,7 +568,7 @@ onMounted(() => {
 
 .error-text {
   font-size: 12px;
-  color: #f85149;
+  color: var(--danger-color);
 }
 
 .severity-options {
@@ -583,9 +583,9 @@ onMounted(() => {
   gap: 8px;
   padding: 10px 12px;
   border-radius: 6px;
-  border: 1px solid #30363d;
-  background: #0d1117;
-  color: #8b949e;
+  border: 1px solid var(--input-border);
+  background: var(--bg-primary);
+  color: var(--text-tertiary);
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
@@ -593,8 +593,8 @@ onMounted(() => {
 }
 
 .severity-btn:hover {
-  border-color: #58a6ff;
-  color: #58a6ff;
+  border-color: var(--accent-color);
+  color: var(--accent-color);
 }
 
 .severity-btn.active {
@@ -636,7 +636,7 @@ onMounted(() => {
   border-radius: 999px;
   background: rgba(88, 166, 255, 0.1);
   border: 1px solid rgba(88, 166, 255, 0.2);
-  color: #58a6ff;
+  color: var(--accent-color);
   font-size: 12px;
   font-weight: 500;
 }
@@ -658,7 +658,7 @@ onMounted(() => {
 
 .remove-btn:hover {
   background: rgba(248, 81, 73, 0.2);
-  color: #f85149;
+  color: var(--danger-color);
 }
 
 .member-input-wrap {
@@ -696,7 +696,7 @@ onMounted(() => {
   justify-content: flex-end;
   gap: 12px;
   padding-top: 24px;
-  border-top: 1px solid #21262d;
+  border-top: 1px solid var(--border-color);
 }
 
 .btn-cancel,
@@ -715,13 +715,13 @@ onMounted(() => {
 
 .btn-cancel {
   background: transparent;
-  border: 1px solid #30363d;
-  color: #8b949e;
+  border: 1px solid var(--input-border);
+  color: var(--text-tertiary);
 }
 
 .btn-cancel:hover {
-  border-color: #58a6ff;
-  color: #58a6ff;
+  border-color: var(--accent-color);
+  color: var(--accent-color);
 }
 
 .btn-save {
@@ -745,7 +745,7 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   padding: 60px 20px;
-  color: #8b949e;
+  color: var(--text-tertiary);
   text-align: center;
 }
 
@@ -764,9 +764,9 @@ onMounted(() => {
 .btn-secondary {
   padding: 10px 20px;
   border-radius: 6px;
-  background: #21262d;
-  border: 1px solid #30363d;
-  color: #c9d1d9;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--input-border);
+  color: var(--text-secondary);
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
@@ -774,7 +774,7 @@ onMounted(() => {
 }
 
 .btn-secondary:hover {
-  border-color: #58a6ff;
-  color: #58a6ff;
+  border-color: var(--accent-color);
+  color: var(--accent-color);
 }
 </style>

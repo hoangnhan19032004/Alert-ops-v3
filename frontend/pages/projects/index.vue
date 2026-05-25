@@ -502,12 +502,12 @@ const badgeClass = (
 .page-title {
   font-size: 24px;
   font-weight: 700;
-  color: #e6edf3;
+  color: var(--text-primary);
 }
 
 .page-sub {
   font-size: 13px;
-  color: #586069;
+  color: var(--text-muted);
   margin-top: 4px;
 }
 
@@ -518,16 +518,16 @@ const badgeClass = (
   padding: 8px 16px;
   border-radius: 8px;
   background: transparent;
-  border: 1px solid #30363d;
-  color: #c9d1d9;
+  border: 1px solid var(--input-border);
+  color: var(--text-secondary);
   font-size: 13px;
   cursor: pointer;
   transition: .15s;
 }
 
 .add-btn:hover {
-  border-color: #58a6ff;
-  color: #58a6ff;
+  border-color: var(--accent-color);
+  color: var(--accent-color);
 }
 
 /* Grid */
@@ -540,8 +540,8 @@ const badgeClass = (
 
 /* Card */
 .project-card {
-  background: #161b22;
-  border: 1px solid #21262d;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
   border-left: 3px solid transparent;
   border-radius: 12px;
   padding: 18px;
@@ -554,11 +554,11 @@ const badgeClass = (
 
 .project-card:hover {
   transform: translateY(-2px);
-  border-color: #30363d;
+  border-color: var(--input-border);
 }
 
 .card-critical {
-  border-left-color: #f85149;
+  border-left-color: var(--danger-color);
 }
 
 .card-error {
@@ -566,11 +566,11 @@ const badgeClass = (
 }
 
 .card-warning {
-  border-left-color: #d29922;
+  border-left-color: var(--warning-color);
 }
 
 .card-resolved {
-  border-left-color: #3fb950;
+  border-left-color: var(--success-color);
 }
 
 /* Header */
@@ -590,12 +590,12 @@ const badgeClass = (
 .proj-name {
   font-size: 15px;
   font-weight: 700;
-  color: #e6edf3;
+  color: var(--text-primary);
 }
 
 .proj-id {
   font-size: 11px;
-  color: #586069;
+  color: var(--text-muted);
 }
 
 .proj-header-right {
@@ -608,7 +608,7 @@ const badgeClass = (
 .proj-desc {
   font-size: 13px;
   line-height: 1.6;
-  color: #8b949e;
+  color: var(--text-tertiary);
   min-height: 42px;
 }
 
@@ -624,7 +624,7 @@ const badgeClass = (
   align-items: center;
   gap: 5px;
   font-size: 12px;
-  color: #8b949e;
+  color: var(--text-tertiary);
 }
 
 .stat-item svg {
@@ -674,12 +674,12 @@ const badgeClass = (
 
 .no-members {
   font-size: 12px;
-  color: #586069;
+  color: var(--text-muted);
 }
 
 .proj-alert-count {
   font-size: 12px;
-  color: #8b949e;
+  color: var(--text-tertiary);
 }
 
 /* Badge */
@@ -701,7 +701,7 @@ const badgeClass = (
 
 .badge-critical {
   background: rgba(248,81,73,.12);
-  color: #f85149;
+  color: var(--danger-color);
 }
 
 .badge-critical .badge-dot {
@@ -719,7 +719,7 @@ const badgeClass = (
 
 .badge-warning {
   background: rgba(210,153,34,.12);
-  color: #d29922;
+  color: var(--warning-color);
 }
 
 .badge-warning .badge-dot {
@@ -728,7 +728,7 @@ const badgeClass = (
 
 .badge-resolved {
   background: rgba(63,185,80,.12);
-  color: #3fb950;
+  color: var(--success-color);
 }
 
 .badge-resolved .badge-dot {
@@ -743,7 +743,7 @@ const badgeClass = (
 .menu-btn {
   background: transparent;
   border: none;
-  color: #8b949e;
+  color: var(--text-tertiary);
   cursor: pointer;
   border-radius: 6px;
   padding: 4px;
@@ -752,8 +752,8 @@ const badgeClass = (
 }
 
 .menu-btn:hover {
-  background: #21262d;
-  color: #c9d1d9;
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
 }
 
 .dropdown {
@@ -761,8 +761,8 @@ const badgeClass = (
   right: 0;
   top: calc(100% + 4px);
   width: 160px;
-  background: #1c2128;
-  border: 1px solid #30363d;
+  background: var(--bg-secondary);
+  border: 1px solid var(--input-border);
   border-radius: 10px;
   padding: 4px;
   z-index: 100;
@@ -774,7 +774,7 @@ const badgeClass = (
   width: 100%;
   border: none;
   background: transparent;
-  color: #c9d1d9;
+  color: var(--text-secondary);
   font-size: 13px;
   border-radius: 6px;
   padding: 8px 10px;
@@ -785,11 +785,11 @@ const badgeClass = (
 }
 
 .drop-item:hover {
-  background: #21262d;
+  background: var(--bg-tertiary);
 }
 
 .drop-danger {
-  color: #f85149;
+  color: var(--danger-color);
 }
 
 .drop-danger:hover {
@@ -805,7 +805,7 @@ const badgeClass = (
   align-items: center;
   gap: 12px;
   padding: 80px 0;
-  color: #586069;
+  color: var(--text-muted);
 }
 
 .loading-icon {
@@ -834,25 +834,25 @@ const badgeClass = (
 .confirm-modal {
   width: 380px;
   max-width: 90vw;
-  background: #1c2128;
-  border: 1px solid #30363d;
+  background: var(--bg-secondary);
+  border: 1px solid var(--input-border);
   border-radius: 12px;
   padding: 24px;
 }
 
 .confirm-modal h3 {
-  color: #e6edf3;
+  color: var(--text-primary);
   margin-bottom: 12px;
 }
 
 .confirm-modal p {
   font-size: 13px;
   line-height: 1.6;
-  color: #8b949e;
+  color: var(--text-tertiary);
 }
 
 .confirm-modal strong {
-  color: #e6edf3;
+  color: var(--text-primary);
 }
 
 .confirm-actions {
@@ -873,13 +873,13 @@ const badgeClass = (
 
 .btn-cancel {
   background: transparent;
-  border: 1px solid #30363d;
-  color: #c9d1d9;
+  border: 1px solid var(--input-border);
+  color: var(--text-secondary);
 }
 
 .btn-cancel:hover {
-  border-color: #58a6ff;
-  color: #58a6ff;
+  border-color: var(--accent-color);
+  color: var(--accent-color);
 }
 
 .btn-delete {

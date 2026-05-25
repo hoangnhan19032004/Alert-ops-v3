@@ -299,7 +299,7 @@ const handleLogin = async () => {
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-color) 15%, transparent);
 }
 .input-wrap.error {
-  border-color: #f85149;
+  border-color: var(--danger-color);
   box-shadow: 0 0 0 3px rgba(248, 81, 73, 0.12);
 }
 
@@ -346,7 +346,7 @@ const handleLogin = async () => {
   background: rgba(248, 81, 73, 0.1);
   border: 1px solid rgba(248, 81, 73, 0.25);
   border-radius: 7px;
-  color: #f85149;
+  color: var(--danger-color);
   font-size: 13px;
 }
 .err-fade-enter-active, .err-fade-leave-active { transition: all 0.25s ease; }

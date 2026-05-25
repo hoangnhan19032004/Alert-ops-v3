@@ -322,7 +322,7 @@ watch(() => [form.value.triggerType, form.value.triggerSeverity, form.value.trig
 }
 
 .modal-content {
-  background: #0d1117;
+  background: var(--bg-primary);
   border: 1px solid #1e2735;
   border-radius: 12px;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
@@ -345,13 +345,13 @@ watch(() => [form.value.triggerType, form.value.triggerSeverity, form.value.trig
 .modal-title {
   font-size: 18px;
   font-weight: 700;
-  color: #e6edf3;
+  color: var(--text-primary);
 }
 
 .close-btn {
   background: none;
   border: none;
-  color: #8b949e;
+  color: var(--text-tertiary);
   cursor: pointer;
   padding: 4px;
   display: flex;
@@ -360,7 +360,7 @@ watch(() => [form.value.triggerType, form.value.triggerSeverity, form.value.trig
 }
 
 .close-btn:hover {
-  color: #c9d1d9;
+  color: var(--text-secondary);
 }
 
 .modal-body {
@@ -379,24 +379,24 @@ watch(() => [form.value.triggerType, form.value.triggerSeverity, form.value.trig
   gap: 8px;
   font-size: 13px;
   font-weight: 600;
-  color: #c9d1d9;
+  color: var(--text-secondary);
   margin-bottom: 8px;
 }
 
 .form-label svg {
   width: 16px;
   height: 16px;
-  color: #8b949e;
+  color: var(--text-tertiary);
 }
 
 .form-select,
 .form-input {
   width: 100%;
   padding: 10px 12px;
-  background: #161b22;
+  background: var(--bg-secondary);
   border: 1px solid #1e2735;
   border-radius: 6px;
-  color: #c9d1d9;
+  color: var(--text-secondary);
   font-size: 13px;
   transition: all 0.15s;
 }
@@ -404,13 +404,13 @@ watch(() => [form.value.triggerType, form.value.triggerSeverity, form.value.trig
 .form-select:focus,
 .form-input:focus {
   outline: none;
-  border-color: #58a6ff;
+  border-color: var(--accent-color);
   box-shadow: 0 0 0 2px rgba(88, 166, 255, 0.1);
 }
 
 .form-select.error,
 .form-input.error {
-  border-color: #f85149;
+  border-color: var(--danger-color);
 }
 
 .trigger-input-group {
@@ -430,7 +430,7 @@ watch(() => [form.value.triggerType, form.value.triggerSeverity, form.value.trig
 }
 
 .trigger-x {
-  color: #8b949e;
+  color: var(--text-tertiary);
   font-weight: 600;
 }
 
@@ -442,14 +442,14 @@ watch(() => [form.value.triggerType, form.value.triggerSeverity, form.value.trig
 .trigger-preview {
   margin-top: 8px;
   padding: 8px 12px;
-  background: #161b22;
+  background: var(--bg-secondary);
   border-radius: 4px;
   border: 1px solid #1e2735;
 }
 
 .preview-label {
   font-size: 11px;
-  color: #8b949e;
+  color: var(--text-tertiary);
   text-transform: uppercase;
   font-weight: 600;
   margin-right: 8px;
@@ -458,7 +458,7 @@ watch(() => [form.value.triggerType, form.value.triggerSeverity, form.value.trig
 .preview-value {
   font-family: 'Courier New', monospace;
   font-size: 12px;
-  color: #58a6ff;
+  color: var(--accent-color);
 }
 
 .channels-selection {
@@ -472,7 +472,7 @@ watch(() => [form.value.triggerType, form.value.triggerSeverity, form.value.trig
   align-items: center;
   gap: 8px;
   padding: 10px 12px;
-  background: #161b22;
+  background: var(--bg-secondary);
   border: 1px solid #1e2735;
   border-radius: 6px;
   cursor: pointer;
@@ -480,7 +480,7 @@ watch(() => [form.value.triggerType, form.value.triggerSeverity, form.value.trig
 }
 
 .channel-option:hover {
-  border-color: #30363d;
+  border-color: var(--input-border);
 }
 
 .channel-checkbox {
@@ -488,11 +488,11 @@ watch(() => [form.value.triggerType, form.value.triggerSeverity, form.value.trig
 }
 
 .channel-checkbox:checked + .channel-label {
-  color: #58a6ff;
+  color: var(--accent-color);
 }
 
 .channel-checkbox:checked + .channel-label svg {
-  color: #58a6ff;
+  color: var(--accent-color);
 }
 
 .channel-label {
@@ -500,20 +500,20 @@ watch(() => [form.value.triggerType, form.value.triggerSeverity, form.value.trig
   align-items: center;
   gap: 6px;
   font-size: 13px;
-  color: #c9d1d9;
+  color: var(--text-secondary);
   transition: color 0.15s;
 }
 
 .channel-label svg {
   width: 16px;
   height: 16px;
-  color: #8b949e;
+  color: var(--text-tertiary);
   transition: color 0.15s;
 }
 
 .selected-channels {
   font-size: 12px;
-  color: #8b949e;
+  color: var(--text-tertiary);
   margin-top: 8px;
 }
 
@@ -527,25 +527,25 @@ watch(() => [form.value.triggerType, form.value.triggerSeverity, form.value.trig
 .toggle-label input[type="checkbox"] {
   margin-top: 3px;
   cursor: pointer;
-  accent-color: #58a6ff;
+  accent-color: var(--accent-color);
 }
 
 .label-text {
   font-size: 13px;
   font-weight: 600;
-  color: #c9d1d9;
+  color: var(--text-secondary);
   margin-bottom: 2px;
 }
 
 .label-desc {
   font-size: 12px;
-  color: #8b949e;
+  color: var(--text-tertiary);
 }
 
 .error-text {
   display: block;
   font-size: 12px;
-  color: #f85149;
+  color: var(--danger-color);
   margin-top: 4px;
 }
 
@@ -561,9 +561,9 @@ watch(() => [form.value.triggerType, form.value.triggerSeverity, form.value.trig
 .btn-cancel {
   padding: 8px 16px;
   background: transparent;
-  border: 1px solid #30363d;
+  border: 1px solid var(--input-border);
   border-radius: 6px;
-  color: #c9d1d9;
+  color: var(--text-secondary);
   cursor: pointer;
   font-size: 13px;
   font-weight: 600;
@@ -571,7 +571,7 @@ watch(() => [form.value.triggerType, form.value.triggerSeverity, form.value.trig
 }
 
 .btn-cancel:hover {
-  border-color: #8b949e;
+  border-color: var(--text-tertiary);
 }
 
 .btn-submit {
@@ -595,8 +595,8 @@ watch(() => [form.value.triggerType, form.value.triggerSeverity, form.value.trig
 }
 
 .btn-submit:disabled {
-  background: #30363d;
-  border-color: #30363d;
+  background: var(--input-border);
+  border-color: var(--input-border);
   cursor: not-allowed;
   opacity: 0.6;
 }

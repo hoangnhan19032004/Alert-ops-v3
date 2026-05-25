@@ -527,7 +527,7 @@ watch(() => form.value.owner, () => {
   max-width: 560px;
   max-height: 90vh;
   overflow-y: auto;
-  background: #0d1117;
+  background: var(--bg-primary);
   border: 1px solid #1e2735;
   border-radius: 14px;
 }
@@ -541,7 +541,7 @@ watch(() => form.value.owner, () => {
 }
 
 .modal-title {
-  color: #e6edf3;
+  color: var(--text-primary);
   font-size: 18px;
   font-weight: 700;
 }
@@ -549,7 +549,7 @@ watch(() => form.value.owner, () => {
 .close-btn {
   background: transparent;
   border: none;
-  color: #8b949e;
+  color: var(--text-tertiary);
   cursor: pointer;
 }
 
@@ -566,7 +566,7 @@ watch(() => form.value.owner, () => {
   align-items: center;
   gap: 8px;
   margin-bottom: 8px;
-  color: #c9d1d9;
+  color: var(--text-secondary);
   font-size: 13px;
   font-weight: 600;
 }
@@ -574,23 +574,23 @@ watch(() => form.value.owner, () => {
 .form-input,
 .form-textarea {
   width: 100%;
-  background: #161b22;
-  border: 1px solid #30363d;
+  background: var(--bg-secondary);
+  border: 1px solid var(--input-border);
   border-radius: 8px;
   padding: 11px 12px;
-  color: #c9d1d9;
+  color: var(--text-secondary);
   font-size: 13px;
 }
 
 .form-input:focus,
 .form-textarea:focus {
   outline: none;
-  border-color: #58a6ff;
+  border-color: var(--accent-color);
 }
 
 .form-input.error,
 .form-textarea.error {
-  border-color: #f85149;
+  border-color: var(--danger-color);
 }
 
 .form-textarea {
@@ -600,7 +600,7 @@ watch(() => form.value.owner, () => {
 .error-text {
   display: block;
   margin-top: 6px;
-  color: #f85149;
+  color: var(--danger-color);
   font-size: 12px;
 }
 
@@ -614,16 +614,16 @@ watch(() => form.value.owner, () => {
   display: flex;
   align-items: center;
   gap: 8px;
-  background: #161b22;
-  border: 1px solid #30363d;
+  background: var(--bg-secondary);
+  border: 1px solid var(--input-border);
   border-radius: 8px;
   padding: 10px 12px;
-  color: #c9d1d9;
+  color: var(--text-secondary);
   cursor: pointer;
 }
 
 .severity-btn.active {
-  border-color: #58a6ff;
+  border-color: var(--accent-color);
   background: rgba(88,166,255,.1);
 }
 
@@ -672,8 +672,8 @@ watch(() => form.value.owner, () => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: #161b22;
-  border: 1px solid #30363d;
+  background: var(--bg-secondary);
+  border: 1px solid var(--input-border);
   border-radius: 10px;
   padding: 10px 12px;
 }
@@ -707,12 +707,12 @@ watch(() => form.value.owner, () => {
 }
 
 .member-email {
-  color: #e6edf3;
+  color: var(--text-primary);
   font-size: 13px;
 }
 
 .member-role {
-  color: #8b949e;
+  color: var(--text-tertiary);
   font-size: 11px;
 }
 
@@ -723,17 +723,17 @@ watch(() => form.value.owner, () => {
 .remove-member {
   border: none;
   background: transparent;
-  color: #8b949e;
+  color: var(--text-tertiary);
   cursor: pointer;
 }
 
 .remove-member:hover {
-  color: #f85149;
+  color: var(--danger-color);
 }
 
 .selected-count {
   margin-top: 10px;
-  color: #8b949e;
+  color: var(--text-tertiary);
   font-size: 12px;
 }
 
@@ -747,10 +747,10 @@ watch(() => form.value.owner, () => {
 
 .btn-cancel {
   background: transparent;
-  border: 1px solid #30363d;
+  border: 1px solid var(--input-border);
   border-radius: 8px;
   padding: 8px 16px;
-  color: #c9d1d9;
+  color: var(--text-secondary);
   cursor: pointer;
 }
 

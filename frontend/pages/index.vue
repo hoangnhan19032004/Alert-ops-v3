@@ -1,5 +1,6 @@
 <template>
   <div class="page-wrap">
+
     <!-- Header -->
     <div class="dash-header">
       <div>
@@ -7,13 +8,15 @@
         <p class="page-sub">{{ t('dashboardSub') }}</p>
       </div>
       <div class="header-right">
-        <span v-if="apiConnected" class="live-badge">
-          <span class="live-dot"></span> LIVE
+        <span v-if="apiConnected" class="status-badge live">
+          <span class="live-dot"></span>LIVE
         </span>
-        <span v-else class="offline-badge">{{ t('offline') }}</span>
-        <!-- Countdown hiển thị bao nhiêu giây nữa refresh -->
-        <span class="countdown-badge">{{ t('next') || 'Next' }}: {{ countdown }}s</span>
-        <button class="refresh-btn" @click="manualRefresh" :disabled="loading">
+        <span v-else class="status-badge offline">{{ t('offline') }}</span>
+        <span class="countdown-badge">
+          <Icon name="lucide:clock" class="countdown-icon" />
+          {{ countdown }}s
+        </span>
+        <button class="icon-btn" @click="manualRefresh" :disabled="loading" :title="t('refresh') || 'Refresh'">
           <Icon name="lucide:refresh-ccw" :class="{ spinning: loading }" />
         </button>
       </div>
@@ -21,62 +24,73 @@
 
     <!-- KPI Cards -->
     <div class="kpi-grid">
-      <div class="kpi-card kpi-blue" @click="navigateTo('/alerts')">
-        <div class="kpi-icon"><Icon name="lucide:alert-triangle" /></div>
-        <div class="kpi-content">
-          <div class="kpi-label">{{ t('totalAlerts') }}</div>
-          <div class="kpi-value">{{ totalAlerts }}</div>
-          <div class="kpi-sub">{{ openCount }} {{ t('openNow') }}</div>
+      <div class="kpi-card" data-color="blue" @click="navigateTo('/alerts')">
+        <div class="kpi-top">
+          <div class="kpi-icon-wrap blue">
+            <Icon name="lucide:activity" />
+          </div>
+          <span v-if="criticalCount > 0" class="kpi-badge red">{{ criticalCount }} critical</span>
         </div>
-        <div class="kpi-trend up" v-if="criticalCount > 0">{{ criticalCount }} {{ t('critical') }}</div>
+        <div class="kpi-value blue">{{ totalAlerts }}</div>
+        <div class="kpi-label">{{ t('totalAlerts') }}</div>
+        <div class="kpi-sub">{{ openCount }} {{ t('openNow') }}</div>
       </div>
 
-      <div class="kpi-card kpi-red" @click="navigateTo('/alerts?filter=open')">
-        <div class="kpi-icon"><Icon name="lucide:alert-circle" /></div>
-        <div class="kpi-content">
-          <div class="kpi-label">{{ t('open') }}</div>
-          <div class="kpi-value">{{ openCount }}</div>
-          <div class="kpi-sub">{{ t('needAttention') }}</div>
+      <div class="kpi-card" data-color="red" @click="navigateTo('/alerts?filter=open')">
+        <div class="kpi-top">
+          <div class="kpi-icon-wrap red">
+            <Icon name="lucide:alert-circle" />
+          </div>
         </div>
+        <div class="kpi-value red">{{ openCount }}</div>
+        <div class="kpi-label">{{ t('open') }}</div>
+        <div class="kpi-sub">{{ t('needAttention') }}</div>
       </div>
 
-      <div class="kpi-card kpi-orange" @click="navigateTo('/alerts?filter=escalated')">
-        <div class="kpi-icon"><Icon name="lucide:arrow-up-right" /></div>
-        <div class="kpi-content">
-          <div class="kpi-label">{{ t('escalated') }}</div>
-          <div class="kpi-value">{{ escalatedCount }}</div>
-          <div class="kpi-sub">{{ t('highPriority') }}</div>
+      <div class="kpi-card" data-color="amber" @click="navigateTo('/alerts?filter=escalated')">
+        <div class="kpi-top">
+          <div class="kpi-icon-wrap amber">
+            <Icon name="lucide:arrow-up-right" />
+          </div>
         </div>
+        <div class="kpi-value amber">{{ escalatedCount }}</div>
+        <div class="kpi-label">{{ t('escalated') }}</div>
+        <div class="kpi-sub">{{ t('highPriority') }}</div>
       </div>
 
-      <div class="kpi-card kpi-green" @click="navigateTo('/alerts?filter=resolved')">
-        <div class="kpi-icon"><Icon name="lucide:check-circle" /></div>
-        <div class="kpi-content">
-          <div class="kpi-label">{{ t('resolved') }}</div>
-          <div class="kpi-value">{{ resolvedCount }}</div>
-          <div class="kpi-sub">{{ t('last24h') }} {{ resolvedToday }}</div>
+      <div class="kpi-card" data-color="green" @click="navigateTo('/alerts?filter=resolved')">
+        <div class="kpi-top">
+          <div class="kpi-icon-wrap green">
+            <Icon name="lucide:check-circle" />
+          </div>
         </div>
+        <div class="kpi-value green">{{ resolvedCount }}</div>
+        <div class="kpi-label">{{ t('resolved') }}</div>
+        <div class="kpi-sub">{{ t('last24h') }} {{ resolvedToday }}</div>
       </div>
     </div>
 
     <!-- 2-column layout -->
     <div class="dash-grid">
-      <!-- Recent Critical Alerts -->
-      <div class="dash-card">
+
+      <!-- Critical Alerts -->
+      <div class="card">
         <div class="card-header">
-          <div class="card-title">{{ t('criticalEscalated') }}</div>
-          <NuxtLink to="/alerts" class="card-link">{{ t('viewAll') }}</NuxtLink>
+          <span class="card-title">{{ t('criticalEscalated') }}</span>
+          <NuxtLink to="/alerts" class="card-link">{{ t('viewAll') }} →</NuxtLink>
         </div>
         <div class="alert-list">
-          <div v-if="urgentAlerts.length === 0" class="empty-card">
-            <Icon name="lucide:check" /> {{ t('noCritical') }}
+          <div v-if="urgentAlerts.length === 0" class="empty-state">
+            <Icon name="lucide:check-circle" class="empty-icon" />
+            <span>{{ t('noCritical') }}</span>
           </div>
           <div
             v-for="a in urgentAlerts" :key="a.id"
-            class="alert-item" :class="a.severity === 'Critical' ? 'item-critical' : 'item-escalated'"
+            class="alert-item"
+            :class="a.severity === 'Critical' ? 'critical' : 'escalated'"
           >
             <div class="item-left">
-              <span class="item-sev" :class="a.severity === 'Critical' ? 'badge-critical' : 'badge-error'">
+              <span class="sev-badge" :class="a.severity === 'Critical' ? 'badge-critical' : 'badge-warning'">
                 {{ a.severity }}
               </span>
               <span class="item-msg">{{ a.message }}</span>
@@ -89,67 +103,90 @@
         </div>
       </div>
 
-      <!-- Severity Breakdown -->
-      <div class="dash-card">
-        <div class="card-header">
-          <div class="card-title">{{ t('bySeverity') }}</div>
-        </div>
-        <div class="sev-breakdown">
-          <div class="sev-row" v-for="sev in severityBreakdown" :key="sev.label">
-            <span class="sev-label" :class="sev.cls">{{ sev.label }}</span>
-            <div class="sev-bar-track">
-              <div class="sev-bar-fill" :style="{ width: sev.pct + '%', background: sev.color }"></div>
+      <!-- Right column -->
+      <div class="right-col">
+
+        <!-- Severity Breakdown -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">{{ t('bySeverity') }}</span>
+          </div>
+          <div class="sev-list">
+            <div class="sev-row" v-for="sev in severityBreakdown" :key="sev.label">
+              <span class="sev-name" :class="`sev-${sev.key}`">{{ sev.label }}</span>
+              <div class="sev-track">
+                <div class="sev-fill" :class="`fill-${sev.key}`" :style="{ width: sev.pct + '%' }"></div>
+              </div>
+              <span class="sev-count">{{ sev.count }}</span>
             </div>
-            <span class="sev-count">{{ sev.count }}</span>
           </div>
         </div>
 
-        <!-- Service Breakdown -->
-        <div class="card-header" style="margin-top: 20px;">
-          <div class="card-title">{{ t('topServices') }}</div>
-        </div>
-        <div class="service-list">
-          <div class="service-row" v-for="s in topServices" :key="s.name">
-            <span class="service-name">{{ s.name }}</span>
-            <span class="service-cnt" :class="s.count > 5 ? 'cnt-red' : 'cnt-normal'">{{ s.count }}</span>
+        <!-- Top Services -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">{{ t('topServices') }}</span>
+          </div>
+          <div class="service-list">
+            <div v-if="topServices.length === 0" class="empty-state">
+              <span>{{ t('noData') || 'Không có dữ liệu' }}</span>
+            </div>
+            <div class="service-row" v-for="s in topServices" :key="s.name">
+              <div class="service-left">
+                <div class="service-bar" :style="{ width: Math.round((s.count / topServices[0].count) * 100) + '%' }"></div>
+                <span class="service-name">{{ s.name }}</span>
+              </div>
+              <span class="service-count" :class="s.count > 5 ? 'cnt-danger' : 'cnt-normal'">{{ s.count }}</span>
+            </div>
           </div>
         </div>
+
       </div>
     </div>
 
-    <!-- Projects status row -->
-    <div class="dash-card">
+    <!-- Project Health -->
+    <div class="card section-gap">
       <div class="card-header">
-        <div class="card-title">{{ t('projectsHealth') }}</div>
-        <NuxtLink to="/projects" class="card-link">{{ t('manage') }}</NuxtLink>
+        <span class="card-title">{{ t('projectsHealth') }}</span>
+        <NuxtLink to="/projects" class="card-link">{{ t('manage') }} →</NuxtLink>
       </div>
       <div class="projects-row">
-        <div v-if="projects.length === 0" class="empty-card">{{ t('noProjects') }}</div>
-        <div v-for="p in projects.slice(0, 6)" :key="p.id" class="proj-pill" :class="projPillClass(p.sev)">
+        <div v-if="projects.length === 0" class="empty-state">{{ t('noProjects') }}</div>
+        <div
+          v-for="p in projects.slice(0, 6)" :key="p.id"
+          class="proj-pill"
+          :class="projPillClass(p.sev)"
+        >
+          <span class="pill-dot" :class="projDotClass(p.sev)"></span>
           <span class="pill-name">{{ p.name }}</span>
           <span class="pill-count">{{ p.alertCount || 0 }}</span>
         </div>
       </div>
     </div>
 
-    <!-- Quick actions -->
-    <div class="quick-actions">
-      <div class="qa-title">{{ t('quickActions') }}</div>
+    <!-- Quick Actions -->
+    <div class="qa-section">
+      <div class="qa-label">{{ t('quickActions') }}</div>
       <div class="qa-row">
         <NuxtLink to="/alerts" class="qa-btn">
-          <Icon name="lucide:bell" /> {{ t('viewAlerts') }}
+          <Icon name="lucide:bell" class="qa-icon" />
+          {{ t('viewAlerts') }}
         </NuxtLink>
         <NuxtLink to="/escalation" class="qa-btn">
-          <Icon name="lucide:arrow-up-right" /> {{ t('escalationRules') }}
+          <Icon name="lucide:arrow-up-right" class="qa-icon" />
+          {{ t('escalationRules') }}
         </NuxtLink>
         <NuxtLink to="/projects" class="qa-btn">
-          <Icon name="lucide:monitor" /> {{ t('projects') }}
+          <Icon name="lucide:monitor" class="qa-icon" />
+          {{ t('projects') }}
         </NuxtLink>
         <NuxtLink to="/analytics" class="qa-btn">
-          <Icon name="lucide:bar-chart-2" /> {{ t('analytics') }}
+          <Icon name="lucide:bar-chart-2" class="qa-icon" />
+          {{ t('analytics') }}
         </NuxtLink>
       </div>
     </div>
+
   </div>
 </template>
 
@@ -163,16 +200,14 @@ const { t } = useI18n()
 const { alerts, loading, apiConnected, loadAlerts } = useErrorStore()
 const { projects } = useProjects()
 
-// ── Auto-refresh config ──────────────────────────────────────────
-const AUTO_REFRESH_SECONDS = 30  // ← đổi số này nếu muốn interval khác
-
+const AUTO_REFRESH_SECONDS = 30
 const countdown = ref(AUTO_REFRESH_SECONDS)
 let refreshTimer = null
 let countdownTimer = null
 
 const doRefresh = async () => {
   if (!loading.value) await loadAlerts()
-  countdown.value = AUTO_REFRESH_SECONDS  // reset đếm ngược sau mỗi lần refresh
+  countdown.value = AUTO_REFRESH_SECONDS
 }
 
 const manualRefresh = async () => {
@@ -184,17 +219,14 @@ const manualRefresh = async () => {
 }
 
 const startTimers = () => {
-  // Đếm ngược hiển thị trên UI, tick mỗi giây
   countdownTimer = setInterval(() => {
     countdown.value = Math.max(0, countdown.value - 1)
   }, 1_000)
-
-  // Refresh thực sự mỗi AUTO_REFRESH_SECONDS giây
   refreshTimer = setInterval(doRefresh, AUTO_REFRESH_SECONDS * 1_000)
 }
 
 onMounted(async () => {
-  await loadAlerts()   // load ngay khi vào trang
+  await loadAlerts()
   startTimers()
 })
 
@@ -202,7 +234,6 @@ onUnmounted(() => {
   clearInterval(refreshTimer)
   clearInterval(countdownTimer)
 })
-// ────────────────────────────────────────────────────────────────
 
 const totalAlerts    = computed(() => alerts.value.length)
 const openCount      = computed(() => alerts.value.filter(a => a.status === 'Open').length)
@@ -221,158 +252,645 @@ const urgentAlerts = computed(() =>
 const severityBreakdown = computed(() => {
   const total = Math.max(alerts.value.length, 1)
   return [
-    { label: 'Critical', count: alerts.value.filter(a => a.severity === 'Critical').length, color: '#f85149', cls: 'sev-critical-text' },
-    { label: 'Error',    count: alerts.value.filter(a => a.severity === 'Error').length,    color: '#e3b341', cls: 'sev-error-text' },
-    { label: 'Warning',  count: alerts.value.filter(a => a.severity === 'Warning').length,  color: '#d29922', cls: 'sev-warning-text' },
-    { label: 'Info',     count: alerts.value.filter(a => a.severity === 'Info').length,     color: '#58a6ff', cls: 'sev-info-text' },
+    { key: 'critical', label: 'Critical', count: alerts.value.filter(a => a.severity === 'Critical').length },
+    { key: 'error',    label: 'Error',    count: alerts.value.filter(a => a.severity === 'Error').length },
+    { key: 'warning',  label: 'Warning',  count: alerts.value.filter(a => a.severity === 'Warning').length },
+    { key: 'info',     label: 'Info',     count: alerts.value.filter(a => a.severity === 'Info').length },
   ].map(s => ({ ...s, pct: Math.round((s.count / total) * 100) }))
 })
 
 const topServices = computed(() => {
   const counts = {}
   alerts.value.forEach(a => { counts[a.service] = (counts[a.service] || 0) + 1 })
-  return Object.entries(counts).map(([name, count]) => ({ name, count }))
-    .sort((a, b) => b.count - a.count).slice(0, 5)
+  return Object.entries(counts)
+    .map(([name, count]) => ({ name, count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 5)
 })
 
 const formatTime = (dt) => {
   if (!dt) return '—'
   const diff = (Date.now() - new Date(dt)) / 1000
-  if (diff < 60) return `${Math.round(diff)}s ago`
+  if (diff < 60)   return `${Math.round(diff)}s ago`
   if (diff < 3600) return `${Math.round(diff / 60)}m ago`
   return `${Math.round(diff / 3600)}h ago`
 }
 
-const projPillClass = sev => ({
-  Critical: 'pill-critical', Error: 'pill-error', Warning: 'pill-warning', Resolved: 'pill-resolved'
+const projPillClass = (sev) => ({
+  Critical: 'pill-critical', Error: 'pill-error',
+  Warning: 'pill-warning', Resolved: 'pill-ok'
 }[sev] || '')
+
+const projDotClass = (sev) => ({
+  Critical: 'dot-red', Error: 'dot-amber',
+  Warning: 'dot-yellow', Resolved: 'dot-green'
+}[sev] || 'dot-muted')
 </script>
 
 <style scoped>
-.page-title { font-size: 22px; font-weight: 700; color: #e6edf3; }
-.page-sub   { font-size: 13px; color: #586069; margin-top: 3px; }
+/* ── CSS Variables ── */
+.page-wrap {
+  /* Light defaults */
+  --bg-card:       #ffffff;
+  --bg-surface:    #f6f8fa;
+  --bg-hover:      #f0f3f6;
+  --border:        #d0d7de;
+  --border-subtle: #e8eaed;
+  --text-primary:  #1a1f2e;
+  --text-muted:    #57606a;
+  --text-hint:     #8c959f;
 
-.dash-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 22px; }
-.header-right { display: flex; align-items: center; gap: 10px; }
+  /* Accent semantic */
+  --blue:          #0969da;
+  --blue-bg:       #dbeafe;
+  --blue-text:     #1d4ed8;
+  --red:           #cf222e;
+  --red-bg:        #fee2e2;
+  --red-text:      #b91c1c;
+  --amber:         #b45309;
+  --amber-bg:      #fef3c7;
+  --amber-text:    #92400e;
+  --green:         #1a7f37;
+  --green-bg:      #dcfce7;
+  --green-text:    #166534;
 
-.live-badge {
-  display: flex; align-items: center; gap: 5px; padding: 4px 10px;
-  background: rgba(63,185,80,.12); border: 1px solid rgba(63,185,80,.3); border-radius: 20px;
-  font-size: 11px; font-weight: 700; color: #3fb950; letter-spacing: .08em;
+  --accent:        #0969da;
+  --accent-hover:  #0550ae;
+
+  --shadow-card:   0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-hover:  0 4px 12px rgba(0,0,0,0.1), 0 2px 4px rgba(0,0,0,0.06);
 }
-.live-dot { width: 6px; height: 6px; background: #3fb950; border-radius: 50%; animation: blink 1.5s infinite; }
-@keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: .3; } }
-.offline-badge { font-size: 11px; color: #f85149; background: rgba(248,81,73,.12); padding: 4px 10px; border-radius: 20px; }
 
-/* Countdown badge */
+/* Dark mode overrides */
+:root.dark .page-wrap {
+  --bg-card:       #161b22;
+  --bg-surface:    #21262d;
+  --bg-hover:      #2d333b;
+  --border:        #30363d;
+  --border-subtle: #21262d;
+  --text-primary:  #e6edf3;
+  --text-muted:    #c9d1d9;
+  --text-hint:     #8b949e;
+
+  --blue:          #58a6ff;
+  --blue-bg:       #102842;
+  --blue-text:     #79c0ff;
+  --red:           #f85149;
+  --red-bg:        #3d1c1c;
+  --red-text:      #ff7b72;
+  --amber:         #e3b341;
+  --amber-bg:      #3d2e0a;
+  --amber-text:    #f0c060;
+  --green:         #3fb950;
+  --green-bg:      #0f2e16;
+  --green-text:    #56d364;
+
+  --accent:        #58a6ff;
+  --accent-hover:  #79c0ff;
+
+  --shadow-card:   0 1px 3px rgba(0,0,0,0.3), 0 1px 2px rgba(0,0,0,0.2);
+  --shadow-hover:  0 4px 12px rgba(0,0,0,0.4), 0 2px 4px rgba(0,0,0,0.3);
+}
+
+/* ── Layout ── */
+.page-wrap {
+  width: 100%;
+  min-width: 0;
+}
+
+/* ── Header ── */
+.dash-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.page-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.page-sub {
+  font-size: 13px;
+  color: var(--text-hint);
+  margin: 4px 0 0;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.status-badge {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 11px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+.status-badge.live {
+  background: var(--green-bg);
+  color: var(--green);
+  border: 1px solid currentColor;
+}
+
+.status-badge.offline {
+  background: var(--red-bg);
+  color: var(--red);
+  border: 1px solid currentColor;
+}
+
+.live-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: blink 1.5s infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.3; }
+}
+
 .countdown-badge {
-  font-size: 11px; color: #586069; background: #21262d;
-  border: 1px solid #30363d; padding: 4px 10px; border-radius: 20px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 11px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  font-size: 11px;
+  color: var(--text-hint);
   font-variant-numeric: tabular-nums;
 }
 
-.refresh-btn {
-  background: #21262d; border: 1px solid #30363d; border-radius: 6px;
-  color: #8b949e; cursor: pointer; padding: 6px 8px; transition: all .15s;
+.countdown-icon {
+  font-size: 12px;
 }
-.refresh-btn:hover { color: #c9d1d9; border-color: #8b949e; }
-.spinning { animation: spin 1s linear infinite; }
-@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
-/* KPI */
-.kpi-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 16px; margin-bottom: 20px; }
+.icon-btn {
+  width: 34px;
+  height: 34px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text-hint);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  transition: all 0.15s;
+}
+
+.icon-btn:hover {
+  color: var(--text-muted);
+  border-color: var(--text-hint);
+}
+
+.icon-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.spinning {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* ── KPI Grid ── */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
 .kpi-card {
-  background: #161b22; border: 1px solid #21262d; border-radius: 12px; padding: 20px;
-  display: flex; align-items: flex-start; gap: 14px; cursor: pointer; transition: border-color .15s;
-  position: relative; overflow: hidden;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 18px 20px;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: var(--shadow-card);
 }
-.kpi-card:hover { border-color: #30363d; transform: translateY(-1px); }
-.kpi-blue   { border-top: 2px solid #58a6ff; }
-.kpi-red    { border-top: 2px solid #f85149; }
-.kpi-orange { border-top: 2px solid #e3b341; }
-.kpi-green  { border-top: 2px solid #3fb950; }
 
-.kpi-icon { font-size: 20px; opacity: .6; margin-top: 2px; }
-.kpi-label { font-size: 11px; font-weight: 600; color: #586069; text-transform: uppercase; letter-spacing: .06em; }
-.kpi-value { font-size: 36px; font-weight: 700; color: #e6edf3; line-height: 1.1; }
-.kpi-sub   { font-size: 12px; color: #586069; margin-top: 2px; }
-.kpi-blue   .kpi-value { color: #58a6ff; }
-.kpi-red    .kpi-value { color: #f85149; }
-.kpi-orange .kpi-value { color: #e3b341; }
-.kpi-green  .kpi-value { color: #3fb950; }
-.kpi-trend { position: absolute; top: 12px; right: 12px; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 4px; }
-.kpi-trend.up { background: rgba(248,81,73,.15); color: #f85149; }
+.kpi-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-hover);
+  border-color: var(--accent);
+}
 
-/* Grid */
-.dash-grid { display: grid; grid-template-columns: 1fr 340px; gap: 16px; margin-bottom: 16px; }
-.dash-card { background: #161b22; border: 1px solid #21262d; border-radius: 12px; padding: 20px; margin-bottom: 0; }
+.kpi-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
 
-.card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
-.card-title { font-size: 13px; font-weight: 600; color: #e6edf3; }
-.card-link { font-size: 12px; color: #58a6ff; text-decoration: none; }
-.card-link:hover { text-decoration: underline; }
+.kpi-icon-wrap {
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 17px;
+}
 
-/* Alert list */
-.alert-list { display: flex; flex-direction: column; gap: 8px; }
-.empty-card { display: flex; align-items: center; gap: 8px; color: #586069; font-size: 13px; padding: 12px 0; }
+.kpi-icon-wrap.blue   { background: var(--blue-bg);  color: var(--blue-text); }
+.kpi-icon-wrap.red    { background: var(--red-bg);   color: var(--red-text);  }
+.kpi-icon-wrap.amber  { background: var(--amber-bg); color: var(--amber-text);}
+.kpi-icon-wrap.green  { background: var(--green-bg); color: var(--green-text);}
+
+.kpi-badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 6px;
+}
+
+.kpi-badge.red {
+  background: var(--red-bg);
+  color: var(--red-text);
+}
+
+.kpi-value {
+  font-size: 34px;
+  font-weight: 700;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.kpi-value.blue  { color: var(--blue);  }
+.kpi-value.red   { color: var(--red);   }
+.kpi-value.amber { color: var(--amber); }
+.kpi-value.green { color: var(--green); }
+
+.kpi-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-bottom: 2px;
+}
+
+.kpi-sub {
+  font-size: 11px;
+  color: var(--text-hint);
+}
+
+/* ── Dash Grid ── */
+.dash-grid {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.right-col {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ── Card ── */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 18px 20px;
+  box-shadow: var(--shadow-card);
+}
+
+.section-gap {
+  margin-bottom: 16px;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.card-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.card-link {
+  font-size: 12px;
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.15s;
+}
+
+.card-link:hover {
+  color: var(--accent-hover);
+}
+
+/* ── Alert list ── */
+.alert-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.empty-state {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-hint);
+  font-size: 13px;
+  padding: 12px 0;
+}
+
+.empty-icon {
+  font-size: 18px;
+  color: var(--green);
+}
+
 .alert-item {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 10px 12px; border-radius: 8px; border-left: 3px solid transparent;
-  background: #0d1117;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 9px 12px;
+  border-radius: 8px;
+  border-left: 3px solid transparent;
+  background: var(--bg-surface);
+  transition: background 0.15s;
 }
-.item-critical { border-left-color: #f85149; }
-.item-escalated { border-left-color: #e3b341; }
-.item-left  { display: flex; align-items: center; gap: 8px; overflow: hidden; }
-.item-right { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; flex-shrink: 0; margin-left: 12px; }
-.item-sev { font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 4px; }
-.badge-critical { background: rgba(248,81,73,.15); color: #f85149; }
-.badge-error    { background: rgba(227,179,65,.15); color: #e3b341; }
-.item-msg { font-size: 12px; color: #c9d1d9; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.item-service { font-size: 11px; color: #58a6ff; font-family: 'Courier New', monospace; }
-.item-time    { font-size: 11px; color: #586069; }
 
-/* Severity breakdown */
-.sev-breakdown { display: flex; flex-direction: column; gap: 10px; }
-.sev-row { display: flex; align-items: center; gap: 10px; }
-.sev-label { font-size: 12px; font-weight: 600; min-width: 60px; }
-.sev-critical-text { color: #f85149; } .sev-error-text { color: #e3b341; }
-.sev-warning-text  { color: #d29922; } .sev-info-text    { color: #58a6ff; }
-.sev-bar-track { flex: 1; background: #21262d; border-radius: 3px; height: 8px; overflow: hidden; }
-.sev-bar-fill  { height: 100%; border-radius: 3px; transition: width .5s; }
-.sev-count { font-size: 12px; color: #586069; min-width: 24px; text-align: right; }
+.alert-item:hover {
+  background: var(--bg-hover);
+}
 
-/* Service list */
-.service-list { display: flex; flex-direction: column; gap: 8px; }
-.service-row { display: flex; align-items: center; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #21262d; }
-.service-row:last-child { border-bottom: none; }
-.service-name { font-family: 'Courier New', monospace; font-size: 12px; color: #8b949e; }
-.service-cnt { font-size: 12px; font-weight: 700; }
-.cnt-red    { color: #f85149; }
-.cnt-normal { color: #58a6ff; }
+.alert-item.critical  { border-left-color: var(--red);   }
+.alert-item.escalated { border-left-color: var(--amber); }
 
-/* Projects row */
-.projects-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.item-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow: hidden;
+}
+
+.item-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  flex-shrink: 0;
+  margin-left: 12px;
+}
+
+.sev-badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 5px;
+  flex-shrink: 0;
+}
+
+.badge-critical {
+  background: var(--red-bg);
+  color: var(--red-text);
+}
+
+.badge-warning {
+  background: var(--amber-bg);
+  color: var(--amber-text);
+}
+
+.item-msg {
+  font-size: 12px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.item-service {
+  font-size: 11px;
+  color: var(--accent);
+  font-family: 'SF Mono', 'Fira Code', monospace;
+}
+
+.item-time {
+  font-size: 11px;
+  color: var(--text-hint);
+}
+
+/* ── Severity breakdown ── */
+.sev-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sev-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sev-name {
+  font-size: 12px;
+  font-weight: 600;
+  min-width: 58px;
+}
+
+.sev-critical { color: var(--red);   }
+.sev-error    { color: var(--amber); }
+.sev-warning  { color: #b45309; }
+.sev-info     { color: var(--blue);  }
+
+.sev-track {
+  flex: 1;
+  height: 6px;
+  background: var(--bg-surface);
+  border-radius: 3px;
+  overflow: hidden;
+  border: 1px solid var(--border-subtle);
+}
+
+.sev-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.5s ease;
+}
+
+.fill-critical { background: var(--red);   }
+.fill-error    { background: var(--amber); }
+.fill-warning  { background: #d29922; }
+.fill-info     { background: var(--blue);  }
+
+.sev-count {
+  font-size: 12px;
+  color: var(--text-hint);
+  min-width: 22px;
+  text-align: right;
+  font-weight: 600;
+}
+
+/* ── Service list ── */
+.service-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.service-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.service-left {
+  position: relative;
+  flex: 1;
+  overflow: hidden;
+}
+
+.service-bar {
+  position: absolute;
+  inset: 0;
+  background: var(--bg-surface);
+  border-radius: 4px;
+  transition: width 0.4s ease;
+}
+
+.service-name {
+  position: relative;
+  font-size: 12px;
+  color: var(--text-muted);
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  padding: 4px 8px;
+  display: block;
+}
+
+.service-count {
+  font-size: 12px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.cnt-danger { color: var(--red);   }
+.cnt-normal { color: var(--blue);  }
+
+/* ── Projects ── */
+.projects-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
 .proj-pill {
-  display: flex; align-items: center; gap: 8px; padding: 8px 14px; border-radius: 8px;
-  border: 1px solid #21262d; cursor: pointer; transition: all .15s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s;
 }
-.proj-pill:hover { border-color: #30363d; }
-.pill-critical { border-left: 3px solid #f85149; }
-.pill-error    { border-left: 3px solid #e3b341; }
-.pill-warning  { border-left: 3px solid #d29922; }
-.pill-resolved { border-left: 3px solid #3fb950; }
-.pill-name  { font-family: 'Courier New', monospace; font-size: 13px; color: #c9d1d9; }
-.pill-count { background: #21262d; color: #8b949e; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 10px; }
 
-/* Quick actions */
-.quick-actions { margin-top: 16px; }
-.qa-title { font-size: 11px; font-weight: 600; color: #586069; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 10px; }
-.qa-row { display: flex; gap: 10px; }
-.qa-btn {
-  display: flex; align-items: center; gap: 8px;
-  padding: 10px 18px; border-radius: 8px; background: #161b22; border: 1px solid #21262d;
-  color: #8b949e; font-size: 13px; text-decoration: none; transition: all .15s;
+.proj-pill:hover {
+  border-color: var(--accent);
+  background: var(--bg-hover);
 }
-.qa-btn:hover { border-color: #58a6ff; color: #58a6ff; }
-.page-wrap { width: 100%; min-width: 0; }
+
+.pill-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.dot-red    { background: var(--red);   }
+.dot-amber  { background: var(--amber); }
+.dot-yellow { background: #d29922;      }
+.dot-green  { background: var(--green); }
+.dot-muted  { background: var(--text-hint); }
+
+.pill-name {
+  font-size: 13px;
+  color: var(--text-muted);
+  font-family: 'SF Mono', 'Fira Code', monospace;
+}
+
+.pill-count {
+  font-size: 11px;
+  font-weight: 700;
+  background: var(--bg-hover);
+  color: var(--text-hint);
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+/* ── Quick Actions ── */
+.qa-section {
+  margin-top: 16px;
+}
+
+.qa-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-hint);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 10px;
+}
+
+.qa-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.qa-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.15s;
+  box-shadow: var(--shadow-card);
+}
+
+.qa-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--bg-surface);
+}
+
+.qa-icon {
+  font-size: 15px;
+}
 </style>

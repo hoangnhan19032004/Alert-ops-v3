@@ -130,7 +130,7 @@ const handleBulkResolve = () => {
   align-items: center;
   justify-content: space-between;
   padding: 12px 16px;
-  background: #161b22;
+  background: var(--bg-secondary);
   border: 1px solid #1e2735;
   border-radius: 8px;
   margin-bottom: 16px;
@@ -153,7 +153,7 @@ const handleBulkResolve = () => {
   align-items: center;
   gap: 8px;
   font-size: 12px;
-  color: #8b949e;
+  color: var(--text-tertiary);
 }
 
 .actions-info svg {
@@ -167,9 +167,9 @@ const handleBulkResolve = () => {
   gap: 8px;
   padding: 8px 12px;
   background: transparent;
-  border: 1px solid #30363d;
+  border: 1px solid var(--input-border);
   border-radius: 6px;
-  color: #c9d1d9;
+  color: var(--text-secondary);
   cursor: pointer;
   font-size: 12px;
   font-weight: 600;
@@ -179,9 +179,9 @@ const handleBulkResolve = () => {
 }
 
 .action-btn:hover {
-  border-color: #8b949e;
-  color: #e6edf3;
-  background: #0d1117;
+  border-color: var(--text-tertiary);
+  color: var(--text-primary);
+  background: var(--bg-primary);
 }
 
 .action-btn svg {
@@ -190,18 +190,18 @@ const handleBulkResolve = () => {
 }
 
 .clear-btn {
-  border-color: #f85149;
-  color: #f85149;
+  border-color: var(--danger-color);
+  color: var(--danger-color);
 }
 
 .clear-btn:hover {
   background: rgba(248, 81, 73, 0.1);
-  border-color: #f85149;
+  border-color: var(--danger-color);
 }
 
 .danger-btn {
-  border-color: #f85149;
-  color: #f85149;
+  border-color: var(--danger-color);
+  color: var(--danger-color);
 }
 
 .danger-btn:hover {
@@ -209,8 +209,8 @@ const handleBulkResolve = () => {
 }
 
 .success-btn {
-  border-color: #3fb950;
-  color: #3fb950;
+  border-color: var(--success-color);
+  color: var(--success-color);
 }
 
 .success-btn:hover {
@@ -225,7 +225,7 @@ const handleBulkResolve = () => {
   position: absolute;
   top: 100%;
   right: 0;
-  background: #161b22;
+  background: var(--bg-secondary);
   border: 1px solid #1e2735;
   border-radius: 6px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
@@ -242,7 +242,7 @@ const handleBulkResolve = () => {
   padding: 8px 12px;
   background: none;
   border: none;
-  color: #c9d1d9;
+  color: var(--text-secondary);
   cursor: pointer;
   font-size: 12px;
   text-align: left;
@@ -250,8 +250,8 @@ const handleBulkResolve = () => {
 }
 
 .export-item:hover {
-  background: #0d1117;
-  color: #e6edf3;
+  background: var(--bg-primary);
+  color: var(--text-primary);
 }
 
 .export-item:first-child {

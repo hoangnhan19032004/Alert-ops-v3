@@ -89,9 +89,6 @@
           </div>
 
           <div class="form-footer">
-            <button class="reset-btn" :disabled="!isDirty || isSaving" @click="resetForm">
-              Hoàn tác
-            </button>
             <button class="save-btn" :disabled="isSaving || !isDirty" @click="handleSave">
               <Icon v-if="isSaving" name="lucide:loader-circle" class="spin" />
               <Icon v-else-if="saveStatus?.type === 'success'" name="lucide:check" />
@@ -402,10 +399,10 @@ function confirmDeleteAccount() {}
   margin-top: 2px;
 }
 
-.role-admin    { background: rgba(248,81,73,.15);   color: #f85149; }
+.role-admin    { background: rgba(248,81,73,.15);   color: var(--danger-color); }
 .role-manager  { background: rgba(58,123,213,.15);  color: #3a7bd5; }
-.role-operator { background: rgba(63,185,80,.15);   color: #3fb950; }
-.role-viewer   { background: rgba(139,148,158,.15); color: #8b949e; }
+.role-operator { background: rgba(63,185,80,.15);   color: var(--success-color); }
+.role-viewer   { background: rgba(139,148,158,.15); color: var(--text-tertiary); }
 
 /* Trạng thái lưu ở cột trái */
 .save-status {
@@ -421,13 +418,13 @@ function confirmDeleteAccount() {}
 
 .save-status.success {
   background: rgba(63,185,80,.12);
-  color: #3fb950;
+  color: var(--success-color);
   border: 1px solid rgba(63,185,80,.25);
 }
 
 .save-status.error {
   background: rgba(248,81,73,.12);
-  color: #f85149;
+  color: var(--danger-color);
   border: 1px solid rgba(248,81,73,.25);
 }
 
@@ -458,7 +455,7 @@ function confirmDeleteAccount() {}
 }
 
 .action-row:hover { background: var(--bg-secondary); }
-.action-row.danger { color: #f85149; }
+.action-row.danger { color: var(--danger-color); }
 
 .action-left {
   display: flex;
