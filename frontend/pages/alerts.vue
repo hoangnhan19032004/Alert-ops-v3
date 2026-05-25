@@ -1,25 +1,71 @@
 <template>
-  <div class="page-wrap">
+  <div class="page-wrap" :class="{ compact: preferences.compactView }">
     <!-- Header -->
     <div class="page-header">
       <div>
-        <h1 class="page-title">{{ t('alertsTitle') }}</h1>
+        <h1 class="page-title">
+          {{ t('alertsTitle') }}
+        </h1>
+
         <p class="page-sub">
           {{ filteredAlerts.length }} / {{ alerts.length }} alerts
-          <span v-if="!apiConnected" class="connection-status offline">• Offline</span>
-          <span v-else class="connection-status online">• Live</span>
+
+          <span
+            v-if="!apiConnected"
+            class="connection-status offline"
+          >
+            • Offline
+          </span>
+
+          <span
+            v-else
+            class="connection-status online"
+          >
+            • Live
+          </span>
         </p>
       </div>
+
       <div class="header-actions">
-        <button v-if="!apiConnected" @click="refetchAlerts" class="retry-btn" :disabled="loading">
-          <Icon name="lucide:refresh-ccw" /> {{ t('retry') }}
+
+        <!-- COMPACT TOGGLE -->
+        <button
+          class="compact-btn"
+          @click="savePreferences({
+            compactView: !preferences.compactView
+          })"
+        >
+          <Icon name="lucide:panel-top-close" />
+
+          {{ preferences.compactView ? 'Normal' : 'Compact' }}
         </button>
-        <button class="add-alert-btn" @click="showCreateModal = true">
-          <Icon name="lucide:plus" /> {{ t('newAlert') }}
+
+        <button
+          v-if="!apiConnected"
+          @click="refetchAlerts"
+          class="retry-btn"
+          :disabled="loading"
+        >
+          <Icon name="lucide:refresh-ccw" />
+          {{ t('retry') }}
         </button>
-        <input class="search-box" v-model="search" :placeholder="t('searchAlerts')" />
+
+        <button
+          class="add-alert-btn"
+          @click="showCreateModal = true"
+        >
+          <Icon name="lucide:plus" />
+          {{ t('newAlert') }}
+        </button>
+
+        <input
+          class="search-box"
+          v-model="search"
+          :placeholder="t('searchAlerts')"
+        />
       </div>
     </div>
+
 
     <!-- Bulk Actions Bar -->
     <AlertActionsBar
@@ -330,6 +376,7 @@
 </template>
 
 <script setup lang="ts">
+import { useUserPreferences } from '~/composables/useUserPreferences'
 import type {
   Alert,
   AlertStatus
@@ -339,8 +386,6 @@ import { useI18n } from '~/composables/useI18n'
 
 const { t } = useI18n()
 const router = useRouter()
-
-// ✅ SIGNALR PLUGIN
 const { $signalr } = useNuxtApp()
 
 // ─────────────────────────────────────────────
@@ -367,50 +412,66 @@ const {
 const availableProjects = useProjects()
 const projects = availableProjects.projects
 
-const getProjectId = (
-  projectId: string | null | undefined
+const normalizeId = (
+  value?: string | null
+) => String(value || '').trim()
+
+const getProject = (
+  projectId?: string | null
 ) => {
-  if (!projectId) return null
+  const id = normalizeId(projectId)
 
-  const id = String(projectId)
+  if (!id) return null
 
-  const found = projects.value.find((p: any) =>
-    String(p.id) === id ||
-    String(p._id) === id
+  return (
+    projects.value.find((p: any) => {
+      return (
+        normalizeId(p.id) === id ||
+        normalizeId(p._id) === id
+      )
+    }) || null
   )
+}
 
-  return found?.id ?? found?._id ?? null
+const getProjectId = (
+  projectId?: string | null
+) => {
+  const project = getProject(projectId)
+
+  return (
+    project?.id ||
+    project?._id ||
+    null
+  )
 }
 
 const getProjectName = (
-  projectId: string | null | undefined
+  projectId?: string | null
 ) => {
-  if (!projectId) return '—'
+  const project = getProject(projectId)
 
-  const id = String(projectId)
-
-  const project = projects.value.find((p: any) =>
-    String(p.id) === id ||
-    String(p._id) === id
-  )
-
-  return project?.name ?? '—'
+  return project?.name || '—'
 }
 
-// Navigate project detail
-const goToProject = (
-  projectId: string | null | undefined
+const goToProject = async (
+  projectId?: string | null
 ) => {
   const id = getProjectId(projectId)
 
-  if (id) {
-    router.push(`/projects/${id}`)
-  }
+  if (!id) return
+
+  await router.push(
+    `/projects/${id}`
+  )
 }
 
 // ─────────────────────────────────────────────
 // State
 // ─────────────────────────────────────────────
+const { 
+  preferences, 
+  savePreferences 
+} = useUserPreferences()
 const search = ref('')
 
 const activeFilter = ref('all')
@@ -418,7 +479,9 @@ const severityFilter = ref('all')
 const envFilter = ref('all')
 
 const sortField = ref('createdAt')
-const sortDir = ref('desc')
+const sortDir = ref<'asc' | 'desc'>(
+  'desc'
+)
 
 const selectedIds = ref(
   new Set<string>()
@@ -427,19 +490,6 @@ const selectedIds = ref(
 const detailAlertId = ref<
   string | null
 >(null)
-
-const detailAlert = computed(() => {
-  if (!detailAlertId.value) {
-    return null
-  }
-
-  return (
-    alerts.value.find(
-      (a: any) =>
-        a.id === detailAlertId.value
-    ) ?? null
-  )
-})
 
 const showCreateModal = ref(false)
 
@@ -458,77 +508,245 @@ const newAlert = ref<
 })
 
 // ─────────────────────────────────────────────
-// SIGNALR EVENT HANDLERS
+// Computed
 // ─────────────────────────────────────────────
-const onNewAlert = (alert: any) => {
-  const exists = alerts.value.some(
-    (a: any) => a.id === alert.id
-  )
-
-  if (exists) return  // ✅ Thêm dòng này, bỏ qua nếu đã có
-
-  alerts.value.unshift(alert)
-  success(`🚨 New alert: ${alert.message}`)
-}
-
-const onUpdatedAlert = (
-  updatedAlert: any
-) => {
-  const index = alerts.value.findIndex(
-    (a: any) =>
-      a.id === updatedAlert.id
-  )
-
-  if (index !== -1) {
-    alerts.value[index] = updatedAlert
+const detailAlert = computed(() => {
+  if (!detailAlertId.value) {
+    return null
   }
 
-  success('✏️ Alert updated')
-}
-
-const onDeletedAlert = (
-  id: string
-) => {
-  alerts.value = alerts.value.filter(
-    (a: any) => a.id !== id
+  return (
+    alerts.value.find(
+      (a: any) =>
+        a.id ===
+        detailAlertId.value
+    ) || null
   )
+})
 
-  success('🗑️ Alert deleted')
+const tabs = computed(() => [
+  {
+    key: 'all',
+    label: t('tabAll'),
+    count: alerts.value.length
+  },
+  {
+    key: 'open',
+    label: t('tabOpen'),
+    count: alerts.value.filter(
+      (a: any) =>
+        a.status === 'Open'
+    ).length
+  },
+  {
+    key: 'acknowledged',
+    label: t('tabAck'),
+    count: alerts.value.filter(
+      (a: any) =>
+        a.status ===
+        'Acknowledged'
+    ).length
+  },
+  {
+    key: 'escalated',
+    label: t('tabEscalated'),
+    count: alerts.value.filter(
+      (a: any) =>
+        a.status ===
+        'Escalated'
+    ).length
+  },
+  {
+    key: 'resolved',
+    label: t('tabResolved'),
+    count: alerts.value.filter(
+      (a: any) =>
+        a.status ===
+        'Resolved'
+    ).length
+  }
+])
+
+const severityOrder: Record<
+  string,
+  number
+> = {
+  Critical: 0,
+  Error: 1,
+  Warning: 2,
+  Info: 3
 }
 
-const onBulkDeleted = (
-  ids: string[]
-) => {
-  alerts.value = alerts.value.filter(
-    (a: any) => !ids.includes(a.id)
-  )
+const filteredAlerts = computed(() => {
+  let list = [...alerts.value]
 
-  success('🗑️ Bulk delete completed')
-}
-
-const onBulkUpdated = (
-  payload: any
-) => {
-  const { ids, status } = payload
-
-  alerts.value = alerts.value.map(
-    (a: any) => {
-      if (ids.includes(a.id)) {
-        return {
-          ...a,
-          status
-        }
-      }
-
-      return a
+  // Status filter
+  if (activeFilter.value !== 'all') {
+    const map: Record<
+      string,
+      AlertStatus
+    > = {
+      open: 'Open',
+      acknowledged:
+        'Acknowledged',
+      escalated: 'Escalated',
+      resolved: 'Resolved'
     }
-  )
 
-  success('⚡ Bulk status updated')
-}
+    list = list.filter(
+      (a: any) =>
+        a.status ===
+        map[activeFilter.value]
+    )
+  }
+
+  // Severity filter
+  if (
+    severityFilter.value !== 'all'
+  ) {
+    list = list.filter(
+      (a: any) =>
+        a.severity ===
+        severityFilter.value
+    )
+  }
+
+  // Environment filter
+  if (envFilter.value !== 'all') {
+    list = list.filter(
+      (a: any) =>
+        a.env === envFilter.value
+    )
+  }
+
+  // Search
+  if (search.value.trim()) {
+    const q = search.value
+      .toLowerCase()
+      .trim()
+
+    list = list.filter(
+      (a: any) => {
+        return [
+          a.id,
+          a.message,
+          a.service,
+          getProjectName(
+            a.projectId
+          )
+        ]
+          .filter(Boolean)
+          .some((v: any) =>
+            String(v)
+              .toLowerCase()
+              .includes(q)
+          )
+      }
+    )
+  }
+
+  // Sort
+  list.sort((a: any, b: any) => {
+    let av: any =
+      a[sortField.value]
+    let bv: any =
+      b[sortField.value]
+
+    switch (sortField.value) {
+      case 'severity':
+        av =
+          severityOrder[av] ?? 99
+        bv =
+          severityOrder[bv] ?? 99
+        break
+
+      case 'projectId':
+        av = getProjectName(
+          a.projectId
+        )
+        bv = getProjectName(
+          b.projectId
+        )
+        break
+
+      case 'createdAt':
+        av = new Date(
+          av || 0
+        ).getTime()
+
+        bv = new Date(
+          bv || 0
+        ).getTime()
+
+        break
+    }
+
+    if (av < bv) {
+      return sortDir.value ===
+        'asc'
+        ? -1
+        : 1
+    }
+
+    if (av > bv) {
+      return sortDir.value ===
+        'asc'
+        ? 1
+        : -1
+    }
+
+    return 0
+  })
+
+  return list
+})
+
+const totalPages = computed(() =>
+  Math.max(
+    1,
+    Math.ceil(
+      filteredAlerts.value.length /
+      pageSize.value
+    )
+  )
+)
+
+const paginatedAlerts = computed(() => {
+  const start =
+    (currentPage.value - 1) *
+    pageSize.value
+
+  return filteredAlerts.value.slice(
+    start,
+    start + pageSize.value
+  )
+})
+
+const allSelected = computed(() => {
+  if (
+    paginatedAlerts.value.length === 0
+  ) {
+    return false
+  }
+
+  return paginatedAlerts.value.every(
+    (a: any) =>
+      a.id &&
+      selectedIds.value.has(a.id)
+  )
+})
+
+const selectedAlertObjects =
+  computed(() => {
+    return filteredAlerts.value.filter(
+      (a: any) =>
+        a.id &&
+        selectedIds.value.has(a.id)
+    )
+  })
 
 // ─────────────────────────────────────────────
-// Mounted
+// Lifecycle
 // ─────────────────────────────────────────────
 onMounted(async () => {
   await Promise.all([
@@ -537,14 +755,142 @@ onMounted(async () => {
   ])
 
   try {
-    // ✅ START SIGNALR
     await $signalr.start()
 
+    registerSignalREvents()
+
     console.log(
-      '✅ SignalR Connected'
+      '✅ SignalR connected'
+    )
+  }
+  catch (err) {
+    console.error(err)
+
+    showError(
+      'Realtime connection failed'
+    )
+  }
+})
+
+onBeforeUnmount(async () => {
+  unregisterSignalREvents()
+
+  try {
+    await $signalr.stop()
+  }
+  catch (err) {
+    console.error(err)
+  }
+})
+
+// ─────────────────────────────────────────────
+// Watchers
+// ─────────────────────────────────────────────
+watch(
+  [
+    activeFilter,
+    severityFilter,
+    envFilter,
+    search,
+    pageSize
+  ],
+  () => {
+    currentPage.value = 1
+  }
+)
+
+watch(currentPage, value => {
+  if (value < 1) {
+    currentPage.value = 1
+  }
+
+  if (value > totalPages.value) {
+    currentPage.value =
+      totalPages.value
+  }
+})
+
+// ─────────────────────────────────────────────
+// SignalR
+// ─────────────────────────────────────────────
+const onNewAlert = (
+  alert: Alert
+) => {
+  const exists =
+    alerts.value.some(
+      (a: any) =>
+        a.id === alert.id
     )
 
-    // ✅ REGISTER EVENTS
+  if (exists) return
+
+  alerts.value.unshift(alert)
+
+  success(
+    `🚨 ${alert.message}`
+  )
+}
+
+const onUpdatedAlert = (
+  updatedAlert: Alert
+) => {
+  const index =
+    alerts.value.findIndex(
+      (a: any) =>
+        a.id === updatedAlert.id
+    )
+
+  if (index === -1) return
+
+  alerts.value[index] =
+    updatedAlert
+}
+
+const onDeletedAlert = (
+  id: string
+) => {
+  alerts.value =
+    alerts.value.filter(
+      (a: any) => a.id !== id
+    )
+}
+
+const onBulkDeleted = (
+  ids: string[]
+) => {
+  alerts.value =
+    alerts.value.filter(
+      (a: any) =>
+        !ids.includes(a.id)
+    )
+}
+
+const onBulkUpdated = (
+  payload: {
+    ids: string[]
+    status: AlertStatus
+  }
+) => {
+  alerts.value =
+    alerts.value.map(
+      (a: any) => {
+        if (
+          payload.ids.includes(a.id)
+        ) {
+          return {
+            ...a,
+            status:
+              payload.status
+          }
+        }
+
+        return a
+      }
+    )
+}
+
+const registerSignalREvents =
+  () => {
     $signalr.on(
       'alert:new',
       onNewAlert
@@ -570,270 +916,42 @@ onMounted(async () => {
       onBulkUpdated
     )
   }
-  catch (err) {
-    console.error(
-      '❌ SignalR Error:',
-      err
+
+const unregisterSignalREvents =
+  () => {
+    $signalr.off(
+      'alert:new',
+      onNewAlert
     )
 
-    showError(
-      'Realtime connection failed'
+    $signalr.off(
+      'alert:updated',
+      onUpdatedAlert
+    )
+
+    $signalr.off(
+      'alert:deleted',
+      onDeletedAlert
+    )
+
+    $signalr.off(
+      'alerts:bulkDeleted',
+      onBulkDeleted
+    )
+
+    $signalr.off(
+      'alerts:bulkUpdated',
+      onBulkUpdated
     )
   }
-})
 
 // ─────────────────────────────────────────────
-// Before Unmount
+// Actions
 // ─────────────────────────────────────────────
-onBeforeUnmount(async () => {
-  // REMOVE EVENTS
-  $signalr.off(
-    'alert:new',
-    onNewAlert
-  )
-
-  $signalr.off(
-    'alert:updated',
-    onUpdatedAlert
-  )
-
-  $signalr.off(
-    'alert:deleted',
-    onDeletedAlert
-  )
-
-  $signalr.off(
-    'alerts:bulkDeleted',
-    onBulkDeleted
-  )
-
-  $signalr.off(
-    'alerts:bulkUpdated',
-    onBulkUpdated
-  )
-
-  // STOP CONNECTION
-  await $signalr.stop()
-})
-
 const refetchAlerts = async () => {
   await loadAlerts()
 }
 
-// ─────────────────────────────────────────────
-// Tabs
-// ─────────────────────────────────────────────
-const tabs = computed(() => [
-  {
-    key: 'all',
-    label: t('tabAll'),
-    count: alerts.value.length
-  },
-
-  {
-    key: 'open',
-    label: t('tabOpen'),
-    count: alerts.value.filter(
-      (a: any) =>
-        a.status === 'Open'
-    ).length
-  },
-
-  {
-    key: 'acknowledged',
-    label: t('tabAck'),
-    count: alerts.value.filter(
-      (a: any) =>
-        a.status === 'Acknowledged'
-    ).length
-  },
-
-  {
-    key: 'escalated',
-    label: t('tabEscalated'),
-    count: alerts.value.filter(
-      (a: any) =>
-        a.status === 'Escalated'
-    ).length
-  },
-
-  {
-    key: 'resolved',
-    label: t('tabResolved'),
-    count: alerts.value.filter(
-      (a: any) =>
-        a.status === 'Resolved'
-    ).length
-  }
-])
-
-const severityOrder: any = {
-  Critical: 0,
-  Error: 1,
-  Warning: 2,
-  Info: 3
-}
-
-// ─────────────────────────────────────────────
-// Filtered + Sorted
-// ─────────────────────────────────────────────
-const filteredAlerts = computed(() => {
-  let list = alerts.value
-
-  if (activeFilter.value !== 'all') {
-    const map: any = {
-      open: 'Open',
-      acknowledged: 'Acknowledged',
-      escalated: 'Escalated',
-      resolved: 'Resolved'
-    }
-
-    list = list.filter(
-      (a: any) =>
-        a.status ===
-        map[activeFilter.value]
-    )
-  }
-
-  if (
-    severityFilter.value !== 'all'
-  ) {
-    list = list.filter(
-      (a: any) =>
-        a.severity ===
-        severityFilter.value
-    )
-  }
-
-  if (envFilter.value !== 'all') {
-    list = list.filter(
-      (a: any) =>
-        a.env === envFilter.value
-    )
-  }
-
-  if (search.value) {
-    const q =
-      search.value.toLowerCase()
-
-    list = list.filter((a: any) => {
-      const projectName =
-        getProjectName(
-          a.projectId
-        ).toLowerCase()
-
-      return (
-        (a.id || '')
-          .toLowerCase()
-          .includes(q) ||
-
-        (a.message || '')
-          .toLowerCase()
-          .includes(q) ||
-
-        (a.service || '')
-          .toLowerCase()
-          .includes(q) ||
-
-        projectName.includes(q)
-      )
-    })
-  }
-
-  list = [...list].sort(
-    (a: any, b: any) => {
-      let av: any =
-        a[sortField.value]
-
-      let bv: any =
-        b[sortField.value]
-
-      if (
-        sortField.value ===
-        'severity'
-      ) {
-        av =
-          severityOrder[av] ?? 9
-
-        bv =
-          severityOrder[bv] ?? 9
-      }
-
-      if (
-        sortField.value ===
-        'projectId'
-      ) {
-        av = getProjectName(
-          a.projectId
-        )
-
-        bv = getProjectName(
-          b.projectId
-        )
-      }
-
-      if (
-        sortField.value ===
-        'createdAt'
-      ) {
-        av = new Date(av || 0)
-        bv = new Date(bv || 0)
-      }
-
-      if (av < bv) {
-        return sortDir.value ===
-          'asc'
-          ? -1
-          : 1
-      }
-
-      if (av > bv) {
-        return sortDir.value ===
-          'asc'
-          ? 1
-          : -1
-      }
-
-      return 0
-    }
-  )
-
-  return list
-})
-
-const totalPages = computed(() =>
-  Math.ceil(
-    filteredAlerts.value.length /
-    pageSize.value
-  )
-)
-
-const paginatedAlerts = computed(() => {
-  const start =
-    (currentPage.value - 1) *
-    pageSize.value
-
-  return filteredAlerts.value.slice(
-    start,
-    start + pageSize.value
-  )
-})
-
-watch(
-  [
-    activeFilter,
-    search,
-    severityFilter,
-    envFilter
-  ],
-  () => {
-    currentPage.value = 1
-  }
-)
-
-// ─────────────────────────────────────────────
-// Sort / Select
-// ─────────────────────────────────────────────
 const toggleSort = (
   field: string
 ) => {
@@ -842,58 +960,35 @@ const toggleSort = (
       sortDir.value === 'asc'
         ? 'desc'
         : 'asc'
+
+    return
   }
-  else {
-    sortField.value = field
-    sortDir.value = 'asc'
-  }
+
+  sortField.value = field
+  sortDir.value = 'asc'
 }
-
-const allSelected = computed(
-  () =>
-    paginatedAlerts.value.length >
-      0 &&
-    paginatedAlerts.value.every(
-      (a: any) =>
-        a.id
-          ? selectedIds.value.has(a.id)
-          : false
-    )
-)
-
-const selectedAlertObjects =
-  computed(() =>
-    filteredAlerts.value.filter(
-      (a: any) =>
-        a.id
-          ? selectedIds.value.has(
-              a.id
-            )
-          : false
-    )
-  )
 
 const toggleSelect = (
   id?: string
 ) => {
   if (!id) return
 
-  const s = new Set(
+  const next = new Set(
     selectedIds.value
   )
 
-  if (s.has(id)) {
-    s.delete(id)
+  if (next.has(id)) {
+    next.delete(id)
   }
   else {
-    s.add(id)
+    next.add(id)
   }
 
-  selectedIds.value = s
+  selectedIds.value = next
 }
 
 const toggleSelectAll = () => {
-  const s = new Set(
+  const next = new Set(
     selectedIds.value
   )
 
@@ -901,7 +996,7 @@ const toggleSelectAll = () => {
     paginatedAlerts.value.forEach(
       (a: any) => {
         if (a.id) {
-          s.delete(a.id)
+          next.delete(a.id)
         }
       }
     )
@@ -910,52 +1005,51 @@ const toggleSelectAll = () => {
     paginatedAlerts.value.forEach(
       (a: any) => {
         if (a.id) {
-          s.add(a.id)
+          next.add(a.id)
         }
       }
     )
   }
 
-  selectedIds.value = s
+  selectedIds.value = next
 }
 
-// ─────────────────────────────────────────────
-// Actions
-// ─────────────────────────────────────────────
-const changeStatus = async (
-  alert: any,
-  newStatus: AlertStatus
+const isSelected = (
+  id?: string
 ) => {
-  if (!alert.id) {
-    return false
-  }
+  return !!(
+    id &&
+    selectedIds.value.has(id)
+  )
+}
+
+const changeStatus = async (
+  alert: Alert,
+  status: AlertStatus
+) => {
+  if (!alert.id) return
 
   const ok = await updateAlert(
     alert.id,
     {
       ...alert,
-      status: newStatus
+      status
     }
   )
 
   if (ok) {
     success(
-      `Alert marked as ${newStatus}`
+      `Alert ${status}`
     )
   }
-
-  return ok
 }
 
 const onStatusChange = (
-  alert: any,
+  alert: Alert,
   event: Event
 ) => {
   const target =
-    event.target as
-    HTMLSelectElement | null
-
-  if (!target) return
+    event.target as HTMLSelectElement
 
   changeStatus(
     alert,
@@ -963,101 +1057,145 @@ const onStatusChange = (
   )
 }
 
-const isSelected = (
-  id?: string
-) => !!id && selectedIds.value.has(id)
+const handleBulkDelete =
+  async () => {
+    const ids = [
+      ...selectedIds.value
+    ]
 
-const handleBulkDelete = async () => {
-  for (const id of selectedIds.value) {
-    await deleteAlert(id)
+    await Promise.all(
+      ids.map(id =>
+        deleteAlert(id)
+      )
+    )
+
+    selectedIds.value =
+      new Set()
+
+    success('Deleted')
   }
 
-  selectedIds.value = new Set()
-}
+const handleBulkResolve =
+  async () => {
+    await Promise.all(
+      selectedAlertObjects.value.map(
+        async (a: any) => {
+          if (!a.id) return
 
-const handleBulkResolve = async () => {
-  for (const a of selectedAlertObjects.value) {
-    if (!a.id) continue
+          await updateAlert(
+            a.id,
+            {
+              ...a,
+              status: 'Resolved'
+            }
+          )
+        }
+      )
+    )
 
-    await updateAlert(a.id, {
-      ...a,
-      status: 'Resolved'
-    })
+    selectedIds.value =
+      new Set()
+
+    success('Resolved')
   }
 
-  selectedIds.value = new Set()
-}
+const handleBulkAcknowledge =
+  async () => {
+    await Promise.all(
+      selectedAlertObjects.value.map(
+        async (a: any) => {
+          if (!a.id) return
 
-const handleBulkAcknowledge = async () => {
-  for (const a of selectedAlertObjects.value) {
-    if (!a.id) continue
+          await updateAlert(
+            a.id,
+            {
+              ...a,
+              status:
+                'Acknowledged'
+            }
+          )
+        }
+      )
+    )
 
-    await updateAlert(a.id, {
-      ...a,
-      status: 'Acknowledged'
-    })
+    selectedIds.value =
+      new Set()
+
+    success('Acknowledged')
   }
 
-  selectedIds.value = new Set()
+const handleBulkEscalate =
+  async () => {
+    await Promise.all(
+      selectedAlertObjects.value.map(
+        async (a: any) => {
+          if (!a.id) return
 
-  success('Alerts acknowledged')
-}
+          await updateAlert(
+            a.id,
+            {
+              ...a,
+              status: 'Escalated'
+            }
+          )
+        }
+      )
+    )
 
-const handleBulkEscalate = async () => {
-  for (const a of selectedAlertObjects.value) {
-    if (!a.id) continue
+    selectedIds.value =
+      new Set()
 
-    await updateAlert(a.id, {
-      ...a,
-      status: 'Escalated'
-    })
+    success('Escalated')
   }
-
-  selectedIds.value = new Set()
-
-  success('Alerts escalated')
-}
 
 const deleteSingle = async (
   id?: string
 ) => {
   if (!id) return
 
-  if (
+  const confirmed =
     confirm(
       'Delete this alert?'
     )
-  ) {
-    await deleteAlert(id)
-  }
+
+  if (!confirmed) return
+
+  await deleteAlert(id)
+
+  success('Deleted')
 }
 
 const submitCreate = async () => {
-  const ok = await createAlert({
+  const payload = {
     ...newAlert.value,
-    status: 'Open'
-  })
-
-  if (ok) {
-    showCreateModal.value = false
-
-    newAlert.value = {
-      message: '',
-      service: '',
-      projectId: '',
-      severity: 'Error',
-      env: 'Production',
-      status: 'Open'
-    }
-
-    success('Alert created')
+    status: 'Open' as AlertStatus
   }
+
+  const ok = await createAlert(payload)
+
+  if (!ok) return
+
+  showCreateModal.value = false
+
+  newAlert.value = {
+    message: '',
+    service: '',
+    projectId: '',
+    severity: 'Error',
+    env: 'Production',
+    status: 'Open'
+  }
+
+  success('Alert created')
 }
 
-const openDetail = (alert: any) => {
+const openDetail = (
+  alert: Alert
+) => {
   if (!alert.id) return
 
-  detailAlertId.value = alert.id
+  detailAlertId.value =
+    alert.id
 }
 
 // ─────────────────────────────────────────────
@@ -1068,22 +1206,27 @@ const formatTime = (
 ) => {
   if (!dt) return '—'
 
+  const now = Date.now()
+
   const diff =
-    (
-      Date.now() -
-      new Date(dt).getTime()
-    ) / 1000
+    (now -
+      new Date(dt).getTime()) /
+    1000
 
   if (diff < 60) {
-    return `${Math.round(diff)}s ago`
+    return `${Math.floor(diff)}s ago`
   }
 
   if (diff < 3600) {
-    return `${Math.round(diff / 60)}m ago`
+    return `${Math.floor(
+      diff / 60
+    )}m ago`
   }
 
   if (diff < 86400) {
-    return `${Math.round(diff / 3600)}h ago`
+    return `${Math.floor(
+      diff / 3600
+    )}h ago`
   }
 
   return new Date(
@@ -1093,59 +1236,87 @@ const formatTime = (
 
 const formatTimeFull = (
   dt?: string
-) =>
-  dt
-    ? new Date(dt).toLocaleString()
-    : '—'
+) => {
+  if (!dt) return '—'
+
+  return new Date(
+    dt
+  ).toLocaleString()
+}
 
 const severityRowClass = (
-  s: string
-) =>
-({
-  Critical: 'sev-critical',
-  Error: 'sev-error',
-  Warning: 'sev-warning',
-  Info: 'sev-info'
-}[s] || '')
+  severity: string
+) => {
+  return (
+    {
+      Critical:
+        'sev-critical',
+      Error: 'sev-error',
+      Warning:
+        'sev-warning',
+      Info: 'sev-info'
+    }[severity] || ''
+  )
+}
 
 const severityBadgeClass = (
-  s: string
-) =>
-({
-  Critical: 'badge-critical',
-  Error: 'badge-error',
-  Warning: 'badge-warning',
-  Info: 'badge-info'
-}[s] || '')
+  severity: string
+) => {
+  return (
+    {
+      Critical:
+        'badge-critical',
+      Error: 'badge-error',
+      Warning:
+        'badge-warning',
+      Info: 'badge-info'
+    }[severity] || ''
+  )
+}
 
 const statusClass = (
-  s: string
-) =>
-({
-  Open: 'status-open',
-  Acknowledged: 'status-ack',
-  Escalated: 'status-esc',
-  Resolved: 'status-res'
-}[s] || '')
+  status: string
+) => {
+  return (
+    {
+      Open: 'status-open',
+      Acknowledged:
+        'status-ack',
+      Escalated:
+        'status-esc',
+      Resolved:
+        'status-res'
+    }[status] || ''
+  )
+}
 
 const statusSelectClass = (
-  s: string
-) =>
-({
-  Open: 'ss-open',
-  Acknowledged: 'ss-ack',
-  Escalated: 'ss-esc',
-  Resolved: 'ss-res'
-}[s] || '')
+  status: string
+) => {
+  return (
+    {
+      Open: 'ss-open',
+      Acknowledged:
+        'ss-ack',
+      Escalated:
+        'ss-esc',
+      Resolved:
+        'ss-res'
+    }[status] || ''
+  )
+}
 
 const envClass = (
-  e: string
-) =>
-  e === 'Staging'
+  env: string
+) => {
+  return env === 'Staging'
     ? 'env-staging'
     : 'env-production'
+}
 
-const getTimeline = (alert: any) => {
+const getTimeline = (
+  alert: Alert
+) => {
   const events = [
     {
       label: 'Alert created',
@@ -1183,7 +1354,10 @@ const getTimeline = (alert: any) => {
     })
   }
 
-  if (alert.status === 'Resolved') {
+  if (
+    alert.status ===
+    'Resolved'
+  ) {
     events.push({
       label: 'Resolved',
       time: '—',
@@ -1196,215 +1370,640 @@ const getTimeline = (alert: any) => {
 </script>
 
 <style scoped>
-.page-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 16px; }
-.page-title  { font-size: 22px; font-weight: 700; color: var(--text-primary); }
-.page-sub    { font-size: 13px; color: var(--text-tertiary); margin-top: 3px; }
-.connection-status { margin-left: 8px; font-size: 11px; font-weight: 600; padding: 2px 6px; border-radius: 3px; }
-.connection-status.online  { color: var(--success-color); background: var(--success-subtle); }
-.connection-status.offline { color: var(--danger-color); background: var(--danger-subtle); }
+/* =========================================================
+   PAGE
+========================================================= */
 
-.header-actions { display: flex; align-items: center; gap: 10px; }
-.retry-btn, .add-alert-btn {
-  display: flex; align-items: center; gap: 6px;
-  padding: 7px 14px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all .15s;
+.page-wrap {
+  width: 100%;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
 }
-.retry-btn    { background: var(--bg-secondary); border: 1px solid var(--input-border); color: var(--text-secondary); }
-.retry-btn:hover { border-color: var(--text-tertiary); }
-.add-alert-btn { background: #238636; border: 1px solid #238636; color: #fff; }
-.add-alert-btn:hover { background: #2ea043; }
-.sort-icon { width: 14px; height: 14px; margin-left: 4px; vertical-align: middle; opacity: 0.7; }
+
+/* =========================================================
+   HEADER
+========================================================= */
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.page-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.page-sub {
+  margin-top: 4px;
+  font-size: 13px;
+  color: var(--text-tertiary);
+}
+
+.connection-status {
+  margin-left: 8px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.connection-status.online {
+  background: var(--success-subtle);
+  color: var(--success-color);
+}
+
+.connection-status.offline {
+  background: var(--danger-subtle);
+  color: var(--danger-color);
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* =========================================================
+   BUTTONS
+========================================================= */
+
+.retry-btn,
+.add-alert-btn,
+.compact-btn {
+  height: 36px;
+
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  padding: 0 14px;
+
+  border-radius: 8px;
+  border: 1px solid var(--input-border);
+
+  font-size: 12px;
+  font-weight: 600;
+
+  cursor: pointer;
+  transition: .15s ease;
+}
+
+.retry-btn,
+.compact-btn {
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+}
+
+.retry-btn:hover,
+.compact-btn:hover {
+  border-color: var(--accent-color);
+  color: var(--accent-color);
+}
+
+.add-alert-btn {
+  background: #238636;
+  border-color: #238636;
+  color: #fff;
+}
+
+.add-alert-btn:hover {
+  background: #2ea043;
+}
+
+/* =========================================================
+   SEARCH
+========================================================= */
+
 .search-box {
-  padding: 7px 14px; border-radius: 6px; border: 1px solid var(--input-border);
-  background: var(--input-bg); color: var(--input-text); font-size: 13px; width: 220px; outline: none;
-}
-.search-box:focus { border-color: var(--accent-color); box-shadow: 0 0 0 3px var(--accent-subtle); }
-.search-box::placeholder { color: var(--text-muted); }
+  width: 230px;
+  height: 36px;
 
-.bulk-ack-row { display: flex; gap: 8px; margin-bottom: 10px; }
-.ack-btn, .esc-btn {
-  display: flex; align-items: center; gap: 6px; padding: 6px 14px;
-  border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; border: 1px solid;
-}
-.ack-btn { background: rgba(227,179,65,.1); border-color: #e3b341; color: #e3b341; }
-.esc-btn { background: var(--danger-subtle); border-color: var(--danger-color); color: var(--danger-color); }
+  padding: 0 14px;
 
-.filter-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; flex-wrap: wrap; gap: 10px; }
-.filter-tabs { display: flex; gap: 6px; }
+  border-radius: 8px;
+  border: 1px solid var(--input-border);
+
+  background: var(--input-bg);
+  color: var(--input-text);
+
+  font-size: 13px;
+  outline: none;
+}
+
+.search-box:focus {
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 3px var(--accent-subtle);
+}
+
+/* =========================================================
+   FILTER BAR
+========================================================= */
+
+.filter-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.filter-tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
 .tab-btn {
-  padding: 6px 14px; border-radius: 6px; font-size: 13px; cursor: pointer;
-  border: 1px solid var(--border-color); background: transparent; color: var(--text-tertiary); transition: all .15s;
-}
-.tab-btn:hover { border-color: var(--accent-color); color: var(--accent-color); }
-.tab-btn.active { background: var(--accent-color); border-color: var(--accent-color); color: #fff; }
-.tab-count { background: rgba(128,128,128,.15); padding: 1px 6px; border-radius: 3px; font-size: 11px; margin-left: 4px; }
+  height: 34px;
 
-.filter-right { display: flex; gap: 8px; }
+  display: flex;
+  align-items: center;
+
+  padding: 0 14px;
+
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+
+  background: transparent;
+  color: var(--text-tertiary);
+
+  font-size: 13px;
+  cursor: pointer;
+
+  transition: .15s ease;
+}
+
+.tab-btn:hover {
+  border-color: var(--accent-color);
+  color: var(--accent-color);
+}
+
+.tab-btn.active {
+  background: var(--accent-color);
+  border-color: var(--accent-color);
+  color: white;
+}
+
+.tab-count {
+  margin-left: 6px;
+
+  padding: 1px 6px;
+
+  border-radius: 999px;
+
+  background: rgba(255,255,255,.15);
+
+  font-size: 11px;
+}
+
+.filter-right {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
 .filter-select {
-  padding: 6px 28px 6px 10px; border-radius: 6px; border: 1px solid var(--input-border);
-  background: var(--input-bg); color: var(--text-tertiary); font-size: 12px; cursor: pointer; outline: none;
+  height: 34px;
+
+  padding: 0 12px;
+
+  border-radius: 8px;
+  border: 1px solid var(--input-border);
+
+  background: var(--input-bg);
+  color: var(--input-text);
+
+  font-size: 12px;
+  outline: none;
 }
 
-.alerts-table { width: 100%; border-collapse: collapse; }
+/* =========================================================
+   TABLE
+========================================================= */
+
+.alerts-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
 .alerts-table th {
-  text-align: left; font-size: 11px; font-weight: 600; color: var(--text-tertiary);
-  text-transform: uppercase; letter-spacing: .05em; padding: 8px 10px;
-  border-bottom: 1px solid var(--border-color); white-space: nowrap;
+  padding: 10px;
+  text-align: left;
+
   background: var(--table-header-bg);
+
+  border-bottom: 1px solid var(--border-color);
+
+  font-size: 11px;
+  font-weight: 700;
+
+  color: var(--text-muted);
+
+  white-space: nowrap;
 }
-.sortable { cursor: pointer; user-select: none; }
-.sortable:hover { color: var(--text-secondary); }
-.alerts-table td { padding: 12px 10px; border-bottom: 1px solid var(--border-color); font-size: 13px; background: var(--table-row-bg); }
-.col-check { width: 36px; }
-.alert-row { cursor: pointer; transition: background .1s; }
-.alert-row:hover td { background: var(--table-row-hover); }
-.alert-row.row-selected td { background: var(--accent-subtle); }
-.alert-row td:nth-child(2) { border-left: 3px solid transparent; }
-.sev-critical td:nth-child(2) { border-left-color: var(--badge-critical-text); }
-.sev-error    td:nth-child(2) { border-left-color: #e3b341; }
-.sev-warning  td:nth-child(2) { border-left-color: var(--warning-color); }
-.sev-info     td:nth-child(2) { border-left-color: var(--accent-color); }
 
-.alert-id { color: var(--accent-color); font-weight: 600; font-family: 'Courier New', monospace; }
+.alerts-table td {
+  padding: 12px 10px;
 
-.badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px; border-radius: 5px; font-size: 12px; font-weight: 500; }
-.badge-dot { width: 7px; height: 7px; border-radius: 50%; }
-.badge-critical { background: var(--badge-critical-bg); color: var(--badge-critical-text); }
-.badge-critical .badge-dot { background: var(--badge-critical-text); }
-.badge-error    { background: var(--badge-error-bg); color: var(--badge-error-text); }
-.badge-error    .badge-dot { background: var(--badge-error-text); }
-.badge-warning  { background: var(--badge-warning-bg); color: var(--badge-warning-text); }
-.badge-warning  .badge-dot { background: var(--badge-warning-text); }
-.badge-info     { background: var(--badge-info-bg); color: var(--badge-info-text); }
-.badge-info     .badge-dot { background: var(--badge-info-text); }
+  border-bottom: 1px solid var(--border-color);
+
+  background: var(--table-row-bg);
+
+  font-size: 13px;
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.alert-row {
+  cursor: pointer;
+  transition: .12s ease;
+}
+
+.alert-row:hover td {
+  background: var(--table-row-hover);
+}
+
+.alert-row.row-selected td {
+  background: var(--accent-subtle);
+}
+
+/* =========================================================
+   COLUMN WIDTH
+========================================================= */
+
+.col-check {
+  width: 40px;
+}
+
+.alerts-table th:nth-child(2) {
+  width: 90px;
+}
+
+.alerts-table th:nth-child(3) {
+  width: 140px;
+}
+
+.alerts-table th:nth-child(4) {
+  width: 110px;
+}
+
+.alerts-table th:nth-child(5) {
+  width: 130px;
+}
+
+.alerts-table th:nth-child(7) {
+  width: 120px;
+}
+
+.alerts-table th:nth-child(8) {
+  width: 90px;
+}
+
+.alerts-table th:nth-child(9) {
+  width: 120px;
+}
+
+.alerts-table th:nth-child(10) {
+  width: 90px;
+}
+
+/* =========================================================
+   ALERT COLORS
+========================================================= */
+
+.alert-row td:nth-child(2) {
+  border-left: 3px solid transparent;
+}
+
+.sev-critical td:nth-child(2) {
+  border-left-color: #ff6b6b;
+}
+
+.sev-error td:nth-child(2) {
+  border-left-color: #e3b341;
+}
+
+.sev-warning td:nth-child(2) {
+  border-left-color: #d29922;
+}
+
+.sev-info td:nth-child(2) {
+  border-left-color: #58a6ff;
+}
+
+/* =========================================================
+   BADGES
+========================================================= */
+
+.badge,
+.project-badge,
+.env-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+
+  padding: 4px 10px;
+
+  border-radius: 999px;
+
+  font-size: 11px;
+  font-weight: 700;
+
+  white-space: nowrap;
+}
 
 .project-badge {
-  display: inline-flex; align-items: center; gap: 5px; justify-content: center;
-  padding: 3px 10px; border-radius: 999px;
-  background: var(--accent-subtle); border: 1px solid rgba(88,166,255,.25);
-  color: var(--accent-color); font-size: 12px; font-weight: 600; min-width: 70px;
-  transition: all .15s;
+  background: var(--accent-subtle);
+  color: var(--accent-color);
+  border: 1px solid rgba(88,166,255,.25);
 }
-.project-badge-link { cursor: pointer; }
-.project-badge-link:hover { background: var(--accent-subtle); filter: brightness(1.2); text-decoration: underline; }
-.badge-folder-icon { width: 11px; height: 11px; flex-shrink: 0; }
 
-.status-select {
-  padding: 3px 28px 3px 8px; border-radius: 5px; border: 1px solid var(--input-border);
-  background: var(--input-bg); color: var(--input-text); font-size: 12px; font-weight: 500; cursor: pointer; outline: none;
+.project-badge-link {
+  cursor: pointer;
 }
-.ss-open { color: var(--success-color); border-color: var(--success-color); }
-.ss-ack  { color: #e3b341; border-color: #e3b341; }
-.ss-esc  { color: var(--danger-color); border-color: var(--danger-color); }
-.ss-res  { color: var(--accent-color); border-color: var(--accent-color); }
 
-.status-open { color: var(--success-color); font-weight: 500; }
-.status-ack  { color: #e3b341; font-weight: 500; }
-.status-esc  { color: var(--danger-color); font-weight: 500; }
-.status-res  { color: var(--accent-color); font-weight: 500; }
+.project-badge-link:hover {
+  filter: brightness(1.15);
+}
 
-.env-badge { padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
-.env-production { background: var(--danger-subtle); color: var(--danger-color); }
-.env-staging    { background: var(--warning-subtle); color: var(--warning-color); }
+/* =========================================================
+   MESSAGE / TEXT
+========================================================= */
 
-.msg-text     { color: var(--text-secondary); max-width: 420px; }
-.service-text { font-family: 'Courier New', monospace; font-size: 12px; color: var(--text-tertiary); }
-.time-text    { color: var(--text-muted); font-size: 12px; white-space: nowrap; }
+.msg-text {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 
-.actions-col { white-space: nowrap; }
+.service-text {
+  font-family: monospace;
+  font-size: 12px;
+}
+
+.time-text {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* =========================================================
+   ACTIONS
+========================================================= */
+
+.actions-col {
+  white-space: nowrap;
+}
+
 .row-action-btn {
-  background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 4px 6px;
-  border-radius: 4px; transition: all .15s;
+  width: 30px;
+  height: 30px;
+
+  border: none;
+  border-radius: 6px;
+
+  background: transparent;
+  color: var(--text-muted);
+
+  cursor: pointer;
+  transition: .15s ease;
 }
-.row-action-btn:hover { color: var(--accent-color); background: var(--accent-subtle); }
-.row-action-btn.danger:hover { color: var(--danger-color); background: var(--danger-subtle); }
 
-.empty-state { text-align: center; color: var(--text-tertiary); padding: 40px; }
+.row-action-btn:hover {
+  background: var(--accent-subtle);
+  color: var(--accent-color);
+}
 
-.pagination { display: flex; align-items: center; gap: 10px; margin-top: 16px; justify-content: flex-end; }
+.row-action-btn.danger:hover {
+  background: var(--danger-subtle);
+  color: var(--danger-color);
+}
+
+/* =========================================================
+   PAGINATION
+========================================================= */
+
+.pagination {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+}
+
 .page-btn {
-  padding: 5px 12px; border-radius: 5px; background: var(--bg-secondary); border: 1px solid var(--input-border);
-  color: var(--text-secondary); cursor: pointer; font-size: 14px;
-}
-.page-btn:hover { border-color: var(--accent-color); color: var(--accent-color); }
-.page-btn:disabled { opacity: .4; cursor: default; }
-.page-info { font-size: 12px; color: var(--text-tertiary); }
-.page-size-select {
-  padding: 4px 28px 4px 8px; border-radius: 5px; background: var(--bg-secondary); border: 1px solid var(--input-border);
-  color: var(--text-tertiary); font-size: 12px; cursor: pointer;
+  width: 32px;
+  height: 32px;
+
+  border-radius: 6px;
+  border: 1px solid var(--input-border);
+
+  background: var(--bg-secondary);
+
+  cursor: pointer;
 }
 
-.loading-state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 60px 20px; color: var(--text-tertiary); }
-.loading-icon { width: 32px; height: 32px; margin-bottom: 16px; animation: spin 1s linear infinite; }
-@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+.page-info {
+  font-size: 12px;
+  color: var(--text-tertiary);
+}
 
-.detail-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 1000; display: flex; justify-content: flex-end; }
+/* =========================================================
+   DETAIL PANEL
+========================================================= */
+
+.detail-overlay {
+  position: fixed;
+  inset: 0;
+
+  background: rgba(0,0,0,.5);
+
+  z-index: 999;
+
+  display: flex;
+  justify-content: flex-end;
+}
+
 .detail-panel {
-  width: 420px; height: 100vh; background: var(--card-bg); border-left: 1px solid var(--card-border);
-  overflow-y: auto; display: flex; flex-direction: column; animation: slideIn .2s ease-out;
-}
-@keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
-.detail-header {
-  display: flex; align-items: flex-start; justify-content: space-between;
-  padding: 20px; border-bottom: 1px solid var(--border-color); position: sticky; top: 0; background: var(--card-bg); z-index: 1;
-}
-.detail-id { font-size: 16px; font-weight: 700; color: var(--accent-color); font-family: 'Courier New', monospace; }
-.detail-service { font-size: 12px; color: var(--text-tertiary); margin-top: 2px; }
-.close-btn { background: none; border: none; color: var(--text-tertiary); cursor: pointer; font-size: 18px; padding: 2px 6px; border-radius: 4px; }
-.close-btn:hover { color: var(--text-primary); background: var(--bg-tertiary); }
-.detail-body { padding: 20px; display: flex; flex-direction: column; gap: 16px; }
-.detail-section { display: flex; flex-direction: column; gap: 6px; }
-.detail-label { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: .06em; }
-.detail-message { background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 6px; padding: 12px; color: var(--text-secondary); font-size: 13px; line-height: 1.5; }
-.detail-value { font-size: 13px; color: var(--text-secondary); }
+  width: 440px;
+  max-width: 100%;
 
-.timeline { display: flex; flex-direction: column; }
-.timeline-item { display: flex; align-items: center; gap: 10px; padding: 8px 0; position: relative; }
-.timeline-item:not(:last-child)::before {
-  content: ''; position: absolute; left: 7px; top: 24px; width: 2px; height: calc(100% - 8px); background: var(--border-color);
-}
-.tl-dot { width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0; border: 2px solid var(--card-bg); }
-.tl-blue { background: var(--accent-color); } .tl-yellow { background: #e3b341; }
-.tl-red  { background: var(--danger-color); } .tl-green  { background: var(--success-color); }
-.tl-info { display: flex; flex-direction: column; gap: 2px; }
-.tl-label { font-size: 13px; color: var(--text-secondary); font-weight: 500; }
-.tl-time  { font-size: 11px; color: var(--text-muted); }
+  height: 100vh;
 
-.detail-actions { display: flex; gap: 8px; margin-top: 8px; }
-.da-btn {
-  flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px;
-  padding: 9px 12px; border-radius: 7px; font-size: 12px; font-weight: 600; cursor: pointer; border: 1px solid; transition: all .15s;
+  background: var(--card-bg);
+
+  overflow-y: auto;
+
+  border-left: 1px solid var(--border-color);
 }
-.da-btn.ack { border-color: #e3b341; color: #e3b341; background: rgba(227,179,65,.08); }
-.da-btn.ack:hover { background: rgba(227,179,65,.2); }
-.da-btn.esc { border-color: var(--danger-color); color: var(--danger-color); background: var(--danger-subtle); }
-.da-btn.esc:hover { filter: brightness(1.1); }
-.da-btn.res { border-color: var(--success-color); color: var(--success-color); background: var(--success-subtle); }
-.da-btn.res:hover { filter: brightness(1.1); }
+
+/* =========================================================
+   MODAL
+========================================================= */
 
 .create-modal {
-  width: 460px; background: var(--card-bg); border-radius: 12px; border: 1px solid var(--card-border);
-  margin: auto; animation: fadeIn .2s ease-out;
+  width: 460px;
+  max-width: calc(100vw - 24px);
+
+  margin: auto;
+
+  border-radius: 14px;
+
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
 }
-@keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
-.create-form { padding: 20px; display: flex; flex-direction: column; gap: 10px; }
-.create-form label { font-size: 12px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
+
+.create-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  padding: 20px;
+}
+
 .form-input {
-  padding: 8px 12px; border-radius: 6px; border: 1px solid var(--input-border);
-  background: var(--input-bg); color: var(--input-text); font-size: 13px; outline: none; width: 100%;
+  width: 100%;
+  height: 40px;
+
+  padding: 0 12px;
+
+  border-radius: 8px;
+  border: 1px solid var(--input-border);
+
+  background: var(--input-bg);
+  color: var(--input-text);
+
+  outline: none;
 }
-.form-input:focus { border-color: var(--accent-color); box-shadow: 0 0 0 3px var(--accent-subtle); }
-.form-input::placeholder { color: var(--text-muted); }
-.create-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 8px; }
-.cancel-btn {
-  padding: 8px 16px; border-radius: 6px; background: transparent; border: 1px solid var(--input-border);
-  color: var(--text-tertiary); font-size: 13px; cursor: pointer;
+
+.form-input:focus {
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 3px var(--accent-subtle);
 }
-.cancel-btn:hover { background: var(--bg-hover); }
-.submit-btn {
-  padding: 8px 20px; border-radius: 6px; background: #238636; border: 1px solid #238636;
-  color: #fff; font-size: 13px; font-weight: 600; cursor: pointer;
+
+/* =========================================================
+   COMPACT MODE
+========================================================= */
+
+.compact .alerts-table th {
+  padding: 6px 8px;
+  font-size: 10px;
 }
-.submit-btn:hover { background: #2ea043; }
-.submit-btn:disabled { opacity: .5; cursor: default; }
-.page-wrap { width: 100%; min-width: 0; }
+
+.compact .alerts-table td {
+  padding: 7px 8px;
+  font-size: 12px;
+}
+
+.compact .badge,
+.compact .project-badge,
+.compact .env-badge {
+  padding: 2px 7px;
+  font-size: 10px;
+}
+
+.compact .search-box {
+  width: 170px;
+  height: 32px;
+}
+
+.compact .retry-btn,
+.compact .add-alert-btn,
+.compact .compact-btn {
+  height: 32px;
+  padding: 0 10px;
+}
+
+.compact .msg-text {
+  max-width: 220px;
+}
+
+.compact .service-text {
+  max-width: 100px;
+
+  display: inline-block;
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* =========================================================
+   LOADING
+========================================================= */
+
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  padding: 60px 20px;
+
+  color: var(--text-tertiary);
+}
+
+.loading-icon {
+  width: 30px;
+  height: 30px;
+
+  margin-bottom: 14px;
+
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 1100px) {
+
+  .alerts-table {
+    min-width: 1100px;
+  }
+
+  .page-wrap {
+    overflow-x: auto;
+  }
+}
+
+@media (max-width: 768px) {
+
+  .page-header {
+    flex-direction: column;
+  }
+
+  .header-actions {
+    width: 100%;
+  }
+
+  .search-box {
+    width: 100%;
+  }
+
+  .detail-panel {
+    width: 100%;
+  }
+
+  .create-modal {
+    width: calc(100vw - 20px);
+  }
+}
 </style>

@@ -75,20 +75,6 @@
               </div>
             </div>
 
-            <!-- Compact view -->
-            <div class="setting-card">
-              <label class="toggle-row">
-                <div>
-                  <span class="label-text">{{ t('compactView') }}</span>
-                  <span class="label-desc">{{ t('compactViewDesc') }}</span>
-                </div>
-                <div class="toggle-wrap">
-                  <input v-model="preferences.compactView" type="checkbox" class="toggle-input" id="compact" />
-                  <label for="compact" class="toggle-track"><span class="toggle-thumb"></span></label>
-                </div>
-              </label>
-            </div>
-
             <!-- Sound notifications (new) -->
             <div class="setting-card">
               <label class="toggle-row">
@@ -260,7 +246,7 @@
                 </div>
                 <button
                   class="permission-btn"
-                  :class="pushPermission"
+                  :class="`permission-btn ${pushPermission}`"
                   @click="requestPushPermission"
                 >
                   <Icon :name="pushIcon" />
@@ -459,7 +445,11 @@
       <div class="modal-footer">
         <span class="unsaved-hint" v-if="hasChanges">● Có thay đổi chưa lưu</span>
         <button class="btn-cancel" @click="closeModal">{{ t('cancel') }}</button>
-        <button class="btn-save" @click="saveSettings" :disabled="!hasChanges">
+        <button
+          class="btn-save"
+          @click="saveSettings"
+          :disabled="!hasChanges || saving"
+        >
           <Icon name="lucide:save" /> {{ t('save') }}
         </button>
       </div>
@@ -469,227 +459,589 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, computed } from 'vue'
+import { ref, watch, computed, onMounted, onUnmounted } from 'vue'
 import { useUserPreferences } from '~/composables/useUserPreferences'
 import { useToast } from '~/composables/useToast'
 import { useTheme } from '~/composables/useTheme'
 import { useI18n } from '~/composables/useI18n'
 import { useAuth } from '~/composables/useAuth'
 
-const emit = defineEmits<{ close: [] }>()
+type ThemeMode = 'auto' | 'light' | 'dark'
+type Language = 'vi' | 'en'
 
-const { preferences: userPreferences, savePreferences, resetPreferences } = useUserPreferences()
-const { success, info } = useToast()
+interface TabItem {
+  id: string
+  label: string
+  icon: string
+  badge?: string
+}
+
+interface ThemeOption {
+  value: ThemeMode
+  label: string
+  icon: string
+}
+
+interface ExtendedPreferences {
+  theme: ThemeMode
+  language: Language
+
+  emailNotifications: boolean
+  slackNotifications: boolean
+
+  alertsPerPage: number
+  autoRefreshAlerts: boolean
+  refreshInterval: number
+
+  soundEnabled: boolean
+  soundVolume: number
+
+  accentColor: string
+
+  timezone: string
+  dateFormat: string
+
+  criticalOnly: boolean
+
+  quietHours: boolean
+  quietFrom: string
+  quietTo: string
+
+  defaultSeverityFilter: string
+  showResolved: boolean
+}
+
+const emit = defineEmits<{
+  close: []
+}>()
+
+const {
+  preferences: userPreferences,
+  savePreferences,
+  resetPreferences
+} = useUserPreferences()
+
+const { success, error, info } = useToast()
 const { setTheme } = useTheme()
 const { t, setLanguage } = useI18n()
 const { currentUser } = useAuth()
 
-// ── Extended preferences with new fields ──
-const preferences = ref({
-  ...userPreferences.value,
-  soundEnabled: false,
+const STORAGE_KEY = 'alertops-settings-v3'
+
+const defaultPreferences: ExtendedPreferences = {
+  theme: 'dark',
+  language: 'vi',
+
+  emailNotifications: true,
+  slackNotifications: false,
+
+  alertsPerPage: 20,
+  autoRefreshAlerts: true,
+  refreshInterval: 30,
+
+  soundEnabled: true,
   soundVolume: 60,
+
   accentColor: 'blue',
+
   timezone: 'Asia/Ho_Chi_Minh',
   dateFormat: 'DD/MM/YYYY',
+
   criticalOnly: false,
+
   quietHours: false,
   quietFrom: '22:00',
   quietTo: '07:00',
+
   defaultSeverityFilter: 'all',
-  showResolved: false,
+  showResolved: true,
+}
+
+const preferences = ref<ExtendedPreferences>({
+  ...defaultPreferences,
+  ...(userPreferences.value || {})
 })
 
-const original = JSON.stringify(preferences.value)
-const hasChanges = computed(() => JSON.stringify(preferences.value) !== original)
+const originalPreferences = ref('')
 
-// ── Active tab ──
 const activeTab = ref('appearance')
 
-const tabs = computed(() => [
-  { id: 'appearance',    label: 'Giao diện',  icon: 'lucide:palette' },
-  { id: 'language',      label: 'Ngôn ngữ',   icon: 'lucide:globe' },
-  { id: 'notifications', label: 'Thông báo',  icon: 'lucide:bell',   badge: notifBadge.value || undefined },
-  { id: 'display',       label: 'Hiển thị',   icon: 'lucide:layout-grid' },
-  { id: 'shortcuts',     label: 'Phím tắt',   icon: 'lucide:keyboard' },
-  { id: 'account',       label: 'Tài khoản',  icon: 'lucide:user-circle' },
-])
+const saving = ref(false)
 
-// Badge count notifications off
+const pushPermission = ref<NotificationPermission>('default')
+
+const pwForm = ref({
+  current: '',
+  next: '',
+  confirm: ''
+})
+
+const pwError = ref('')
+
+/* =========================================
+   INIT
+========================================= */
+
+onMounted(() => {
+  originalPreferences.value = JSON.stringify(preferences.value)
+
+  loadLocalDraft()
+
+  if (typeof window !== 'undefined' && 'Notification' in window) {
+    pushPermission.value = Notification.permission
+  }
+
+  applyAccentColor(preferences.value.accentColor)
+
+  registerShortcuts()
+})
+
+onUnmounted(() => {
+  unregisterShortcuts()
+})
+
+/* =========================================
+   COMPUTED
+========================================= */
+
+const hasChanges = computed(() => {
+  return JSON.stringify(preferences.value) !== originalPreferences.value
+})
+
+const userInitials = computed(() => {
+  const name = currentUser.value?.name || ''
+
+  return (
+    name
+      .split(' ')
+      .map((w: string) => w[0])
+      .slice(0, 2)
+      .join('')
+      .toUpperCase() || '?'
+  )
+})
+
+const canSavePassword = computed(() => {
+  return (
+    pwForm.value.current.length > 0 &&
+    pwForm.value.next.length >= 6 &&
+    pwForm.value.next === pwForm.value.confirm
+  )
+})
+
 const notifBadge = computed(() => {
   let off = 0
+
   if (!preferences.value.emailNotifications) off++
   if (!preferences.value.slackNotifications) off++
+
   return off > 0 ? String(off) : ''
 })
 
-// ── User ──
-const userInitials = computed(() => {
-  const name = currentUser.value?.name || ''
-  return name.split(' ').map((w: string) => w[0]).slice(0, 2).join('').toUpperCase() || '?'
-})
-
-// ── Theme ──
-const themeOptions = [
-  { value: 'auto'  as const, label: 'Auto',  icon: 'lucide:monitor' },
-  { value: 'light' as const, label: 'Light', icon: 'lucide:sun-medium' },
-  { value: 'dark'  as const, label: 'Dark',  icon: 'lucide:moon-star' },
-]
-
-watch(() => preferences.value.theme, (v) => setTheme(v))
-watch(() => preferences.value.language, (v) => setLanguage(v))
-
-const selectLanguage = (lang: 'vi' | 'en') => {
-  preferences.value.language = lang
-  setLanguage(lang)
-}
-
-// ── Accent colors ──
-const accentColors = [
-  { value: 'blue',   hex: '#2563eb', label: 'Blue' },
-  { value: 'violet', hex: '#7c3aed', label: 'Violet' },
-  { value: 'teal',   hex: '#0d9488', label: 'Teal' },
-  { value: 'rose',   hex: '#e11d48', label: 'Rose' },
-  { value: 'amber',  hex: '#d97706', label: 'Amber' },
-  { value: 'slate',  hex: '#475569', label: 'Slate' },
-]
-
-// ── Sound test ──
-const testSound = () => {
-  if (typeof window !== 'undefined' && window.AudioContext) {
-    const ctx = new AudioContext()
-    const osc = ctx.createOscillator()
-    const gain = ctx.createGain()
-    osc.connect(gain)
-    gain.connect(ctx.destination)
-    osc.frequency.value = 880
-    gain.gain.setValueAtTime(preferences.value.soundVolume / 300, ctx.currentTime)
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4)
-    osc.start()
-    osc.stop(ctx.currentTime + 0.4)
-  }
-}
-
-// ── Timezone ──
-const timezones = [
-  { value: 'Asia/Ho_Chi_Minh', label: 'GMT+7 — Hồ Chí Minh' },
-  { value: 'Asia/Bangkok',     label: 'GMT+7 — Bangkok' },
-  { value: 'Asia/Singapore',   label: 'GMT+8 — Singapore' },
-  { value: 'Asia/Tokyo',       label: 'GMT+9 — Tokyo' },
-  { value: 'Europe/London',    label: 'GMT+0 — London' },
-  { value: 'America/New_York', label: 'GMT-5 — New York' },
-  { value: 'UTC',              label: 'UTC' },
-]
-
-// ── Date format ──
-const dateFormats = [
-  { value: 'DD/MM/YYYY', label: 'DD/MM/YYYY' },
-  { value: 'MM/DD/YYYY', label: 'MM/DD/YYYY' },
-  { value: 'YYYY-MM-DD', label: 'ISO 8601' },
-]
-
-const datePreview = computed(() => {
-  const now = new Date()
-  const d = String(now.getDate()).padStart(2, '0')
-  const m = String(now.getMonth() + 1).padStart(2, '0')
-  const y = now.getFullYear()
-  return preferences.value.dateFormat
-    .replace('DD', d).replace('MM', m).replace('YYYY', String(y))
-})
-
-// ── Push notification ──
-const pushPermission = ref(
-  typeof Notification !== 'undefined' ? Notification.permission : 'default'
-)
-
 const pushIcon = computed(() => ({
   granted: 'lucide:check-circle',
-  denied:  'lucide:x-circle',
-  default: 'lucide:bell-plus',
-}[pushPermission.value] || 'lucide:bell-plus'))
+  denied: 'lucide:x-circle',
+  default: 'lucide:bell-plus'
+}[pushPermission.value]))
 
 const pushLabel = computed(() => ({
   granted: 'Đã bật',
-  denied:  'Bị chặn',
-  default: 'Bật',
-}[pushPermission.value] || 'Bật'))
+  denied: 'Bị chặn',
+  default: 'Bật'
+}[pushPermission.value]))
 
-const requestPushPermission = async () => {
-  if (typeof Notification !== 'undefined' && Notification.permission === 'default') {
-    const result = await Notification.requestPermission()
-    pushPermission.value = result
-    if (result === 'granted') {
-      new Notification('AlertOps', { body: 'Thông báo trình duyệt đã được bật!' })
-    }
+const datePreview = computed(() => {
+  const now = new Date()
+
+  const d = String(now.getDate()).padStart(2, '0')
+  const m = String(now.getMonth() + 1).padStart(2, '0')
+  const y = String(now.getFullYear())
+
+  return preferences.value.dateFormat
+    .replace('DD', d)
+    .replace('MM', m)
+    .replace('YYYY', y)
+})
+
+/* =========================================
+   WATCHERS
+========================================= */
+
+watch(
+  () => preferences.value.theme,
+  (v) => {
+    setTheme(v)
   }
-}
-
-// ── Severity filter ──
-const severities = [
-  { value: 'all',      label: 'Tất cả',  cls: 'sev-all' },
-  { value: 'Critical', label: 'Critical', cls: 'sev-critical' },
-  { value: 'Error',    label: 'Error',    cls: 'sev-error' },
-  { value: 'Warning',  label: 'Warning',  cls: 'sev-warning' },
-]
-
-// ── Shortcuts reference ──
-const shortcuts = [
-  { label: 'Mở / Đóng Settings',     keys: ['G', 'S'] },
-  { label: 'Tới trang Alerts',        keys: ['G', 'A'] },
-  { label: 'Tới Dashboard',           keys: ['G', 'D'] },
-  { label: 'Refresh alerts',          keys: ['R'] },
-  { label: 'Tìm kiếm alert',          keys: ['Ctrl', 'K'] },
-  { label: 'Đánh dấu alert đã chọn', keys: ['Space'] },
-  { label: 'Xóa alert đã chọn',      keys: ['Delete'] },
-  { label: 'Chọn tất cả alerts',     keys: ['Ctrl', 'A'] },
-]
-
-const buildDate = new Date().toLocaleDateString('vi-VN')
-
-// ── Change password ──
-const pwForm = ref({ current: '', next: '', confirm: '' })
-const pwError = ref('')
-
-const canSavePassword = computed(() =>
-  pwForm.value.current.length > 0 &&
-  pwForm.value.next.length >= 6 &&
-  pwForm.value.next === pwForm.value.confirm
 )
 
-const changePassword = () => {
-  pwError.value = ''
-  if (pwForm.value.next !== pwForm.value.confirm) {
-    pwError.value = 'Mật khẩu xác nhận không khớp'
-    return
+watch(
+  () => preferences.value.language,
+  (v) => {
+    setLanguage(v)
   }
-  if (pwForm.value.next.length < 6) {
-    pwError.value = 'Mật khẩu phải ít nhất 6 ký tự'
-    return
+)
+
+watch(
+  () => preferences.value.accentColor,
+  (v) => {
+    applyAccentColor(v)
   }
-  // TODO: call API /api/auth/change-password
-  success('Mật khẩu đã được cập nhật!')
-  pwForm.value = { current: '', next: '', confirm: '' }
+)
+
+watch(
+  preferences,
+  () => {
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify(preferences.value)
+    )
+  },
+  {
+    deep: true
+  }
+)
+
+/* =========================================
+   METHODS
+========================================= */
+
+const closeModal = () => {
+  emit('close')
 }
 
-// ── Actions ──
-const closeModal = () => emit('close')
+const saveSettings = async () => {
+  try {
+    saving.value = true
 
-const saveSettings = () => {
-  savePreferences(preferences.value)
-  setTheme(preferences.value.theme)
-  setLanguage(preferences.value.language)
-  success(t('settingsSaved'))
-  closeModal()
+    validateSettings()
+
+    savePreferences(preferences.value)
+
+    originalPreferences.value = JSON.stringify(preferences.value)
+
+    success(t('settingsSaved'))
+
+    closeModal()
+  } catch (e: any) {
+    error(e.message || 'Không thể lưu cài đặt')
+  } finally {
+    saving.value = false
+  }
+}
+
+const validateSettings = () => {
+  if (
+    preferences.value.refreshInterval < 10 ||
+    preferences.value.refreshInterval > 300
+  ) {
+    throw new Error('Refresh interval không hợp lệ')
+  }
+
+  if (
+    preferences.value.alertsPerPage < 5 ||
+    preferences.value.alertsPerPage > 100
+  ) {
+    throw new Error('Alerts per page không hợp lệ')
+  }
 }
 
 const handleResetSettings = () => {
-  if (confirm(t('confirmReset'))) {
-    resetPreferences()
-    preferences.value = { ...userPreferences.value } as any
-    setLanguage(preferences.value.language)
-    info(t('settingsReset'))
+  if (!confirm(t('confirmReset'))) return
+
+  preferences.value = {
+    ...defaultPreferences
+  }
+
+  resetPreferences()
+
+  applyAccentColor(defaultPreferences.accentColor)
+
+  success(t('settingsReset'))
+}
+
+const selectLanguage = (lang: Language) => {
+  preferences.value.language = lang
+}
+
+const applyAccentColor = (color: string) => {
+  if (typeof document === 'undefined') return
+
+  const root = document.documentElement
+
+const colors = {    
+    blue: '#2563eb',
+    violet: '#7c3aed',
+    teal: '#0d9488',
+    rose: '#e11d48',
+    amber: '#d97706',
+    slate: '#475569'
+  }
+
+  root.style.setProperty(
+    '--accent',
+    colors[color as keyof typeof colors] ?? colors.blue
+  )
+}
+
+const testSound = async () => {
+  try {
+    const AudioCtx =
+      window.AudioContext ||
+      (window as any).webkitAudioContext
+
+    const ctx = new AudioCtx()
+
+    const oscillator = ctx.createOscillator()
+    const gainNode = ctx.createGain()
+
+    oscillator.connect(gainNode)
+    gainNode.connect(ctx.destination)
+
+    oscillator.type = 'sine'
+    oscillator.frequency.value = 880
+
+    gainNode.gain.value =
+      preferences.value.soundVolume / 100 / 2
+
+    oscillator.start()
+
+    setTimeout(() => {
+      oscillator.stop()
+      ctx.close()
+    }, 250)
+  } catch {
+    error('Không thể phát âm thanh')
   }
 }
+
+const requestPushPermission = async () => {
+  if (typeof window === 'undefined') return
+
+  if (!('Notification' in window)) {
+    error('Browser không hỗ trợ notification')
+    return
+  }
+
+  const permission = await Notification.requestPermission()
+
+  pushPermission.value = permission
+
+  if (permission === 'granted') {
+    new Notification('AlertOps', {
+      body: 'Thông báo đã được bật thành công!',
+    })
+
+    success('Đã bật push notification')
+  }
+}
+
+const changePassword = async () => {
+  try {
+    pwError.value = ''
+
+    if (pwForm.value.next !== pwForm.value.confirm) {
+      throw new Error('Mật khẩu xác nhận không khớp')
+    }
+
+    if (pwForm.value.next.length < 6) {
+      throw new Error('Mật khẩu phải ít nhất 6 ký tự')
+    }
+
+    /*
+      TODO:
+      await $fetch('/api/auth/change-password', {
+        method: 'POST',
+        body: {
+          currentPassword: pwForm.value.current,
+          newPassword: pwForm.value.next
+        }
+      })
+    */
+
+    success('Đổi mật khẩu thành công')
+
+    pwForm.value = {
+      current: '',
+      next: '',
+      confirm: ''
+    }
+  } catch (e: any) {
+    pwError.value = e.message
+  }
+}
+
+const loadLocalDraft = () => {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY)
+
+    if (!raw) return
+
+    const parsed = JSON.parse(raw)
+
+    preferences.value = {
+      ...preferences.value,
+      ...parsed
+    }
+  } catch {}
+}
+
+/* =========================================
+   KEYBOARD SHORTCUTS
+========================================= */
+
+const handleKeydown = (e: KeyboardEvent) => {
+  if (e.ctrlKey && e.key.toLowerCase() === 's') {
+    e.preventDefault()
+
+    if (hasChanges.value) {
+      saveSettings()
+    }
+  }
+
+  if (e.key === 'Escape') {
+    closeModal()
+  }
+}
+
+const registerShortcuts = () => {
+  window.addEventListener('keydown', handleKeydown)
+}
+
+const unregisterShortcuts = () => {
+  window.removeEventListener('keydown', handleKeydown)
+}
+
+/* =========================================
+   UI DATA
+========================================= */
+
+const tabs: TabItem[] = [
+  {
+    id: 'appearance',
+    label: 'Giao diện',
+    icon: 'lucide:palette'
+  },
+  {
+    id: 'language',
+    label: 'Ngôn ngữ',
+    icon: 'lucide:languages'
+  },
+  {
+    id: 'notifications',
+    label: 'Thông báo',
+    icon: 'lucide:bell'
+  },
+  {
+    id: 'display',
+    label: 'Hiển thị',
+    icon: 'lucide:monitor'
+  },
+  {
+    id: 'shortcuts',
+    label: 'Phím tắt',
+    icon: 'lucide:keyboard'
+  },
+  {
+    id: 'account',
+    label: 'Tài khoản',
+    icon: 'lucide:user'
+  }
+]
+
+const themeOptions: ThemeOption[] = [
+  {
+    value: 'auto',
+    label: 'Auto',
+    icon: 'lucide:monitor'
+  },
+  {
+    value: 'light',
+    label: 'Light',
+    icon: 'lucide:sun'
+  },
+  {
+    value: 'dark',
+    label: 'Dark',
+    icon: 'lucide:moon'
+  }
+]
+
+const accentColors = [
+  { value: 'blue', hex: '#2563eb', label: 'Blue' },
+  { value: 'violet', hex: '#7c3aed', label: 'Violet' },
+  { value: 'teal', hex: '#0d9488', label: 'Teal' },
+  { value: 'rose', hex: '#e11d48', label: 'Rose' },
+  { value: 'amber', hex: '#d97706', label: 'Amber' },
+  { value: 'slate', hex: '#475569', label: 'Slate' }
+]
+
+const timezones = [
+  {
+    value: 'Asia/Ho_Chi_Minh',
+    label: 'GMT+7 — Hồ Chí Minh'
+  },
+  {
+    value: 'Asia/Tokyo',
+    label: 'GMT+9 — Tokyo'
+  },
+  {
+    value: 'UTC',
+    label: 'UTC'
+  }
+]
+
+const dateFormats = [
+  {
+    value: 'DD/MM/YYYY',
+    label: 'DD/MM/YYYY'
+  },
+  {
+    value: 'MM/DD/YYYY',
+    label: 'MM/DD/YYYY'
+  },
+  {
+    value: 'YYYY-MM-DD',
+    label: 'ISO 8601'
+  }
+]
+
+const severities = [
+  {
+    value: 'all',
+    label: 'Tất cả',
+    cls: 'sev-all'
+  },
+  {
+    value: 'Critical',
+    label: 'Critical',
+    cls: 'sev-critical'
+  },
+  {
+    value: 'Error',
+    label: 'Error',
+    cls: 'sev-error'
+  },
+  {
+    value: 'Warning',
+    label: 'Warning',
+    cls: 'sev-warning'
+  }
+]
+
+const buildDate = computed(() =>
+  new Date().toLocaleDateString('vi-VN')
+)
+
+const shortcuts = [
+  {
+    label: 'Lưu settings',
+    keys: ['Ctrl', 'S']
+  },
+  {
+    label: 'Đóng modal',
+    keys: ['ESC']
+  }
+]
 </script>
 
 <style scoped>
