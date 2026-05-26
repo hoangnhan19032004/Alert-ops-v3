@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("AlertOpsBackend")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+8da4c001d8576ce31c20b56028c337da95cece60")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+ac5c4b58347af4130fae84e838a7caa3ce7372d1")]
 [assembly: System.Reflection.AssemblyProductAttribute("AlertOpsBackend")]
 [assembly: System.Reflection.AssemblyTitleAttribute("AlertOpsBackend")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

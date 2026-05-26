@@ -76,39 +76,6 @@
               </div>
             </div>
 
-            <!-- Sound notifications -->
-            <div class="setting-card">
-              <label class="toggle-row">
-                <div>
-                  <span class="label-text">{{ t('soundNotifications') }}</span>
-                  <span class="label-desc">{{ t('soundNotificationsDesc') }}</span>
-                </div>
-                <div class="toggle-wrap">
-                  <input v-model="preferences.soundEnabled" type="checkbox" class="toggle-input" id="sound" />
-                  <label for="sound" class="toggle-track"><span class="toggle-thumb"></span></label>
-                </div>
-              </label>
-            </div>
-
-            <!-- Sound volume -->
-            <div v-if="preferences.soundEnabled" class="setting-card">
-              <div class="card-label-row">
-                <div>
-                  <span class="label-text">{{ t('volume') }}</span>
-                  <span class="label-desc">{{ preferences.soundVolume }}%</span>
-                </div>
-                <button class="test-sound-btn" @click="testSound">
-                  <Icon name="lucide:volume-2" /> {{ t('test') }}
-                </button>
-              </div>
-              <input
-                v-model.number="preferences.soundVolume"
-                type="range" min="10" max="100" step="10"
-                class="volume-slider"
-              />
-              <div class="slider-labels"><span>10%</span><span>100%</span></div>
-            </div>
-
             <!-- Color accent -->
             <div class="setting-card">
               <div class="card-label-row">
@@ -254,6 +221,39 @@
                   {{ pushLabel }}
                 </button>
               </div>
+            </div>
+
+            <!-- Sound notifications -->
+            <div class="setting-card">
+              <label class="toggle-row">
+                <div>
+                  <span class="label-text">{{ t('soundNotifications') }}</span>
+                  <span class="label-desc">{{ t('soundNotificationsDesc') }}</span>
+                </div>
+                <div class="toggle-wrap">
+                  <input v-model="preferences.soundEnabled" type="checkbox" class="toggle-input" id="sound" />
+                  <label for="sound" class="toggle-track"><span class="toggle-thumb"></span></label>
+                </div>
+              </label>
+            </div>
+
+            <!-- Sound volume -->
+            <div v-if="preferences.soundEnabled" class="setting-card">
+              <div class="card-label-row">
+                <div>
+                  <span class="label-text">{{ t('volume') }}</span>
+                  <span class="label-desc">{{ preferences.soundVolume }}%</span>
+                </div>
+                <button class="test-sound-btn" @click="testSound">
+                  <Icon name="lucide:volume-2" /> {{ t('test') }}
+                </button>
+              </div>
+              <input
+                v-model.number="preferences.soundVolume"
+                type="range" min="10" max="100" step="10"
+                class="volume-slider"
+              />
+              <div class="slider-labels"><span>10%</span><span>100%</span></div>
             </div>
 
             <!-- Quiet hours -->
