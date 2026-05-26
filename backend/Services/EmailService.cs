@@ -3,11 +3,13 @@ using System.Net.Mail;
 
 namespace AlertOpsBackend.Services
 {
+    // Interface IEmailService
     public interface IEmailService
     {
         Task<bool> SendEmailAsync(List<string> recipients, string subject, string body);
     }
 
+    // Class EmailService kế thừa interface IEmailService
     public class EmailService : IEmailService
     {
         private readonly IConfiguration _config;
@@ -19,10 +21,12 @@ namespace AlertOpsBackend.Services
             _logger = logger;
         }
 
+        // Hàm này dùng để gửi email
         public async Task<bool> SendEmailAsync(List<string> recipients, string subject, string body)
         {
             try
             {
+                // Lấy thông tin SMTP từ file appsettings.json
                 var smtpHost = _config["EmailSettings:SmtpHost"] ?? "localhost";
                 var smtpPort = int.Parse(_config["EmailSettings:SmtpPort"] ?? "587");
                 var smtpUser = _config["EmailSettings:SmtpUser"];
@@ -38,6 +42,7 @@ namespace AlertOpsBackend.Services
                     return true; // Assume success in dev mode
                 }
 
+                // Sử dụng SmtpClient để gửi email
                 using (var client = new SmtpClient(smtpHost, smtpPort))
                 {
                     client.EnableSsl = true;

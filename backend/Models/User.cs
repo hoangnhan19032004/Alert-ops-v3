@@ -3,6 +3,7 @@ using MongoDB.Bson.Serialization.Attributes;
 
 namespace AlertOpsBackend.Models
 {
+    // Class User dùng để map với collection 'users' trong MongoDB
     public class User
     {
         [BsonId]

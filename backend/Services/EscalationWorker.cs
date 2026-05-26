@@ -11,18 +11,19 @@ namespace AlertOpsBackend.Services
     /// </summary>
     public class EscalationWorker : BackgroundService
     {
+        // _services là IServiceProvider dùng để tạo scoped services
         private readonly IServiceProvider _services;
+        // _logger là ILogger dùng để ghi log
         private readonly ILogger<EscalationWorker> _logger;
-
-        // Tránh gửi trùng: lưu cặp (ruleId, alertId) đã xử lý trong memory.
+        // _sent là HashSet dùng để lưu cặp (ruleId, alertId) đã xử lý trong memory để tránh gửi trùng
         private readonly HashSet<string> _sent = new();
-
+        // Constructor
         public EscalationWorker(IServiceProvider services, ILogger<EscalationWorker> logger)
         {
             _services = services;
             _logger = logger;
         }
-
+        // Hàm này dùng để chạy worker mỗi 30 giây
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             _logger.LogInformation("EscalationWorker started.");
@@ -41,7 +42,7 @@ namespace AlertOpsBackend.Services
                 await Task.Delay(TimeSpan.FromSeconds(30), stoppingToken);
             }
         }
-
+        // Hàm này dùng để chạy worker
         private async Task RunAsync()
         {
             using var scope = _services.CreateScope();
@@ -53,7 +54,8 @@ namespace AlertOpsBackend.Services
             var rules  = ruleService.Get().Where(r => r.Active).ToList();
             var alerts = alertService.Get();
             var now    = DateTime.UtcNow;
-
+            
+            // Duyệt qua từng rule
             foreach (var rule in rules)
             {
                 var delay = ParseDelay(rule.Delay);
@@ -122,7 +124,7 @@ namespace AlertOpsBackend.Services
         }
 
         // ─── Helpers ─────────────────────────────────────────────
-
+        // Hàm này dùng để parse delay từ string sang TimeSpan
         private static TimeSpan ParseDelay(string delay) => delay?.Trim().ToLower() switch
         {
             null or "" or "immediate" => TimeSpan.Zero,
@@ -136,7 +138,7 @@ namespace AlertOpsBackend.Services
             "1 hour"  => TimeSpan.FromHours(1),
             _         => TryParseGeneric(delay)
         };
-
+        // Hàm này dùng để parse delay khi không match với các trường hợp trên
         private static TimeSpan TryParseGeneric(string delay)
         {
             var parts = delay.Split(' ', StringSplitOptions.RemoveEmptyEntries);
@@ -149,11 +151,14 @@ namespace AlertOpsBackend.Services
             }
             return TimeSpan.FromMinutes(5);
         }
-
+        // Hàm này dùng để check alert có match với project không
         private static bool MatchesProject(Alert alert, Project project) =>
             !string.IsNullOrEmpty(alert.ProjectId) &&
             (alert.ProjectId == project.Id || alert.ProjectId == project.Name);
-
+        // Hàm này dùng để check alert có match với trigger không ?
+        // Trigger có 2 dạng:
+        // 1. "critical" hoặc "xx" -> match với severity hoặc message có chứa prefix + "0" hoặc service
+        // 2. "critical" -> match với severity
         private static bool MatchesTrigger(Alert alert, string trigger)
         {
             if (string.IsNullOrEmpty(trigger)) return true;
@@ -198,10 +203,10 @@ namespace AlertOpsBackend.Services
 
             return list.Distinct().ToList();
         }
-
+        // Hàm này dùng để build subject cho email
         private static string BuildSubject(EscalationRule rule, Alert alert) =>
             $"[AlertOps] 🚨 Auto-escalation: {alert.Severity} alert in {rule.Project}";
-
+        // Hàm này dùng để build body cho email
         private static string BuildBody(EscalationRule rule, Alert alert, Project project) => $"""
             <div style="font-family: sans-serif; max-width: 600px; margin: auto; border: 1px solid #e1e4e8; border-radius: 8px; overflow: hidden;">
               <div style="background: #161b22; padding: 20px 24px; border-bottom: 1px solid #30363d;">

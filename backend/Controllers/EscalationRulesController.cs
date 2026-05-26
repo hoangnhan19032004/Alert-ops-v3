@@ -6,9 +6,10 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace AlertOpsBackend.Controllers
 {
+    //Cấu hình chung cho API controller
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize]                     // FIX: yêu cầu JWT cho toàn bộ controller
+    [Authorize]
     public class EscalationRulesController : ControllerBase
     {
         private readonly EscalationRuleService _escalationRuleService;
@@ -22,12 +23,12 @@ namespace AlertOpsBackend.Controllers
             _notification          = notification;
         }
 
-        // GET /api/escalationrules
+        // GET /api/escalationrules - Lấy danh sách các quy tắc leo thang
         [HttpGet]
         public ActionResult<List<EscalationRule>> Get() =>
             _escalationRuleService.Get();
 
-        // GET /api/escalationrules/{id}
+        // GET /api/escalationrules/{id} - Lấy chi tiết quy tắc leo thang theo ID 
         [HttpGet("{id:length(24)}")]
         public ActionResult<EscalationRule> Get(string id)
         {
@@ -36,7 +37,7 @@ namespace AlertOpsBackend.Controllers
             return rule;
         }
 
-        // POST /api/escalationrules — chỉ Manager trở lên
+        // POST /api/escalationrules - Tạo quy tắc leo thang mới
         [HttpPost]
         [Authorize(Policy = "ManagerUp")]
         public async Task<ActionResult<EscalationRule>> Create(EscalationRule rule)
@@ -46,7 +47,7 @@ namespace AlertOpsBackend.Controllers
             return CreatedAtAction(nameof(Get), new { id = rule.Id }, rule);
         }
 
-        // PUT /api/escalationrules/{id} — chỉ Manager trở lên
+        // PUT /api/escalationrules/{id} - Cập nhật quy tắc leo thang
         [HttpPut("{id:length(24)}")]
         [Authorize(Policy = "ManagerUp")]
         public async Task<IActionResult> Update(string id, EscalationRule ruleIn)
@@ -60,7 +61,7 @@ namespace AlertOpsBackend.Controllers
             return NoContent();
         }
 
-        // DELETE /api/escalationrules/{id} — chỉ Admin
+        // DELETE /api/escalationrules/{id} - Xóa quy tắc leo thang
         [HttpDelete("{id:length(24)}")]
         [Authorize(Policy = "AdminOnly")]
         public async Task<IActionResult> Delete(string id)

@@ -1,5 +1,6 @@
 namespace AlertOpsBackend.Models
 {
+    // Interface này để map với file appsettings.json -> Kết nối database
     public class AlertOpsDatabaseSettings
     {
         public string ConnectionString { get; set; } = null!;

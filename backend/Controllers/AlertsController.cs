@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace AlertOpsBackend.Controllers
 {
+    //Cấu hình chung cho API controller
     [ApiController]
     [Route("api/[controller]")]
     [Authorize]
@@ -30,15 +31,15 @@ namespace AlertOpsBackend.Controllers
             _notification = notification;
             _hubContext = hubContext;
         }
-
-        // GET /api/alerts
+        // API Get list alerts
+        // GET /api/alerts - Lấy danh sách toàn bộ cảnh báo
         [HttpGet]
         public ActionResult<List<Alert>> Get()
         {
             return _alertService.Get();
         }
 
-        // GET /api/alerts/stats
+        // GET /api/alerts/stats - Lấy số liệu thống kê cảnh báo
         [HttpGet("stats")]
         public ActionResult<AlertStats> GetStats()
         {
@@ -59,7 +60,7 @@ namespace AlertOpsBackend.Controllers
             });
         }
 
-        // GET /api/alerts/{id}
+        // GET /api/alerts/{id} - Lấy chi tiết cảnh báo theo ID
         [HttpGet("{id:length(24)}")]
         public ActionResult<Alert> Get(string id)
         {
@@ -71,7 +72,7 @@ namespace AlertOpsBackend.Controllers
             return alert;
         }
 
-        // POST /api/alerts
+        // POST /api/alerts - Tạo cảnh báo mới
         [HttpPost]
         public async Task<ActionResult<Alert>> Create(Alert alert)
         {
@@ -99,7 +100,7 @@ namespace AlertOpsBackend.Controllers
             );
         }
 
-        // PUT /api/alerts/{id}
+        // PUT /api/alerts/{id} - Cập nhật toàn bộ thông tin cảnh báo
         [HttpPut("{id:length(24)}")]
         public async Task<IActionResult> Update(
             string id,
@@ -112,15 +113,15 @@ namespace AlertOpsBackend.Controllers
 
             alertIn.Id = id;
 
-            // Preserve original timestamp
+            // Preserve original timestamp - Giữ nguyên thời gian tạo ban đầu
             alertIn.CreatedAt = alert.CreatedAt;
 
             _alertService.Update(id, alertIn);
 
-            // Existing notification
+            // Existing notification - Gửi thông báo về việc có alert mới
             await _notification.SendAsync("alerts");
 
-            // REALTIME SIGNALR EVENT
+            // REALTIME SIGNALR EVENT - Gửi sự kiện websocket về việc có alert mới
             await _hubContext.Clients.All.SendAsync(
                 "alert:updated",
                 alertIn
@@ -129,7 +130,7 @@ namespace AlertOpsBackend.Controllers
             return NoContent();
         }
 
-        // PATCH /api/alerts/{id}/status
+        // PATCH /api/alerts/{id}/status - Cập nhật trạng thái cảnh báo
         [HttpPatch("{id:length(24)}/status")]
         public async Task<IActionResult> PatchStatus(
             string id,
@@ -152,10 +153,10 @@ namespace AlertOpsBackend.Controllers
 
             _alertService.Update(id, alert);
 
-            // Existing notification
+            // Existing notification - Gửi thông báo về việc có alert mới
             await _notification.SendAsync("alerts");
 
-            // REALTIME SIGNALR EVENT
+            // REALTIME SIGNALR EVENT - Gửi sự kiện websocket về việc có alert mới
             await _hubContext.Clients.All.SendAsync(
                 "alert:updated",
                 alert
@@ -164,7 +165,7 @@ namespace AlertOpsBackend.Controllers
             return Ok(alert);
         }
 
-        // DELETE /api/alerts/{id}
+        // DELETE /api/alerts/{id} - Xóa cảnh báo
         [HttpDelete("{id:length(24)}")]
         public async Task<IActionResult> Delete(string id)
         {
@@ -175,14 +176,14 @@ namespace AlertOpsBackend.Controllers
 
             _alertService.Remove(id);
 
-            // Giảm alertCount của project
+            // Giảm alertCount của project - Giảm số lượng cảnh báo của project
             if (!string.IsNullOrEmpty(alert.ProjectId))
                 _projectService.DecrementAlertCount(alert.ProjectId);
 
-            // Existing notification
+            // Existing notification - Gửi thông báo về việc có alert mới
             await _notification.SendAsync("alerts");
 
-            // REALTIME SIGNALR EVENT
+            // REALTIME SIGNALR EVENT - Gửi sự kiện websocket về việc có alert mới
             await _hubContext.Clients.All.SendAsync(
                 "alert:deleted",
                 id
@@ -191,7 +192,7 @@ namespace AlertOpsBackend.Controllers
             return NoContent();
         }
 
-        // POST /api/alerts/bulk-delete
+        // POST /api/alerts/bulk-delete - Xóa nhiều cảnh báo cùng lúc
         [HttpPost("bulk-delete")]
         public async Task<IActionResult> BulkDelete(
             [FromBody] BulkIdsRequest req)
@@ -227,7 +228,7 @@ namespace AlertOpsBackend.Controllers
                     deleted
                 );
 
-                // REALTIME EVENT
+                // REALTIME EVENT - Gửi sự kiện websocket về việc xóa nhiều cảnh báo
                 await _hubContext.Clients.All.SendAsync(
                     "alerts:bulkDeleted",
                     req.Ids
@@ -241,7 +242,7 @@ namespace AlertOpsBackend.Controllers
             });
         }
 
-        // POST /api/alerts/bulk-status
+        // POST /api/alerts/bulk-status - Cập nhật trạng thái nhiều cảnh báo cùng lúc
         [HttpPost("bulk-status")]
         public async Task<IActionResult> BulkStatus(
             [FromBody] BulkStatusRequest req)
@@ -274,7 +275,7 @@ namespace AlertOpsBackend.Controllers
                     updated
                 );
 
-                // REALTIME EVENT
+                // REALTIME EVENT - Gửi sự kiện websocket về việc cập nhật trạng thái nhiều cảnh báo
                 await _hubContext.Clients.All.SendAsync(
                     "alerts:bulkUpdated",
                     new

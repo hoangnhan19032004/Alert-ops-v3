@@ -6,9 +6,10 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace AlertOpsBackend.Controllers
 {
+    //Cấu hình chung cho API controller
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize]                     // FIX: yêu cầu JWT cho toàn bộ controller
+    [Authorize]                     
     public class ProjectsController : ControllerBase
     {
         private readonly ProjectService _projectService;
@@ -20,11 +21,11 @@ namespace AlertOpsBackend.Controllers
             _notification   = notification;
         }
 
-        // GET: api/projects
+        // GET: api/projects - Lấy danh sách tất cả các dự án
         [HttpGet]
         public ActionResult<List<Project>> Get() => _projectService.Get();
 
-        // GET: api/projects/{id}
+        // GET: api/projects/{id} - Lấy thông tin chi tiết dự án theo ID
         [HttpGet("{id:length(24)}")]
         public ActionResult<Project> Get(string id)
         {
@@ -33,7 +34,7 @@ namespace AlertOpsBackend.Controllers
             return project;
         }
 
-        // POST: api/projects — chỉ Manager trở lên
+        // POST: api/projects - Tạo mới dự án (chỉ Manager)
         [HttpPost]
         [Authorize(Policy = "ManagerUp")]
         public async Task<ActionResult<Project>> Create(Project project)
@@ -43,7 +44,7 @@ namespace AlertOpsBackend.Controllers
             return CreatedAtAction(nameof(Get), new { id = project.Id }, project);
         }
 
-        // PUT: api/projects/{id} — chỉ Manager trở lên
+        // PUT: api/projects/{id} - Cập nhật dự án (chỉ Manager)
         [HttpPut("{id:length(24)}")]
         [Authorize(Policy = "ManagerUp")]
         public async Task<IActionResult> Update(string id, Project projectIn)
@@ -57,7 +58,7 @@ namespace AlertOpsBackend.Controllers
             return NoContent();
         }
 
-        // DELETE: api/projects/{id} — chỉ Admin
+        // DELETE: api/projects/{id} - Xóa dự án (chỉ Admin)
         [HttpDelete("{id:length(24)}")]
         [Authorize(Policy = "AdminOnly")]
         public async Task<IActionResult> Delete(string id)

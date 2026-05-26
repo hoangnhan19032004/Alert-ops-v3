@@ -18,13 +18,13 @@ namespace AlertOpsBackend.Services
         }
 
         // ─────────────────────────────
-        // GET ALL
+        // GET ALL - Lấy tất cả thông tin user
         // ─────────────────────────────
         public async Task<List<User>> GetAsync() =>
             await _users.Find(_ => true).ToListAsync();
 
         // ─────────────────────────────
-        // GET BY EMAIL
+        // GET BY EMAIL - Lấy thông tin user theo email
         // ─────────────────────────────
         public async Task<User?> GetByEmailAsync(string email)
         {
@@ -34,7 +34,7 @@ namespace AlertOpsBackend.Services
         }
 
         // ─────────────────────────────
-        // GET BY REFRESH TOKEN (FIX LỖI CỦA BẠN)
+        // GET BY REFRESH TOKEN - Lấy thông tin user theo refresh token
         // ─────────────────────────────
         public async Task<User?> GetByRefreshTokenAsync(string refreshToken)
         {
@@ -44,7 +44,7 @@ namespace AlertOpsBackend.Services
         }
 
         // ─────────────────────────────
-        // CREATE USER
+        // CREATE USER - Tạo user
         // ─────────────────────────────
         public async Task CreateAsync(User user)
         {
@@ -52,7 +52,7 @@ namespace AlertOpsBackend.Services
         }
 
         // ─────────────────────────────
-        // UPDATE USER
+        // UPDATE USER - Cập nhật thông tin user    
         // ─────────────────────────────
         public async Task UpdateAsync(string id, User user)
         {

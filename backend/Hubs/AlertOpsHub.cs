@@ -4,14 +4,17 @@ using System.Security.Claims;
 
 namespace AlertOpsBackend.Hubs
 {
+    // SignalR Hub - WebSocket realtime server 
+    // Cần authorize để đảm bảo chỉ user đã đăng nhập mới có thể kết nối
     [Authorize]
     public class AlertOpsHub : Hub
     {
         // ─────────────────────────────────────
-        // CONNECT
+        // CONNECT - Xử lý khi user kết nối tới SignalR server
         // ─────────────────────────────────────
         public override async Task OnConnectedAsync()
         {
+            // Lấy thông tin user từ token
             var userId =
                 Context.User?.FindFirst(
                     ClaimTypes.NameIdentifier
@@ -28,10 +31,10 @@ namespace AlertOpsBackend.Hubs
                 )?.Value;
 
             Console.WriteLine(
-                $"🔌 Connected: {email} ({role})"
-            );
+                $"🔌 Connected: {email} ({role})" 
+            ); // Log debug ở backend
 
-            // Join personal group
+            // Tham gia nhóm cá nhân (Personal Group)
             if (!string.IsNullOrEmpty(userId))
             {
                 await Groups.AddToGroupAsync(
@@ -40,7 +43,7 @@ namespace AlertOpsBackend.Hubs
                 );
             }
 
-            // Join role group
+            // Tham gia nhóm theo Vai trò (Role Group)
             if (!string.IsNullOrEmpty(role))
             {
                 await Groups.AddToGroupAsync(
@@ -49,6 +52,7 @@ namespace AlertOpsBackend.Hubs
                 );
             }
 
+            // Gửi lời chào chào mừng lại cho riêng client đó
             await Clients.Caller.SendAsync(
                 "connected",
                 new
@@ -61,7 +65,7 @@ namespace AlertOpsBackend.Hubs
         }
 
         // ─────────────────────────────────────
-        // DISCONNECT
+        // DISCONNECT - Xử lí ngắt kết nối 
         // ─────────────────────────────────────
         public override async Task OnDisconnectedAsync(
             Exception? exception)
@@ -73,7 +77,7 @@ namespace AlertOpsBackend.Hubs
 
             Console.WriteLine(
                 $"❌ Disconnected: {email}"
-            );
+            ); // Ghi log debug ở backend
 
             await base.OnDisconnectedAsync(
                 exception
@@ -81,7 +85,7 @@ namespace AlertOpsBackend.Hubs
         }
 
         // ─────────────────────────────────────
-        // JOIN PROJECT ROOM
+        // JOIN PROJECT ROOM - Tham gia vào room của dự án 
         // ─────────────────────────────────────
         public async Task JoinProject(
             string projectId)
@@ -98,7 +102,7 @@ namespace AlertOpsBackend.Hubs
         }
 
         // ─────────────────────────────────────
-        // LEAVE PROJECT ROOM
+        // LEAVE PROJECT ROOM - Rời khỏi room của dự án 
         // ─────────────────────────────────────
         public async Task LeaveProject(
             string projectId)
@@ -115,7 +119,7 @@ namespace AlertOpsBackend.Hubs
         }
 
         // ─────────────────────────────────────
-        // ADMIN BROADCAST
+        // ADMIN BROADCAST - Gửi tin nhắn đến tất cả mọi người (chỉ Admin)
         // ─────────────────────────────────────
         [Authorize(Roles = "Admin")]
         public async Task BroadcastAdminMessage(

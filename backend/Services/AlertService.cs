@@ -6,6 +6,7 @@ namespace AlertOpsBackend.Services
 {
     public class AlertService
     {
+        // Collection MongoDB để lưu trữ thông tin alerts
         private readonly IMongoCollection<Alert> _alerts;
 
         public AlertService(AlertOpsDatabaseSettings settings)
@@ -15,21 +16,26 @@ namespace AlertOpsBackend.Services
             _alerts = database.GetCollection<Alert>(settings.AlertsCollectionName);
         }
 
+        // Lấy tất cả alerts
         public List<Alert> Get() =>
             _alerts.Find(_ => true).ToList();
-
+        
+        // Lấy alert theo id
         public Alert? Get(string id) =>
             _alerts.Find(a => a.Id == id).FirstOrDefault();
 
+        // Tạo alert mới
         public Alert Create(Alert alert)
         {
             _alerts.InsertOne(alert);
             return alert;
         }
 
+        // Update alert
         public void Update(string id, Alert alertIn) =>
             _alerts.ReplaceOne(a => a.Id == id, alertIn);
 
+        // Xóa alert
         public void Remove(string id) =>
             _alerts.DeleteOne(a => a.Id == id);
 

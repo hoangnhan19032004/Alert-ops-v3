@@ -5,30 +5,38 @@ namespace AlertOpsBackend.Services
 {
     public class ProjectService
     {
+        // Collection để lưu trữ thông tin project
         private readonly IMongoCollection<Project> _projects;
 
+        // Constructor
         public ProjectService(AlertOpsDatabaseSettings settings)
         {
+            // Tạo kết nối đến MongoDB
             var client = new MongoClient(settings.ConnectionString);
             var database = client.GetDatabase(settings.DatabaseName);
             _projects = database.GetCollection<Project>(settings.ProjectsCollectionName);
         }
 
+        // Lấy tất cả thông tin project
         public List<Project> Get() =>
             _projects.Find(_ => true).ToList();
 
+        // Lấy thông tin project theo id
         public Project? Get(string id) =>
             _projects.Find(p => p.Id == id).FirstOrDefault();
 
+        // Tạo thông tin project
         public Project Create(Project project)
         {
             _projects.InsertOne(project);
             return project;
         }
 
+        // Cập nhật thông tin project
         public void Update(string id, Project projectIn) =>
             _projects.ReplaceOne(p => p.Id == id, projectIn);
 
+        // Xóa thông tin project
         public void Remove(string id) =>
             _projects.DeleteOne(p => p.Id == id);
 

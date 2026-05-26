@@ -13,6 +13,7 @@ using System.Text;
 
 namespace AlertOpsBackend.Controllers
 {
+    //Cấu hình chung cho API controller
     [ApiController]
     [Route("api/[controller]")]
     public class AuthController : ControllerBase
@@ -27,7 +28,7 @@ namespace AlertOpsBackend.Controllers
         }
 
         // ─────────────────────────────
-        // REGISTER
+        // REGISTER - Đăng ký
         // ─────────────────────────────
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterRequest dto)
@@ -53,7 +54,7 @@ namespace AlertOpsBackend.Controllers
         }
 
         // ─────────────────────────────
-        // LOGIN
+        // LOGIN - Đăng nhập
         // ─────────────────────────────
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequest dto)
@@ -89,7 +90,7 @@ namespace AlertOpsBackend.Controllers
         }
 
         // ─────────────────────────────
-        // REFRESH TOKEN
+        // REFRESH TOKEN - Làm mới token
         // ─────────────────────────────
         [HttpPost("refresh")]
         public async Task<IActionResult> Refresh([FromBody] RefreshTokenRequest dto)
@@ -166,7 +167,7 @@ namespace AlertOpsBackend.Controllers
         }
 
         // ─────────────────────────────
-        // UPDATE PROFILE
+        // UPDATE PROFILE - Cập nhật thông tin cá nhân
         // ─────────────────────────────
         [HttpPut("profile")]
         [Authorize]
@@ -196,7 +197,7 @@ namespace AlertOpsBackend.Controllers
         }
 
         // ─────────────────────────────
-        // PRIVATE HELPERS
+        // PRIVATE HELPERS - Hàm trợ giúp
         // ─────────────────────────────
         private string GenerateJwt(User user)
         {

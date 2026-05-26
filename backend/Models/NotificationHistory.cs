@@ -3,6 +3,7 @@ using MongoDB.Bson.Serialization.Attributes;
 
 namespace AlertOpsBackend.Models
 {
+    // Class NotificationHistory dùng để map với collection 'notificationhistory' trong MongoDB
     [BsonIgnoreExtraElements]
     public class NotificationHistory
     {

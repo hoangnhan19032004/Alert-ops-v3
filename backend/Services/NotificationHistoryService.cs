@@ -4,12 +4,17 @@ using MongoDB.Driver;
 
 namespace AlertOpsBackend.Services
 {
+    // Đây là service để lưu trữ lịch sử notification
     public class NotificationHistoryService
     {
+        // Collection để lưu trữ lịch sử notification
         private readonly IMongoCollection<NotificationHistory> _notifications;
+        // Interface để gửi email
         private readonly IEmailService _emailService;
+        // Interface để ghi log
         private readonly ILogger<NotificationHistoryService> _logger;
 
+        // Constructor
         public NotificationHistoryService(
             AlertOpsDatabaseSettings settings,
             IEmailService emailService,
@@ -35,7 +40,7 @@ namespace AlertOpsBackend.Services
         }
 
         // ─────────────────────────────
-        // GET BY ALERT ID
+        // GET BY ALERT ID - Lấy danh sách notification theo alertId
         // ─────────────────────────────
         public async Task<List<NotificationHistory>> GetByAlertIdAsync(string alertId)
         {
@@ -46,7 +51,7 @@ namespace AlertOpsBackend.Services
         }
 
         // ─────────────────────────────
-        // GET BY PROJECT ID
+        // GET BY PROJECT ID - Lấy danh sách notification theo projectId
         // ─────────────────────────────
         public async Task<List<NotificationHistory>> GetByProjectIdAsync(string projectId)
         {
@@ -57,7 +62,7 @@ namespace AlertOpsBackend.Services
         }
 
         // ─────────────────────────────
-        // GET BY ID
+        // GET BY ID - Lấy danh sách notification theo id
         // ─────────────────────────────
         public async Task<NotificationHistory?> GetAsync(string id)
         {
@@ -67,7 +72,7 @@ namespace AlertOpsBackend.Services
         }
 
         // ─────────────────────────────
-        // CREATE ONLY
+        // CREATE ONLY - Tạo notification
         // ─────────────────────────────
         public async Task<NotificationHistory> CreateAsync(
             NotificationHistory notification)
@@ -97,7 +102,7 @@ namespace AlertOpsBackend.Services
         }
 
         // ─────────────────────────────
-        // SEND + RECORD NOTIFICATION
+        // SEND + RECORD NOTIFICATION - Gửi email và lưu trữ lịch sử notification
         // ─────────────────────────────
         public async Task<NotificationHistory> SendAndRecordAsync(
             string? alertId,
@@ -179,7 +184,7 @@ namespace AlertOpsBackend.Services
                 );
             }
 
-            // SAVE TO MONGODB
+            // SAVE TO MONGODB - Lưu trữ vào MongoDB
             try
             {
                 await _notifications.InsertOneAsync(notification);
@@ -202,7 +207,7 @@ namespace AlertOpsBackend.Services
         }
 
         // ─────────────────────────────
-        // UPDATE
+        // UPDATE - Cập nhật thông tin notification
         // ─────────────────────────────
         public async Task UpdateAsync(
             string id,
@@ -232,7 +237,7 @@ namespace AlertOpsBackend.Services
         }
 
         // ─────────────────────────────
-        // DELETE
+        // DELETE - Xóa notification
         // ─────────────────────────────
         public async Task RemoveAsync(string id)
         {
@@ -259,7 +264,7 @@ namespace AlertOpsBackend.Services
         }
 
         // ─────────────────────────────
-        // GET RECENT
+        // GET RECENT - Lấy danh sách notification recent
         // ─────────────────────────────
         public async Task<List<NotificationHistory>> GetRecentAsync(
             int limit = 20)
@@ -272,7 +277,7 @@ namespace AlertOpsBackend.Services
         }
 
         // ─────────────────────────────
-        // GET FAILED
+        // GET FAILED - Lấy danh sách notification failed
         // ─────────────────────────────
         public async Task<List<NotificationHistory>> GetFailedAsync()
         {

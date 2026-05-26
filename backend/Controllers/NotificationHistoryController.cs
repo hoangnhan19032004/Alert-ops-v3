@@ -6,9 +6,10 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace AlertOpsBackend.Controllers
 {
+    //Cấu hình chung cho API controller
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize]                     // FIX: yêu cầu JWT cho toàn bộ controller
+    [Authorize]                     
     public class NotificationHistoryController : ControllerBase
     {
         private readonly NotificationHistoryService _notificationService;
@@ -18,7 +19,7 @@ namespace AlertOpsBackend.Controllers
             _notificationService = notificationService;
         }
 
-        // GET BY ALERT ID
+        // GET BY ALERT ID - Lấy danh sách các thông báo theo ID của cảnh báo
         [HttpGet("alert/{alertId}")]
         public async Task<IActionResult> GetByAlertId(string alertId)
         {
@@ -26,7 +27,7 @@ namespace AlertOpsBackend.Controllers
             return Ok(notifications);
         }
 
-        // GET BY PROJECT ID
+        // GET BY PROJECT ID - Lấy danh sách các thông báo theo ID của dự án
         [HttpGet("project/{projectId}")]
         public async Task<IActionResult> GetByProjectId(string projectId)
         {
@@ -34,7 +35,7 @@ namespace AlertOpsBackend.Controllers
             return Ok(notifications);
         }
 
-        // GET BY ID
+        // GET BY ID - Lấy thông báo theo ID
         [HttpGet("{id:length(24)}")]
         public async Task<IActionResult> Get(string id)
         {
@@ -43,7 +44,7 @@ namespace AlertOpsBackend.Controllers
             return Ok(notification);
         }
 
-        // GET RECENT
+        // GET RECENT - Lấy danh sách các thông báo gần đây
         [HttpGet("recent")]
         public async Task<IActionResult> GetRecent([FromQuery] int limit = 20)
         {
@@ -51,7 +52,7 @@ namespace AlertOpsBackend.Controllers
             return Ok(notifications);
         }
 
-        // GET FAILED
+        // GET FAILED - Lấy danh sách các thông báo thất bại
         [HttpGet("failed")]
         public async Task<IActionResult> GetFailed()
         {
@@ -59,7 +60,7 @@ namespace AlertOpsBackend.Controllers
             return Ok(notifications);
         }
 
-        // SEND NOTIFICATION — chỉ Manager trở lên
+        // SEND NOTIFICATION - Gửi thông báo (chỉ Manager trở lên)
         [HttpPost("send")]
         [Authorize(Policy = "ManagerUp")]
         public async Task<IActionResult> SendNotification([FromBody] SendNotificationRequest req)
@@ -92,7 +93,7 @@ namespace AlertOpsBackend.Controllers
             }
         }
 
-        // DELETE — chỉ Admin
+        // DELETE - Xóa thông báo (chỉ Admin)
         [HttpDelete("{id:length(24)}")]
         [Authorize(Policy = "AdminOnly")]
         public async Task<IActionResult> Delete(string id)
@@ -105,7 +106,7 @@ namespace AlertOpsBackend.Controllers
         }
     }
 
-    // DTO request
+    // DTO request - để gửi thông báo
     public class SendNotificationRequest
     {
         public string?       AlertId    { get; set; }
