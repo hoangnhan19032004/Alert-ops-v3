@@ -30,8 +30,8 @@ export const useNotifications = () => {
   }))
 
   const lastKnownCount = useState('last-known-count', () => -1)
-  const newAlertCount  = useState('new-alert-count', () => 0)
-  const newAlerts      = useState<NotificationAlert[]>('new-alerts', () => [])
+  const newAlertCount = useState('new-alert-count', () => 0)
+  const newAlerts = useState<NotificationAlert[]>('new-alerts', () => [])
 
   let pollTimer: ReturnType<typeof setInterval> | null = null
 

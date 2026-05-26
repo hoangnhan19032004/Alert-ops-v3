@@ -102,6 +102,7 @@ export const translations = {
     quickActions: 'Thao tác nhanh',
     viewAlerts: 'Xem cảnh báo',
     escalationRules: 'Quy tắc leo thang',
+    // profile page ────────────────────────────────────────────────────────────────
     emailCannotChange: 'Email không thể thay đổi sau khi tạo tài khoản',
     personalInfo: 'Thông tin cá nhân',
     fullName: 'Họ và tên',
@@ -397,6 +398,8 @@ export const translations = {
     quickActions: 'Quick Actions',
     viewAlerts: 'View Alerts',
     escalationRules: 'Escalation Rules',
+
+    // profile page ────────────────────────────────────────────────────────────────
     emailCannotChange: 'Email cannot be changed after account creation',
     personalInfo: 'Personal information',
     fullName: 'Full Name',

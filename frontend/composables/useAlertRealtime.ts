@@ -1,5 +1,6 @@
 import * as signalR from '@microsoft/signalr'
 
+// useAlertsRealtime.ts - This composable is used to receive real-time alerts from the backend
 export const useAlertsRealtime = () => {
   const config = useRuntimeConfig()
 
@@ -17,19 +18,19 @@ export const useAlertsRealtime = () => {
       .withAutomaticReconnect()
       .build()
 
-    // ALERT CREATED
+    // ALERT CREATED - Tạo cảnh báo mới
     connection.on('alert:new', (alert) => {
       console.log('Realtime new alert', alert)
       onNewAlert(alert)
     })
 
-    // ALERT UPDATED
+    // ALERT UPDATED - Cập nhật cảnh báo
     connection.on('alert:updated', (alert) => {
       console.log('Realtime updated alert', alert)
       onUpdatedAlert(alert)
     })
 
-    // ALERT DELETED
+    // ALERT DELETED - Xóa cảnh báo
     connection.on('alert:deleted', (id) => {
       console.log('Realtime deleted alert', id)
       onDeletedAlert(id)

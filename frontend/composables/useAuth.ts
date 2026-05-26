@@ -11,23 +11,23 @@
 import { ref, computed } from 'vue'
 
 export interface AuthUser {
-  id:    string
-  name:  string
+  id: string
+  name: string
   email: string
-  role:  'Admin' | 'Manager' | 'Operator' | 'Viewer'
-  phone?: string  // ← thêm
-  bio?:   string  // ← thêm
+  role: 'Admin' | 'Manager' | 'Operator' | 'Viewer'
+  phone?: string
+  bio?: string
 }
 
 // ── Singleton state (in-memory) ──────────────────────────────
-const accessToken  = ref<string | null>(null)
-const currentUser  = ref<AuthUser | null>(null)
-const isLoading    = ref(false)
-const authError    = ref('')
+const accessToken = ref<string | null>(null)
+const currentUser = ref<AuthUser | null>(null)
+const isLoading = ref(false)
+const authError = ref('')
 
 // ── Storage keys ─────────────────────────────────────────────
 const REFRESH_KEY = 'alertops_refresh'
-const USER_KEY    = 'alertops_user'
+const USER_KEY = 'alertops_user'
 
 const isClient = typeof window !== 'undefined'
 
@@ -85,6 +85,7 @@ function scheduleRefresh(token: string) {
   refreshTimer = setTimeout(() => { void silentRefresh() }, delay)
 }
 
+// Silent refresh - Refresh token silently - Refresh token in the background
 async function silentRefresh(): Promise<boolean> {
   if (!isClient) return false
   const rt = localStorage.getItem(REFRESH_KEY)
@@ -110,7 +111,7 @@ async function silentRefresh(): Promise<boolean> {
 function clearAuthState() {
   accessToken.value = null
   currentUser.value = null
-  authError.value   = ''
+  authError.value = ''
   if (refreshTimer) { clearTimeout(refreshTimer); refreshTimer = null }
   if (isClient) {
     localStorage.removeItem(REFRESH_KEY)
@@ -133,6 +134,7 @@ export const useAuth = () => {
     }
   }
 
+  // Login - Đăng nhập
   const login = async (email: string, password: string): Promise<boolean> => {
     isLoading.value = true
     authError.value = ''
@@ -161,6 +163,7 @@ export const useAuth = () => {
     }
   }
 
+  // Logout - Đăng xuất
   const logout = async (): Promise<void> => {
     const rt = isClient ? localStorage.getItem(REFRESH_KEY) : null
     if (rt && accessToken.value) {

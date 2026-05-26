@@ -7,7 +7,7 @@ export const useProjects = () => {
 
   // ===== STATE =====
   const projects = useState<Project[]>('projects', () => [])
-  const loading  = useState<boolean>('projects-loading', () => false)
+  const loading = useState<boolean>('projects-loading', () => false)
 
   // ===== HELPERS =====
   const createMemberFromEmail = (email: string, role: ProjectMember['role']): ProjectMember => {
@@ -20,8 +20,8 @@ export const useProjects = () => {
     const email = member?.email ?? ''
     const fallbackName = email ? email.split('@')[0] : 'Unknown User'
     return {
-      id:     member?.id ?? member?._id ?? crypto.randomUUID(),
-      name:   member?.name ?? fallbackName,
+      id: member?.id ?? member?._id ?? crypto.randomUUID(),
+      name: member?.name ?? fallbackName,
       email,
       role,
       avatar: member?.avatar ?? fallbackName.charAt(0).toUpperCase()
@@ -29,16 +29,16 @@ export const useProjects = () => {
   }
 
   const mapProject = (item: any): Project => ({
-    id:         item?.id ?? item?.Id ?? item?._id ?? '',
-    name:       item?.name ?? item?.Name ?? '',
-    sev:        item?.sev ?? item?.Sev ?? 'Warning',
-    desc:       item?.desc ?? item?.Desc ?? '',
-    avatars:    Array.isArray(item?.avatars) ? item.avatars : Array.isArray(item?.Avatars) ? item.Avatars : [],
-    owner:      (item?.owner ?? item?.Owner) ? normalizeMember(item.owner ?? item.Owner, 'Owner') : null,
-    managers:   Array.isArray(item?.managers) ? item.managers.map((m: any) => normalizeMember(m, 'Manager')) : [],
-    members:    Array.isArray(item?.members) ? item.members.map((m: any) => normalizeMember(m, 'Member')) : [],
+    id: item?.id ?? item?.Id ?? item?._id ?? '',
+    name: item?.name ?? item?.Name ?? '',
+    sev: item?.sev ?? item?.Sev ?? 'Warning',
+    desc: item?.desc ?? item?.Desc ?? '',
+    avatars: Array.isArray(item?.avatars) ? item.avatars : Array.isArray(item?.Avatars) ? item.Avatars : [],
+    owner: (item?.owner ?? item?.Owner) ? normalizeMember(item.owner ?? item.Owner, 'Owner') : null,
+    managers: Array.isArray(item?.managers) ? item.managers.map((m: any) => normalizeMember(m, 'Manager')) : [],
+    members: Array.isArray(item?.members) ? item.members.map((m: any) => normalizeMember(m, 'Member')) : [],
     alertCount: item?.alertCount ?? 0,
-    createdAt:  item?.createdAt ?? new Date().toISOString()
+    createdAt: item?.createdAt ?? new Date().toISOString()
   })
 
   // ===== LOAD =====
@@ -128,7 +128,7 @@ export const useProjects = () => {
     projects.value.flatMap(p => p.owner ? [p.owner] : [])
   )
 
-  const getProjectById   = (id: string): Project | null => projects.value.find(p => p.id === id) ?? null
+  const getProjectById = (id: string): Project | null => projects.value.find(p => p.id === id) ?? null
   const getProjectsBySev = (sev: ProjectSeverity): Project[] => projects.value.filter(p => p.sev === sev)
 
   // ===== INIT =====
@@ -137,9 +137,9 @@ export const useProjects = () => {
   }
 
   return {
-    projects:           readonly(projects),
-    projectsLoading:    readonly(loading),
-    loading:            readonly(loading),
+    projects: readonly(projects),
+    projectsLoading: readonly(loading),
+    loading: readonly(loading),
     loadProjects,
     createProject,
     updateProject,

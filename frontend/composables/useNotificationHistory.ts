@@ -7,7 +7,7 @@ export const useNotificationHistory = () => {
   const loading = ref(false)
   const sending = ref(false)
 
-  // Load notifications for an alert
+  // Load notifications for an alert - Lấy danh sách thông báo theo ID của cảnh báo
   const loadByAlertId = async (alertId: string) => {
     loading.value = true
     try {
@@ -23,7 +23,7 @@ export const useNotificationHistory = () => {
     }
   }
 
-  // Send notification and record it
+  // Send notification and record it - Gửi thông báo và ghi lại nó
   const sendNotification = async (payload: SendNotificationPayload) => {
     sending.value = true
     try {
@@ -47,7 +47,7 @@ export const useNotificationHistory = () => {
     }
   }
 
-  // Get recent notifications
+  // Get recent notifications - Lấy thông báo gần đây
   const loadRecent = async (limit = 20) => {
     loading.value = true
     try {
@@ -63,7 +63,7 @@ export const useNotificationHistory = () => {
     }
   }
 
-  // Get failed notifications
+  // Get failed notifications - Lấy danh sách thông báo thất bại
   const loadFailed = async () => {
     loading.value = true
     try {
@@ -79,7 +79,7 @@ export const useNotificationHistory = () => {
     }
   }
 
-  const sentCount   = computed(() => notificationHistory.value.filter(n => n.status === 'sent').length)
+  const sentCount = computed(() => notificationHistory.value.filter(n => n.status === 'sent').length)
   const failedCount = computed(() => notificationHistory.value.filter(n => n.status === 'failed').length)
 
   return {

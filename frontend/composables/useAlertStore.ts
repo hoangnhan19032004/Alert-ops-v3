@@ -6,7 +6,7 @@ export const useEscRules = () => {
   const { apiCall } = useApi()
   const { error: showError } = useToast()
 
-  const escRules        = useState<EscalationRule[]>('escRules', () => [])
+  const escRules = useState<EscalationRule[]>('escRules', () => [])
   const escRulesLoading = useState('escRules-loading', () => false)
 
   // Load rules from API

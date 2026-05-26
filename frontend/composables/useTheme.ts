@@ -7,7 +7,7 @@ export const useTheme = () => {
   const setTheme = (newTheme: 'dark' | 'light' | 'auto') => {
     theme.value = newTheme
     localStorage.setItem('theme', newTheme)
-    
+
     if (import.meta.client) {
       const html = document.documentElement
       let actualTheme: 'dark' | 'light'
@@ -16,7 +16,7 @@ export const useTheme = () => {
       } else {
         actualTheme = newTheme
       }
-      
+
       if (actualTheme === 'dark') {
         html.classList.add('dark')
         html.classList.remove('light')
@@ -44,7 +44,7 @@ export const useTheme = () => {
 
   onMounted(() => {
     detectSystemPreference()
-    
+
     // Load từ localStorage
     const saved = localStorage.getItem('theme')
     if (saved === 'light' || saved === 'dark' || saved === 'auto') {

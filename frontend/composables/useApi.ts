@@ -7,7 +7,7 @@ import type { Alert, ApiResponse } from '~/types'
 import { useAuth } from '~/composables/useAuth'
 
 export const useApi = () => {
-  const config  = useRuntimeConfig()
+  const config = useRuntimeConfig()
   const baseURL = (config.public.apiBase as string) || 'http://localhost:5000'
   const { getAccessToken, logout } = useAuth()
 
@@ -15,8 +15,8 @@ export const useApi = () => {
   const apiCall = async <T>(
     endpoint: string,
     options: {
-      method?:  'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH'
-      body?:    any
+      method?: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH'
+      body?: any
       headers?: Record<string, string>
     } = {},
     _retry = false          // flag để tránh vòng lặp vô hạn
@@ -60,7 +60,7 @@ export const useApi = () => {
 
       console.error('API Error:', error)
       return {
-        data:    null as T,
+        data: null as T,
         success: false,
         message: error?.data?.message || error?.message || 'API call failed'
       }
@@ -68,7 +68,7 @@ export const useApi = () => {
   }
 
   // ── Shortcuts ────────────────────────────────────────────────
-  const getAlerts  = () => apiCall<Alert[]>('/api/alerts')
+  const getAlerts = () => apiCall<Alert[]>('/api/alerts')
   const createAlert = (alert: Omit<Alert, 'id'>) =>
     apiCall<Alert>('/api/alerts', { method: 'POST', body: alert })
 

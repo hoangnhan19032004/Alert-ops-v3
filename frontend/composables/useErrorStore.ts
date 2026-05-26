@@ -3,14 +3,14 @@ import type { Alert } from '~/types'
 
 // ─── Helper: normalize một item từ API thành Alert ───
 const mapAlert = (item: any): Alert => ({
-  id:        item.id ?? item._id ?? item.Id ?? '',
+  id: item.id ?? item._id ?? item.Id ?? '',
   projectId: item.projectId ?? item.ProjectId ?? undefined,
-  message:   item.message ?? item.Message ?? '',
-  service:   item.service ?? item.Service ?? '',
-  severity:  item.severity ?? item.Severity ?? 'Error',
-  status:    item.status ?? item.Status ?? 'Open',
-  env:       item.env ?? item.Env ?? 'Production',
-  time:      item.time ?? item.Time ?? '',
+  message: item.message ?? item.Message ?? '',
+  service: item.service ?? item.Service ?? '',
+  severity: item.severity ?? item.Severity ?? 'Error',
+  status: item.status ?? item.Status ?? 'Open',
+  env: item.env ?? item.Env ?? 'Production',
+  time: item.time ?? item.Time ?? '',
   createdAt: item.createdAt ?? item.CreatedAt ?? undefined,
 })
 
@@ -18,8 +18,8 @@ export const useErrorStore = () => {
   const { apiCall, healthCheck } = useApi()
   const { success, error: showError } = useToast()
 
-  const alerts      = useState<Alert[]>('alerts',         () => [])
-  const loading     = useState<boolean>('alerts-loading', () => false)
+  const alerts = useState<Alert[]>('alerts', () => [])
+  const loading = useState<boolean>('alerts-loading', () => false)
   const apiConnected = useState<boolean>('api-connected', () => false)
 
   // ===== LOAD =====
@@ -28,7 +28,7 @@ export const useErrorStore = () => {
     try {
       const res = await apiCall<any[]>('/api/alerts')
       if (res?.success && Array.isArray(res.data)) {
-        alerts.value      = res.data.map(mapAlert)
+        alerts.value = res.data.map(mapAlert)
         apiConnected.value = true
       } else {
         apiConnected.value = false
@@ -72,12 +72,12 @@ export const useErrorStore = () => {
 
     const current = alerts.value[index]!
     const fullBody = {
-      message:   current.message,
-      service:   current.service,
-      severity:  current.severity,
-      status:    current.status,
-      env:       current.env,
-      time:      current.time ?? '',
+      message: current.message,
+      service: current.service,
+      severity: current.severity,
+      status: current.status,
+      env: current.env,
+      time: current.time ?? '',
       createdAt: old.createdAt,
       projectId: current.projectId ?? null,
     }
@@ -133,8 +133,8 @@ export const useErrorStore = () => {
     updateAlert,
     deleteAlert,
     checkConnection,
-    alertCount:     computed(() => alerts.value.length),
+    alertCount: computed(() => alerts.value.length),
     criticalAlerts: computed(() => alerts.value.filter(a => a.severity === 'Critical')),
-    recentAlerts:   computed(() => alerts.value.slice(0, 10)),
+    recentAlerts: computed(() => alerts.value.slice(0, 10)),
   }
 }
