@@ -19,7 +19,8 @@
       </div>
 
       <!-- Body: sidebar + content -->
-      <div class="modal-body">
+      <!-- ✅ :key="language" — force re-render toàn bộ body khi đổi ngôn ngữ -->
+      <div class="modal-body" :key="language">
 
         <!-- Sidebar nav -->
         <nav class="settings-nav">
@@ -31,7 +32,7 @@
             @click="activeTab = tab.id"
           >
             <Icon :name="tab.icon" class="nav-icon" />
-            <span>{{ tab.label }}</span>
+            <span>{{ t(tab.id as any) }}</span>
             <span v-if="tab.badge" class="nav-badge">{{ tab.badge }}</span>
           </button>
 
@@ -41,7 +42,7 @@
             <div class="user-avatar">{{ userInitials }}</div>
             <div class="user-info">
               <span class="user-name">{{ currentUser?.name || '—' }}</span>
-              <span class="user-role">{{ currentUser?.role || '—' }}</span>
+              <span class="user-role">{{ currentUser?.role ? t(currentUser.role.toLowerCase() as any) : '—' }}</span>
             </div>
           </div>
         </nav>
@@ -51,7 +52,7 @@
 
           <!-- ── TAB: Appearance ── -->
           <div v-if="activeTab === 'appearance'" class="tab-panel">
-            <div class="panel-title">Giao diện</div>
+            <div class="panel-title">{{ t('appearance') }}</div>
 
             <!-- Theme -->
             <div class="setting-card">
@@ -70,17 +71,17 @@
                   @click="preferences.theme = opt.value"
                 >
                   <Icon :name="opt.icon" class="theme-icon" />
-                  <span>{{ opt.label }}</span>
+                  <span>{{ t(opt.label as any) }}</span>
                 </button>
               </div>
             </div>
 
-            <!-- Sound notifications (new) -->
+            <!-- Sound notifications -->
             <div class="setting-card">
               <label class="toggle-row">
                 <div>
-                  <span class="label-text">Âm thanh thông báo</span>
-                  <span class="label-desc">Phát âm khi có alert mới hoặc critical</span>
+                  <span class="label-text">{{ t('soundNotifications') }}</span>
+                  <span class="label-desc">{{ t('soundNotificationsDesc') }}</span>
                 </div>
                 <div class="toggle-wrap">
                   <input v-model="preferences.soundEnabled" type="checkbox" class="toggle-input" id="sound" />
@@ -89,15 +90,15 @@
               </label>
             </div>
 
-            <!-- Sound volume (new, shown if sound on) -->
+            <!-- Sound volume -->
             <div v-if="preferences.soundEnabled" class="setting-card">
               <div class="card-label-row">
                 <div>
-                  <span class="label-text">Âm lượng</span>
+                  <span class="label-text">{{ t('volume') }}</span>
                   <span class="label-desc">{{ preferences.soundVolume }}%</span>
                 </div>
                 <button class="test-sound-btn" @click="testSound">
-                  <Icon name="lucide:volume-2" /> Test
+                  <Icon name="lucide:volume-2" /> {{ t('test') }}
                 </button>
               </div>
               <input
@@ -108,12 +109,12 @@
               <div class="slider-labels"><span>10%</span><span>100%</span></div>
             </div>
 
-            <!-- Color accent (new) -->
+            <!-- Color accent -->
             <div class="setting-card">
               <div class="card-label-row">
                 <div>
-                  <span class="label-text">Màu nhấn</span>
-                  <span class="label-desc">Màu accent chính của giao diện</span>
+                  <span class="label-text">{{ t('accentColor') }}</span>
+                  <span class="label-desc">{{ t('accentColorDesc') }}</span>
                 </div>
               </div>
               <div class="accent-grid">
@@ -134,7 +135,7 @@
 
           <!-- ── TAB: Language & Region ── -->
           <div v-if="activeTab === 'language'" class="tab-panel">
-            <div class="panel-title">Ngôn ngữ & Khu vực</div>
+            <div class="panel-title">{{ t('languageRegion') }}</div>
 
             <!-- Language -->
             <div class="setting-card">
@@ -158,12 +159,12 @@
               </div>
             </div>
 
-            <!-- Timezone (new) -->
+            <!-- Timezone -->
             <div class="setting-card">
               <div class="card-label-row">
                 <div>
-                  <span class="label-text">Múi giờ</span>
-                  <span class="label-desc">Ảnh hưởng đến thời gian hiển thị alert</span>
+                  <span class="label-text">{{ t('timezone') }}</span>
+                  <span class="label-desc">{{ t('timezoneDesc') }}</span>
                 </div>
               </div>
               <select v-model="preferences.timezone" class="select-input">
@@ -173,12 +174,12 @@
               </select>
             </div>
 
-            <!-- Date format (new) -->
+            <!-- Date format -->
             <div class="setting-card">
               <div class="card-label-row">
                 <div>
-                  <span class="label-text">Định dạng ngày</span>
-                  <span class="label-desc">Preview: {{ datePreview }}</span>
+                  <span class="label-text">{{ t('dateFormat') }}</span>
+                  <span class="label-desc">{{ t('preview') }}: {{ datePreview }}</span>
                 </div>
               </div>
               <div class="date-format-group">
@@ -195,7 +196,7 @@
 
           <!-- ── TAB: Notifications ── -->
           <div v-if="activeTab === 'notifications'" class="tab-panel">
-            <div class="panel-title">Thông báo</div>
+            <div class="panel-title">{{ t('notifications') }}</div>
 
             <div class="setting-card">
               <label class="toggle-row">
@@ -223,12 +224,12 @@
               </label>
             </div>
 
-            <!-- Notify only critical (new) -->
+            <!-- Notify only critical -->
             <div class="setting-card">
               <label class="toggle-row">
                 <div>
-                  <span class="label-text">Chỉ thông báo Critical</span>
-                  <span class="label-desc">Bỏ qua alert Warning và Info</span>
+                  <span class="label-text">{{ t('criticalOnly') }}</span>
+                  <span class="label-desc">{{ t('criticalOnlyDesc') }}</span>
                 </div>
                 <div class="toggle-wrap">
                   <input v-model="preferences.criticalOnly" type="checkbox" class="toggle-input" id="critical-only" />
@@ -237,12 +238,12 @@
               </label>
             </div>
 
-            <!-- Browser push (new) -->
+            <!-- Browser push -->
             <div class="setting-card">
               <div class="toggle-row">
                 <div>
-                  <span class="label-text">Thông báo trình duyệt</span>
-                  <span class="label-desc">Push notification khi tab không active</span>
+                  <span class="label-text">{{ t('browserNotifications') }}</span>
+                  <span class="label-desc">{{ t('browserNotificationsDesc') }}</span>
                 </div>
                 <button
                   class="permission-btn"
@@ -255,12 +256,12 @@
               </div>
             </div>
 
-            <!-- Quiet hours (new) -->
+            <!-- Quiet hours -->
             <div class="setting-card">
               <label class="toggle-row">
                 <div>
-                  <span class="label-text">Giờ im lặng</span>
-                  <span class="label-desc">Tắt thông báo trong khung giờ này</span>
+                  <span class="label-text">{{ t('quietHours') }}</span>
+                  <span class="label-desc">{{ t('quietHoursDesc') }}</span>
                 </div>
                 <div class="toggle-wrap">
                   <input v-model="preferences.quietHours" type="checkbox" class="toggle-input" id="quiet" />
@@ -269,12 +270,12 @@
               </label>
               <div v-if="preferences.quietHours" class="time-range">
                 <div class="time-field">
-                  <label class="time-label">Từ</label>
+                  <label class="time-label">{{ t('from') }}</label>
                   <input v-model="preferences.quietFrom" type="time" class="time-input" />
                 </div>
                 <Icon name="lucide:arrow-right" class="time-arrow" />
                 <div class="time-field">
-                  <label class="time-label">Đến</label>
+                  <label class="time-label">{{ t('to') }}</label>
                   <input v-model="preferences.quietTo" type="time" class="time-input" />
                 </div>
               </div>
@@ -283,7 +284,7 @@
 
           <!-- ── TAB: Display ── -->
           <div v-if="activeTab === 'display'" class="tab-panel">
-            <div class="panel-title">Hiển thị</div>
+            <div class="panel-title">{{ t('display') }}</div>
 
             <!-- Alerts per page -->
             <div class="setting-card">
@@ -320,17 +321,17 @@
                 </div>
                 <div class="num-wrap">
                   <input v-model.number="preferences.refreshInterval" type="number" min="10" max="300" step="10" class="num-input" />
-                  <span class="num-unit">s</span>
+                  <span class="num-unit">{{ t('seconds') }}</span>
                 </div>
               </div>
             </div>
 
-            <!-- Default severity filter (new) -->
+            <!-- Default severity filter -->
             <div class="setting-card">
               <div class="card-label-row">
                 <div>
-                  <span class="label-text">Bộ lọc mặc định</span>
-                  <span class="label-desc">Severity hiển thị mặc định khi vào trang Alerts</span>
+                  <span class="label-text">{{ t('defaultFilter') }}</span>
+                  <span class="label-desc">{{ t('defaultFilterDesc') }}</span>
                 </div>
               </div>
               <div class="severity-filter-group">
@@ -340,16 +341,16 @@
                   class="sev-btn"
                   :class="[sev.cls, { active: preferences.defaultSeverityFilter === sev.value }]"
                   @click="preferences.defaultSeverityFilter = sev.value"
-                >{{ sev.label }}</button>
+                >{{ t(sev.label as any) }}</button>
               </div>
             </div>
 
-            <!-- Show resolved (new) -->
+            <!-- Show resolved -->
             <div class="setting-card">
               <label class="toggle-row">
                 <div>
-                  <span class="label-text">Hiện alert đã giải quyết</span>
-                  <span class="label-desc">Mặc định ẩn các alert Resolved</span>
+                  <span class="label-text">{{ t('showResolved') }}</span>
+                  <span class="label-desc">{{ t('showResolvedDesc') }}</span>
                 </div>
                 <div class="toggle-wrap">
                   <input v-model="preferences.showResolved" type="checkbox" class="toggle-input" id="show-resolved" />
@@ -361,19 +362,19 @@
 
           <!-- ── TAB: Shortcuts ── -->
           <div v-if="activeTab === 'shortcuts'" class="tab-panel">
-            <div class="panel-title">Phím tắt</div>
-            <div class="shortcut-desc">Các phím tắt bàn phím hoạt động toàn app</div>
+            <div class="panel-title">{{ t('shortcuts') }}</div>
+            <div class="shortcut-desc">{{ t('shortcutsDesc') }}</div>
 
             <div class="shortcut-list">
               <div class="shortcut-row" v-for="s in shortcuts" :key="s.label">
-                <span class="shortcut-label">{{ s.label }}</span>
+                <span class="shortcut-label">{{ t(s.label as any) }}</span>
                 <div class="shortcut-keys">
                   <kbd v-for="k in s.keys" :key="k" class="kbd">{{ k }}</kbd>
                 </div>
               </div>
             </div>
 
-            <div class="panel-title" style="margin-top: 20px;">Phiên bản</div>
+            <div class="panel-title" style="margin-top: 20px;">{{ t('version') }}</div>
             <div class="version-card">
               <div class="version-row">
                 <span class="version-label">App</span>
@@ -381,10 +382,10 @@
               </div>
               <div class="version-row">
                 <span class="version-label">API</span>
-                <span class="version-value status-ok">● Connected</span>
+                <span class="version-value status-ok">● {{ t('connectedStatus') }}</span>
               </div>
               <div class="version-row">
-                <span class="version-label">Build</span>
+                <span class="version-label">{{ t('build') }}</span>
                 <span class="version-value">{{ buildDate }}</span>
               </div>
             </div>
@@ -392,36 +393,36 @@
 
           <!-- ── TAB: Account ── -->
           <div v-if="activeTab === 'account'" class="tab-panel">
-            <div class="panel-title">Tài khoản</div>
+            <div class="panel-title">{{ t('account') }}</div>
 
             <div class="setting-card account-info-card">
               <div class="account-avatar">{{ userInitials }}</div>
               <div class="account-meta">
                 <span class="account-name">{{ currentUser?.name || '—' }}</span>
                 <span class="account-email">{{ currentUser?.email || '—' }}</span>
-                <span class="role-badge" :class="`role-${currentUser?.role?.toLowerCase()}`">{{ currentUser?.role }}</span>
+                <span class="role-badge" :class="`role-${currentUser?.role?.toLowerCase()}`">{{ currentUser?.role ? t(currentUser.role.toLowerCase() as any) : '' }}</span>
               </div>
             </div>
 
             <!-- Change password section -->
             <div class="setting-card">
-              <div class="panel-title" style="font-size:13px; margin-bottom:12px;">Đổi mật khẩu</div>
+              <div class="panel-title" style="font-size:13px; margin-bottom:12px;">{{ t('changePassword') }}</div>
               <div class="field-group">
                 <div class="field-item">
-                  <label class="field-label">Mật khẩu hiện tại</label>
+                  <label class="field-label">{{ t('currentPassword') }}</label>
                   <input v-model="pwForm.current" type="password" class="text-input" placeholder="••••••••" />
                 </div>
                 <div class="field-item">
-                  <label class="field-label">Mật khẩu mới</label>
+                  <label class="field-label">{{ t('newPassword') }}</label>
                   <input v-model="pwForm.next" type="password" class="text-input" placeholder="••••••••" />
                 </div>
                 <div class="field-item">
-                  <label class="field-label">Xác nhận mật khẩu mới</label>
+                  <label class="field-label">{{ t('confirmPassword') }}</label>
                   <input v-model="pwForm.confirm" type="password" class="text-input" placeholder="••••••••" />
                 </div>
                 <div v-if="pwError" class="pw-error">{{ pwError }}</div>
                 <button class="save-pw-btn" @click="changePassword" :disabled="!canSavePassword">
-                  <Icon name="lucide:shield-check" /> Cập nhật mật khẩu
+                  <Icon name="lucide:shield-check" /> {{ t('updatePassword') }}
                 </button>
               </div>
             </div>
@@ -429,9 +430,9 @@
             <!-- Danger zone -->
             <div class="setting-card danger-card">
               <div class="danger-title">
-                <Icon name="lucide:shield-alert" /> Vùng nguy hiểm
+                <Icon name="lucide:shield-alert" /> {{ t('dangerZone') }}
               </div>
-              <div class="danger-desc">Khôi phục toàn bộ cài đặt về mặc định. Không ảnh hưởng dữ liệu alert.</div>
+              <div class="danger-desc">{{ t('dangerZoneDesc') }}</div>
               <button class="danger-btn" @click="handleResetSettings">
                 <Icon name="lucide:rotate-ccw" /> {{ t('resetToDefaults') }}
               </button>
@@ -443,7 +444,7 @@
 
       <!-- Footer -->
       <div class="modal-footer">
-        <span class="unsaved-hint" v-if="hasChanges">● Có thay đổi chưa lưu</span>
+        <span class="unsaved-hint" v-if="hasChanges">● {{ t('unsavedChanges') }}</span>
         <button class="btn-cancel" @click="closeModal">{{ t('cancel') }}</button>
         <button
           class="btn-save"
@@ -523,7 +524,10 @@ const {
 
 const { success, error, info } = useToast()
 const { setTheme } = useTheme()
-const { t, setLanguage } = useI18n()
+
+// ✅ FIX: Lấy thêm `language` (computed ref) từ useI18n để dùng làm :key trên modal-body
+const { t, setLanguage, language } = useI18n()
+
 const { currentUser } = useAuth()
 
 const STORAGE_KEY = 'alertops-settings-v3'
@@ -645,9 +649,9 @@ const pushIcon = computed(() => ({
 }[pushPermission.value]))
 
 const pushLabel = computed(() => ({
-  granted: 'Đã bật',
-  denied: 'Bị chặn',
-  default: 'Bật'
+  granted: t('pushGranted'),
+  denied: t('pushDenied'),
+  default: t('pushDefault')
 }[pushPermission.value]))
 
 const datePreview = computed(() => {
@@ -674,6 +678,8 @@ watch(
   }
 )
 
+// ✅ FIX: Watcher đổi ngôn ngữ — gọi setLanguage() để cập nhật singleton _language.
+// Vue sẽ tự re-render modal-body vì :key="language" thay đổi.
 watch(
   () => preferences.value.language,
   (v) => {
@@ -723,7 +729,7 @@ const saveSettings = async () => {
 
     closeModal()
   } catch (e: any) {
-    error(e.message || 'Không thể lưu cài đặt')
+    error(e.message || t('settingsSaveError'))
   } finally {
     saving.value = false
   }
@@ -734,14 +740,14 @@ const validateSettings = () => {
     preferences.value.refreshInterval < 10 ||
     preferences.value.refreshInterval > 300
   ) {
-    throw new Error('Refresh interval không hợp lệ')
+    throw new Error(t('invalidRefreshInterval'))
   }
 
   if (
     preferences.value.alertsPerPage < 5 ||
     preferences.value.alertsPerPage > 100
   ) {
-    throw new Error('Alerts per page không hợp lệ')
+    throw new Error(t('invalidAlertsPerPage'))
   }
 }
 
@@ -752,6 +758,9 @@ const handleResetSettings = () => {
     ...defaultPreferences
   }
 
+  // ✅ Reset lại ngôn ngữ trong singleton ngay lập tức
+  setLanguage(defaultPreferences.language)
+
   resetPreferences()
 
   applyAccentColor(defaultPreferences.accentColor)
@@ -759,8 +768,11 @@ const handleResetSettings = () => {
   success(t('settingsReset'))
 }
 
+// ✅ FIX: selectLanguage cập nhật cả preferences lẫn singleton _language ngay lập tức
+// để :key="language" thay đổi và Vue re-render toàn bộ modal-body ngay.
 const selectLanguage = (lang: Language) => {
   preferences.value.language = lang
+  setLanguage(lang)
 }
 
 const applyAccentColor = (color: string) => {
@@ -768,7 +780,7 @@ const applyAccentColor = (color: string) => {
 
   const root = document.documentElement
 
-const colors = {    
+  const colors = {
     blue: '#2563eb',
     violet: '#7c3aed',
     teal: '#0d9488',
@@ -810,7 +822,7 @@ const testSound = async () => {
       ctx.close()
     }, 250)
   } catch {
-    error('Không thể phát âm thanh')
+    error(t('soundPlayError'))
   }
 }
 
@@ -818,7 +830,7 @@ const requestPushPermission = async () => {
   if (typeof window === 'undefined') return
 
   if (!('Notification' in window)) {
-    error('Browser không hỗ trợ notification')
+    error(t('pushNotSupported'))
     return
   }
 
@@ -828,10 +840,10 @@ const requestPushPermission = async () => {
 
   if (permission === 'granted') {
     new Notification('AlertOps', {
-      body: 'Thông báo đã được bật thành công!',
+      body: t('pushEnabledMsg'),
     })
 
-    success('Đã bật push notification')
+    success(t('pushEnabledSuccess'))
   }
 }
 
@@ -840,11 +852,11 @@ const changePassword = async () => {
     pwError.value = ''
 
     if (pwForm.value.next !== pwForm.value.confirm) {
-      throw new Error('Mật khẩu xác nhận không khớp')
+      throw new Error(t('passwordMismatch'))
     }
 
     if (pwForm.value.next.length < 6) {
-      throw new Error('Mật khẩu phải ít nhất 6 ký tự')
+      throw new Error(t('passwordTooShort'))
     }
 
     /*
@@ -858,7 +870,7 @@ const changePassword = async () => {
       })
     */
 
-    success('Đổi mật khẩu thành công')
+    success(t('passwordChangeSuccess'))
 
     pwForm.value = {
       current: '',
@@ -881,6 +893,11 @@ const loadLocalDraft = () => {
     preferences.value = {
       ...preferences.value,
       ...parsed
+    }
+
+    // ✅ Đồng bộ singleton language ngay khi load draft
+    if (parsed.language) {
+      setLanguage(parsed.language)
     }
   } catch {}
 }
@@ -918,32 +935,32 @@ const unregisterShortcuts = () => {
 const tabs: TabItem[] = [
   {
     id: 'appearance',
-    label: 'Giao diện',
+    label: 'appearance',
     icon: 'lucide:palette'
   },
   {
     id: 'language',
-    label: 'Ngôn ngữ',
+    label: 'language',
     icon: 'lucide:languages'
   },
   {
     id: 'notifications',
-    label: 'Thông báo',
+    label: 'notifications',
     icon: 'lucide:bell'
   },
   {
     id: 'display',
-    label: 'Hiển thị',
+    label: 'display',
     icon: 'lucide:monitor'
   },
   {
     id: 'shortcuts',
-    label: 'Phím tắt',
+    label: 'shortcuts',
     icon: 'lucide:keyboard'
   },
   {
     id: 'account',
-    label: 'Tài khoản',
+    label: 'account',
     icon: 'lucide:user'
   }
 ]
@@ -951,17 +968,17 @@ const tabs: TabItem[] = [
 const themeOptions: ThemeOption[] = [
   {
     value: 'auto',
-    label: 'Auto',
+    label: 'themeAuto',
     icon: 'lucide:monitor'
   },
   {
     value: 'light',
-    label: 'Light',
+    label: 'themeLight',
     icon: 'lucide:sun'
   },
   {
     value: 'dark',
-    label: 'Dark',
+    label: 'themeDark',
     icon: 'lucide:moon'
   }
 ]
@@ -1008,22 +1025,22 @@ const dateFormats = [
 const severities = [
   {
     value: 'all',
-    label: 'Tất cả',
+    label: 'all',
     cls: 'sev-all'
   },
   {
     value: 'Critical',
-    label: 'Critical',
+    label: 'critical',
     cls: 'sev-critical'
   },
   {
     value: 'Error',
-    label: 'Error',
+    label: 'error',
     cls: 'sev-error'
   },
   {
     value: 'Warning',
-    label: 'Warning',
+    label: 'warning',
     cls: 'sev-warning'
   }
 ]
@@ -1034,11 +1051,11 @@ const buildDate = computed(() =>
 
 const shortcuts = [
   {
-    label: 'Lưu settings',
+    label: 'saveSettingsShortcut',
     keys: ['Ctrl', 'S']
   },
   {
-    label: 'Đóng modal',
+    label: 'closeModalShortcut',
     keys: ['ESC']
   }
 ]

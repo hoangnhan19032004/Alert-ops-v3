@@ -287,10 +287,12 @@
 </template>
 
 <script setup lang="ts">
+// import module
 import { ref, computed, watch } from 'vue'
 import { useI18n } from '~/composables/useI18n'
 import { useToast } from '~/composables/useToast'
 
+// composable
 const { t } = useI18n()
 const { success, error: showError } = useToast()
 
@@ -495,7 +497,7 @@ const handleSubmit = () => {
 const closeModal = () => {
   emit('close')
 }
-
+// Validate realtime cho từng trường khi dữ liệu thay đổi
 watch(() => form.value.name, () => {
   errors.value.name = ''
 })

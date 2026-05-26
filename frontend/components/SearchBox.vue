@@ -49,23 +49,29 @@
 </template>
 
 <script setup lang="ts">
+// import module
 import { ref, computed } from 'vue'
 import { useSearchHistory } from '~/composables/useSearchHistory'
 
+// props
 const props = defineProps<{
   placeholder?: string
   category?: 'alerts' | 'projects' | 'escalation'
 }>()
 
+// emit
 const emit = defineEmits<{
   search: [query: string]
 }>()
 
+// composable
 const { history: allHistory, addSearch, removeSearch, clearHistory: clearAllHistory } = useSearchHistory()
 
+// state
 const searchQuery = ref('')
 const showHistory = ref(false)
 
+// computed
 const category = computed(() => props.category || 'alerts')
 const placeholder = computed(() => props.placeholder || 'Search...')
 

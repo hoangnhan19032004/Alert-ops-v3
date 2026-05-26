@@ -65,11 +65,13 @@
 </template>
 
 <script setup lang="ts">
+// import module
 import { ref } from 'vue'
 import { useI18n } from '~/composables/useI18n'
 import { useAlertExport } from '~/composables/useAlertExport'
 import { useToast } from '~/composables/useToast'
 
+// composable
 const props = defineProps<{
   selectedCount: number
   selectedAlerts: any[]

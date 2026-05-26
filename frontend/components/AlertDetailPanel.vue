@@ -87,8 +87,11 @@
 </template>
 
 <script setup lang="ts">
+// import module
+import { computed } from 'vue'
 import { useI18n } from '~/composables/useI18n'
 
+// Interface
 interface AlertData {
   id?: string
   message: string
@@ -98,6 +101,8 @@ interface AlertData {
   env?: string
   createdAt?: string
 }
+
+// composable
 const { t } = useI18n()
 const props = defineProps<{ alert: AlertData | null }>()
 defineEmits<{

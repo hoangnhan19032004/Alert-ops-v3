@@ -23,8 +23,10 @@
 </template>
 
 <script setup lang="ts">
+// import module
 import { useToast } from '~/composables/useToast'
 
+// composable
 const { toasts, removeToast } = useToast()
 </script>
 
