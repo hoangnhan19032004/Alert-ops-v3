@@ -1,83 +1,101 @@
-import { ref, onMounted } from 'vue'
+import { ref } from 'vue'
 import type { Language } from './useI18n'
 
-// Định nghĩa cấu trúc preferences của người dùng
+// Định nghĩa cấu trúc đầy đủ của hệ thống
 export interface UserPreferences {
-  theme: 'dark' | 'light' | 'auto'   // Giao diện sáng/tối/tự động
-  language: Language                   // Ngôn ngữ, lấy type từ useI18n
-  emailNotifications: boolean          // Bật/tắt thông báo qua email
-  slackNotifications: boolean          // Bật/tắt thông báo qua Slack
-  autoRefreshAlerts: boolean           // Bật/tắt tự động làm mới alerts
-  refreshInterval: number              // Thời gian làm mới (giây)
-  alertsPerPage: number                // Số alerts hiển thị mỗi trang
-  compactView: boolean                 // Bật/tắt chế độ hiển thị thu gọn
+  theme: 'dark' | 'light' | 'auto'
+  language: Language
+  emailNotifications: boolean
+  slackNotifications: boolean
+  autoRefreshAlerts: boolean
+  refreshInterval: number
+  alertsPerPage: number
+  compactView: boolean
+  timezone: string
+  dateFormat: string
+
+  // Thêm các thuộc tính modal cần vào đây để không bị lỗi TS
+  accentColor: string
+  criticalOnly: boolean
+  soundEnabled: boolean
+  soundVolume: number
+  quietHours: boolean
+  quietFrom: string
+  quietTo: string
+  defaultSeverityFilter: string
+  showResolved: boolean
 }
 
-// Giá trị mặc định khi người dùng chưa có preferences hoặc reset
+const STORAGE_KEY = 'alertops-settings-v3'
+
+// Giá trị mặc định đầy đủ
 const defaultPreferences: UserPreferences = {
-  theme: 'auto',
+  theme: 'dark',
   language: 'vi',
   emailNotifications: true,
-  slackNotifications: true,
+  slackNotifications: false,
   autoRefreshAlerts: true,
   refreshInterval: 30,
-  alertsPerPage: 10,
-  compactView: false
+  alertsPerPage: 20,
+  compactView: false,
+  timezone: 'Asia/Ho_Chi_Minh',
+  dateFormat: 'DD/MM/YYYY',
+
+  accentColor: 'blue',
+  criticalOnly: false,
+  soundEnabled: true,
+  soundVolume: 60,
+  quietHours: false,
+  quietFrom: '22:00',
+  quietTo: '07:00',
+  defaultSeverityFilter: 'all',
+  showResolved: true
 }
 
-export const useUserPreferences = () => {
-  // Khởi tạo preferences với giá trị mặc định, spread để tránh mutate object gốc
-  const preferences = ref<UserPreferences>({ ...defaultPreferences })
+const preferences = ref<UserPreferences>({ ...defaultPreferences })
 
-  // Hàm load preferences từ localStorage
-  const loadPreferences = () => {
-    if (import.meta.client) { // Kiểm tra đang chạy ở client (tránh lỗi SSR vì server không có localStorage)
-      const saved = localStorage.getItem('userPreferences')
-      if (saved) {
-        try {
-          preferences.value = {
-            ...defaultPreferences, // Lấy default trước để đảm bảo không thiếu field nào
-            ...JSON.parse(saved)   // Ghi đè bằng giá trị đã lưu
-          }
-        } catch (e) {
-          // Nếu JSON bị lỗi/corrupt thì giữ nguyên default, không crash app
-          console.error('Failed to parse preferences:', e)
+const loadPreferences = () => {
+  if (import.meta.client) {
+    const saved = localStorage.getItem(STORAGE_KEY)
+    if (saved) {
+      try {
+        preferences.value = {
+          ...defaultPreferences,
+          ...JSON.parse(saved)
         }
+      } catch (e) {
+        console.error('Failed to parse preferences:', e)
       }
     }
   }
+}
 
-  // Hàm lưu preferences — chỉ cần truyền vào những field muốn thay đổi (Partial)
+if (import.meta.client) {
+  loadPreferences()
+}
+
+export const useUserPreferences = () => {
   const savePreferences = (newPrefs: Partial<UserPreferences>) => {
     preferences.value = {
-      ...preferences.value, // Giữ lại các field cũ
-      ...newPrefs           // Ghi đè bằng field mới
+      ...preferences.value,
+      ...newPrefs
     }
-
     if (import.meta.client) {
-      // Lưu toàn bộ preferences xuống localStorage dưới dạng JSON string
-      localStorage.setItem('userPreferences', JSON.stringify(preferences.value))
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(preferences.value))
     }
   }
 
-  // Hàm reset preferences về mặc định và xóa khỏi localStorage
   const resetPreferences = () => {
     preferences.value = { ...defaultPreferences }
-
     if (import.meta.client) {
-      localStorage.removeItem('userPreferences')
+      localStorage.removeItem(STORAGE_KEY)
     }
   }
 
-  // Load preferences khi component được mount
-  onMounted(() => {
-    loadPreferences()
-  })
-
   return {
-    preferences,      // Preferences hiện tại để dùng trong template
-    loadPreferences,  // Gọi thủ công nếu cần reload
-    savePreferences,  // Cập nhật một hoặc nhiều field
-    resetPreferences  // Reset về mặc định
+    preferences,
+    loadPreferences,
+    savePreferences,
+    resetPreferences
   }
 }

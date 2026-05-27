@@ -251,11 +251,28 @@ const urgentAlerts = computed(() =>
 
 const severityBreakdown = computed(() => {
   const total = Math.max(alerts.value.length, 1)
+  
   return [
-    { key: 'critical', label: 'Critical', count: alerts.value.filter(a => a.severity === 'Critical').length },
-    { key: 'error',    label: 'Error',    count: alerts.value.filter(a => a.severity === 'Error').length },
-    { key: 'warning',  label: 'Warning',  count: alerts.value.filter(a => a.severity === 'Warning').length },
-    { key: 'info',     label: 'Info',     count: alerts.value.filter(a => a.severity === 'Info').length },
+    { 
+      key: 'critical', 
+      label: t('critical'), // Tự động trả về "Nghiêm trọng" hoặc "Critical"
+      count: alerts.value.filter(a => a.severity === 'Critical').length 
+    },
+    { 
+      key: 'error',    
+      label: t('error'),    // Tự động trả về "Lỗi" hoặc "Error"
+      count: alerts.value.filter(a => a.severity === 'Error').length 
+    },
+    { 
+      key: 'warning',  
+      label: t('warning'),  // Tự động trả về "Cảnh báo" hoặc "Warning"
+      count: alerts.value.filter(a => a.severity === 'Warning').length 
+    },
+    { 
+      key: 'info',     
+      label: t('info'),     // Tự động trả về "Thông tin" hoặc "Info"
+      count: alerts.value.filter(a => a.severity === 'Info').length 
+    },
   ].map(s => ({ ...s, pct: Math.round((s.count / total) * 100) }))
 })
 

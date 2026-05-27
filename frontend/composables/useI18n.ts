@@ -25,7 +25,7 @@ export const translations = {
     alerts: 'Cảnh báo',
     analytics: 'Phân tích',
     projects: 'Dự án',
-    escalation: 'Leo thang',
+    escalation: 'Xử lý',
     profile: 'Hồ sơ',
     preferences: 'Tùy chọn',
     logout: 'Đăng xuất',
@@ -76,7 +76,7 @@ export const translations = {
     // ── Status values ─────────────────────────────────────────────────────────
     open: 'Mở',
     acknowledged: 'Đã xác nhận',
-    escalated: 'Leo thang',
+    escalated: 'Đang thực hiện',
     resolved: 'Đã giải quyết',
 
     // ── Environment ───────────────────────────────────────────────────────────
@@ -93,7 +93,7 @@ export const translations = {
     resolveRate: 'Tỷ lệ giải quyết',
     highPriority: 'Ưu tiên cao',
     last24h: 'Hôm nay:',
-    criticalEscalated: '🔴 Nghiêm trọng & Leo thang',
+    criticalEscalated: '🔴 Nghiêm trọng & xử lí',
     noCritical: 'Không có cảnh báo nghiêm trọng',
     bySeverity: 'Theo mức độ',
     topServices: 'Dịch vụ nhiều nhất',
@@ -101,7 +101,7 @@ export const translations = {
     noProjects: 'Chưa có dự án',
     quickActions: 'Thao tác nhanh',
     viewAlerts: 'Xem cảnh báo',
-    escalationRules: 'Quy tắc leo thang',
+    escalationRules: 'Quy tắc xử lí cảnh báo',
     // profile page ────────────────────────────────────────────────────────────────
     emailCannotChange: 'Email không thể thay đổi sau khi tạo tài khoản',
     personalInfo: 'Thông tin cá nhân',
@@ -123,9 +123,9 @@ export const translations = {
     allSeverities: 'Tất cả mức độ',
     allEnvs: 'Tất cả môi trường',
     acknowledge: 'Xác nhận',
-    escalateBtn: 'Leo thang',
+    escalateBtn: 'Xử lí',
     bulkAcknowledge: 'Xác nhận đã chọn',
-    bulkEscalate: 'Leo thang đã chọn',
+    bulkEscalate: 'Xử lí đã chọn',
     noAlertsMatch: 'Không có cảnh báo khớp với bộ lọc',
     loadingAlerts: 'Đang tải cảnh báo từ API...',
     viewDetail: 'Xem chi tiết',
@@ -162,7 +162,7 @@ export const translations = {
     loadingProjects: 'Đang tải dự án từ API...',
 
     // ── Escalation page (escalation.vue) ──────────────────────────────────────
-    escalationTitle: 'Quy tắc leo thang',
+    escalationTitle: 'Quy tắc xử lí cảnh báo',
     escalationSub: 'Tự động định tuyến và thông báo on-call',
     addRule: '+ Thêm quy tắc',
     notifChannels: 'Kênh thông báo',
@@ -185,7 +185,7 @@ export const translations = {
     saveProject: 'Lưu dự án',
 
     // ── AddRuleModal ──────────────────────────────────────────────────────────
-    addRuleTitle: 'Thêm quy tắc leo thang',
+    addRuleTitle: 'Thêm quy tắc xử lí',
     selectProject: 'Chọn dự án...',
     triggerCondition: 'Điều kiện kích hoạt',
     severityLevel: 'Mức độ nghiêm trọng',
@@ -313,7 +313,14 @@ export const translations = {
     noMembers: 'Không có thành viên được phân công',
     owner: 'Chủ sở hữu',
     managers: 'Quản lý',
-    teamMembers: 'Thành viên'
+    teamMembers: 'Thành viên',
+
+    // ── Shortcuts ─────────────────────────────────────────────────────────────────
+    goToDashboard: 'Đến bảng điều khiển',
+    goToAlerts: 'Đến cảnh báo',
+    goToAnalytics: 'Đến phân tích',
+    goToEscalation: 'Đến chuyển cấp xử lí',
+    goToProjects: 'Đến dự án',
   },
 
   en: {
@@ -610,7 +617,14 @@ export const translations = {
     noMembers: 'No members assigned',
     owner: 'Owner',
     managers: 'Managers',
-    teamMembers: 'Members'
+    teamMembers: 'Members',
+
+    // ── Shortcuts ─────────────────────────────────────────────────────────────────
+    goToDashboard: 'Go to Dashboard',
+    goToAlerts: 'Go to Alerts',
+    goToAnalytics: 'Go to Analytics',
+    goToEscalation: 'Go to Escalation',
+    goToProjects: 'Go to Projects',
   },
 } as const
 

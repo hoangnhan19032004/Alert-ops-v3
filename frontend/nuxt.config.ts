@@ -31,6 +31,9 @@ export default defineNuxtConfig({
         '@microsoft/signalr',
         '@vue/devtools-core',
         '@vue/devtools-kit',
+        'dayjs',
+        'dayjs/plugin/timezone',
+        'dayjs/plugin/utc',
       ]
     }
   },
