@@ -102,7 +102,8 @@ export const translations = {
     quickActions: 'Thao tác nhanh',
     viewAlerts: 'Xem cảnh báo',
     escalationRules: 'Quy tắc xử lí cảnh báo',
-    // profile page ────────────────────────────────────────────────────────────────
+
+    // profile page ────────────────────────────────────────────────────────────
     emailCannotChange: 'Email không thể thay đổi sau khi tạo tài khoản',
     personalInfo: 'Thông tin cá nhân',
     fullName: 'Họ và tên',
@@ -244,13 +245,17 @@ export const translations = {
     settingsReset: 'Cài đặt đã được đặt lại về mặc định',
     confirmReset: 'Bạn có chắc muốn đặt lại tất cả cài đặt về mặc định?',
 
-    // New Settings Modal translations
+    // ── Settings Modal (extended) ─────────────────────────────────────────────
     soundNotifications: 'Âm thanh thông báo',
     soundNotificationsDesc: 'Phát âm khi có cảnh báo mới hoặc nghiêm trọng',
     volume: 'Âm lượng',
     test: 'Thử nghiệm',
-    accentColor: 'Màu nhấn',
-    accentColorDesc: 'Màu nhấn chính của giao diện',
+    // Font settings (thay thế accentColor)
+    fontFamily: 'Font chữ',
+    fontFamilyDesc: 'Chọn kiểu chữ hiển thị',
+    fontSize: 'Cỡ chữ',
+    fontSizeDesc: 'Điều chỉnh kích thước chữ (px)',
+    fontPreviewText: 'Đây là văn bản mẫu để xem trước font chữ.',
     themeAuto: 'Tự động',
     themeLight: 'Sáng',
     themeDark: 'Tối',
@@ -300,7 +305,7 @@ export const translations = {
     manager: 'Quản lý',
     shortcuts: 'Phím tắt',
 
-    // ── [id] ────────────────────────────────────────────────────────
+    // ── [id] ─────────────────────────────────────────────────────────────────
     backToProjects: 'Quay lại dự án',
     loadingProject: 'Đang tải dự án...',
     noDescription: 'Không có mô tả',
@@ -315,7 +320,7 @@ export const translations = {
     managers: 'Quản lý',
     teamMembers: 'Thành viên',
 
-    // ── Shortcuts ─────────────────────────────────────────────────────────────────
+    // ── Shortcuts ─────────────────────────────────────────────────────────────
     goToDashboard: 'Đến bảng điều khiển',
     goToAlerts: 'Đến cảnh báo',
     goToAnalytics: 'Đến phân tích',
@@ -406,7 +411,7 @@ export const translations = {
     viewAlerts: 'View Alerts',
     escalationRules: 'Escalation Rules',
 
-    // profile page ────────────────────────────────────────────────────────────────
+    // profile page ────────────────────────────────────────────────────────────
     emailCannotChange: 'Email cannot be changed after account creation',
     personalInfo: 'Personal information',
     fullName: 'Full Name',
@@ -548,13 +553,17 @@ export const translations = {
     settingsReset: 'Settings reset to defaults',
     confirmReset: 'Are you sure you want to reset all settings to defaults?',
 
-    // New Settings Modal translations
+    // ── Settings Modal (extended) ─────────────────────────────────────────────
     soundNotifications: 'Sound Notifications',
     soundNotificationsDesc: 'Play sound on new or critical alerts',
     volume: 'Volume',
     test: 'Test',
-    accentColor: 'Accent Color',
-    accentColorDesc: 'Main accent color of the interface',
+    // Font settings (replaces accentColor)
+    fontFamily: 'Font Family',
+    fontFamilyDesc: 'Choose the display font',
+    fontSize: 'Font Size',
+    fontSizeDesc: 'Adjust text size (px)',
+    fontPreviewText: 'This is a sample text to preview the font.',
     themeAuto: 'Auto',
     themeLight: 'Light',
     themeDark: 'Dark',
@@ -604,7 +613,7 @@ export const translations = {
     manager: 'Manager',
     shortcuts: 'Keyboard Shortcuts',
 
-    // ── [id] ────────────────────────────────────────────────────────
+    // ── [id] ─────────────────────────────────────────────────────────────────
     backToProjects: 'Back to Projects',
     loadingProject: 'Loading project...',
     noDescription: 'No description available',
@@ -619,7 +628,7 @@ export const translations = {
     managers: 'Managers',
     teamMembers: 'Members',
 
-    // ── Shortcuts ─────────────────────────────────────────────────────────────────
+    // ── Shortcuts ─────────────────────────────────────────────────────────────
     goToDashboard: 'Go to Dashboard',
     goToAlerts: 'Go to Alerts',
     goToAnalytics: 'Go to Analytics',
@@ -639,8 +648,6 @@ export const useI18n = () => {
     }
   }
 
-  // ✅ FIX: t() truy cập _language.value trực tiếp để Vue tracking reactive dependency.
-  // Dùng kèm :key="language" trên container trong template để đảm bảo re-render toàn bộ.
   const t = (key: TranslationKey): string => {
     return (translations[_language.value] as any)[key]
       ?? (translations.en as any)[key]

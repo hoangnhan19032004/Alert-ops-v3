@@ -149,13 +149,22 @@
                 <div class="mail-item-header">
                   <div class="mail-dot" :class="mail.type === 'auto' ? 'dot-auto' : 'dot-manual'"></div>
                   <div class="mail-item-info">
-                    <div class="mail-subject">{{ mail.subject }}</div>
+                    <div class="mail-subject-row">
+                      <span class="mail-subject">{{ mail.subject }}</span>
+                      <!-- ← Badge quan trọng trong lịch sử -->
+                      <span v-if="mail.isImportant" class="mail-important-badge">
+                        <Icon name="lucide:alert-circle" />
+                        Quan trọng
+                      </span>
+                    </div>
                     <div class="mail-meta-row">
                       <span class="mail-tag" :class="mail.type === 'auto' ? 'tag-auto' : 'tag-manual'">
                         {{ mail.type === 'auto' ? 'Tự động' : 'Thủ công' }}
                       </span>
                       <span class="mail-status-dot">●</span>
-                      <span class="mail-sent-status">{{ mail.status === 'sent' ? 'Đã gửi' : mail.status === 'failed' ? 'Thất bại' : 'Đang xử lý' }}</span>
+                      <span class="mail-sent-status" :class="mail.status === 'failed' ? 'status-failed' : ''">
+                        {{ mail.status === 'sent' ? 'Đã gửi' : mail.status === 'failed' ? 'Thất bại' : 'Đang xử lý' }}
+                      </span>
                     </div>
                   </div>
                   <div class="mail-item-right">
@@ -305,7 +314,7 @@
               <div class="recipient-tags">
                 <span v-for="(r, i) in composeForm.recipients" :key="i" class="recipient-tag editable">
                   {{ r }}
-                  <button class="remove-recipient" @click="removeRecipient(i)">
+                  <button class="remove-recipient" @click.stop="removeRecipient(i)">
                     <Icon name="lucide:x" />
                   </button>
                 </span>
@@ -340,6 +349,31 @@
               placeholder="Nhập nội dung mail..."
             ></textarea>
           </div>
+
+          <!-- ─── Priority Toggle ─── -->
+          <div class="compose-field">
+            <label class="compose-label">ĐỘ QUAN TRỌNG</label>
+            <div class="priority-toggle-wrap">
+              <button
+                type="button"
+                class="priority-btn"
+                :class="{ 'priority-btn--active': composeForm.priority === 'normal' }"
+                @click="composeForm.priority = 'normal'"
+              >
+                <Icon name="lucide:minus-circle" />
+                Bình thường
+              </button>
+              <button
+                type="button"
+                class="priority-btn priority-btn--high"
+                :class="{ 'priority-btn--active': composeForm.priority === 'high' }"
+                @click="composeForm.priority = 'high'"
+              >
+                <Icon name="lucide:alert-circle" />
+                Quan trọng
+              </button>
+            </div>
+          </div>
         </div>
 
         <div class="compose-footer">
@@ -348,11 +382,17 @@
               <Icon name="lucide:info" />
               Gửi tới {{ composeForm.recipients.length }} người nhận
             </span>
+            <!-- Badge hiển thị khi chọn Quan trọng -->
+            <span v-if="composeForm.priority === 'high'" class="priority-badge">
+              <Icon name="lucide:alert-circle" />
+              Quan trọng
+            </span>
           </div>
           <div class="compose-footer-actions">
             <button class="btn-cancel" @click="closeCompose">Huỷ</button>
             <button
               class="btn-send"
+              :class="{ 'btn-send--important': composeForm.priority === 'high' }"
               :disabled="sending || !composeForm.subject || composeForm.recipients.length === 0"
               @click="handleSendMail"
             >
@@ -379,7 +419,7 @@ const { success, error: showError } = useToast()
 
 const { alerts, loading: alertsStoreLoading, loadAlerts } = useErrorStore()
 
-// ─── Local type definitions (không phụ thuộc export từ useProjects) ───
+// ─── Local type definitions ───
 type ProjectSeverity = 'Critical' | 'Error' | 'Warning' | 'Resolved'
 
 interface ProjectMember {
@@ -428,12 +468,16 @@ interface MailItem {
   errorMessage?: string
   createdAt: string
   sentAt?: string
+  isImportant?: boolean   // ← thêm
+  priority?: 'normal' | 'high'  // ← thêm (mirror từ ComposeForm)
 }
 
+// ─── ComposeForm với priority ───
 interface ComposeForm {
   recipients: string[]
   subject: string
   body: string
+  priority: 'normal' | 'high'   // ← thêm
 }
 
 interface ApiResponse<T> { success: boolean; data: T }
@@ -495,9 +539,11 @@ const expandedMailId = ref<string | null>(null)
 const showComposeModal = ref(false)
 const sending = ref(false)
 const recipientInput = ref('')
-const composeForm = ref<ComposeForm>({ recipients: [], subject: '', body: '' })
 
-// ─── Alerts: ép id về string để khớp AlertItem ───
+// ← priority mặc định là 'normal'
+const composeForm = ref<ComposeForm>({ recipients: [], subject: '', body: '', priority: 'normal' })
+
+// ─── Alerts ───
 const projectAlerts = computed<AlertItem[]>(() => {
   const id = String(route.params.id)
   return alerts.value
@@ -561,11 +607,7 @@ const loadMailHistory = async () => {
   mailLoading.value = true
   try {
     const pid = Array.isArray(route.params.id) ? route.params.id[0] : route.params.id ?? ''
-    // apiCall wraps response as { data, success } — server route trả mảng thẳng
-    const res = await apiCall<MailItem[]>(
-      `/api/notificationhistory/project/${pid}`
-    )
-    // res.data là mảng MailItem[] từ server route
+    const res = await apiCall<MailItem[]>(`/api/notificationhistory/project/${pid}`)
     mailHistory.value = Array.isArray(res.data) ? res.data : []
   } catch (err) {
     console.error('Failed to load mail history:', err)
@@ -593,42 +635,48 @@ const removeRecipient = (index: number) => {
 
 const closeCompose = () => {
   showComposeModal.value = false
-  composeForm.value = { recipients: [], subject: '', body: '' }
+  // ← reset cả priority về 'normal'
+  composeForm.value = { recipients: [], subject: '', body: '', priority: 'normal' }
   recipientInput.value = ''
 }
 
 const handleSendMail = async () => {
-  // Flush recipient input nếu người dùng chưa nhấn Enter
   if (recipientInput.value.trim()) addRecipient()
   if (!composeForm.value.subject || composeForm.value.recipients.length === 0) return
+
+  console.log('RAW BODY:', JSON.stringify(composeForm.value.body))
 
   sending.value = true
   try {
     const pid = Array.isArray(route.params.id) ? route.params.id[0] : route.params.id ?? ''
+    const isImportant = composeForm.value.priority === 'high'
 
-    // Gửi object (không JSON.stringify) — useApi / $fetch tự serialize
     const res = await apiCall<MailItem>(
       `/api/notificationhistory/send`,
       {
         method: 'POST',
         body: {
-          projectId:  pid,
-          alertId:    '',           // optional trên backend, gửi rỗng khi gửi thủ công
-          recipients: composeForm.value.recipients,
-          subject:    composeForm.value.subject,
-          body:       composeForm.value.body,
-          type:       'manual',
-          channel:    'email'
+          projectId:   pid,
+          alertId:     '',
+          recipients:  composeForm.value.recipients,
+          subject:     composeForm.value.subject,
+          body:        composeForm.value.body          // ← sửa dòng này
+                        .split('\n')
+                        .map(line => line.trimEnd())
+                        .join('\n')
+                        .trimEnd(),
+          type:        'manual',
+          channel:     'email',
+          priority:    composeForm.value.priority,
+          isImportant,
         }
       }
     )
 
     if (!res.success) {
-      // apiCall trả success: false khi có lỗi (network, 4xx, 5xx)
       throw new Error((res as any).message ?? 'Gửi thất bại')
     }
 
-    // Reload từ server để đảm bảo đồng bộ với DB
     await loadMailHistory()
     success('Gửi mail thành công')
     closeCompose()
@@ -776,6 +824,7 @@ const statusClass = (status?: string) =>
 .status-open     { background: rgba(248,81,73,.12); color: var(--danger-color); }
 .status-active   { background: rgba(227,179,65,.12); color: #e3b341; }
 
+/* ─── Mail list ─── */
 .mail-list { display: flex; flex-direction: column; gap: 4px; }
 .mail-item {
   border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden;
@@ -793,13 +842,26 @@ const statusClass = (status?: string) =>
 .dot-auto   { background: #58a6ff; }
 .dot-manual { background: #3fb950; }
 .mail-item-info { flex: 1; min-width: 0; }
+
+/* Subject row với badge quan trọng */
+.mail-subject-row { display: flex; align-items: center; gap: 6px; }
 .mail-subject { font-size: 13px; color: var(--text-secondary); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mail-important-badge {
+  display: inline-flex; align-items: center; gap: 3px;
+  padding: 1px 6px; border-radius: 4px; flex-shrink: 0;
+  background: rgba(245,158,11,.15); color: #f59e0b;
+  font-size: 10px; font-weight: 700; letter-spacing: .02em;
+  border: 1px solid rgba(245,158,11,.3);
+}
+.mail-important-badge svg { width: 9px; height: 9px; }
+
 .mail-meta-row { display: flex; align-items: center; gap: 6px; margin-top: 3px; flex-wrap: wrap; }
 .mail-tag { font-size: 10px; padding: 1px 6px; border-radius: 4px; font-weight: 600; }
 .tag-auto   { background: rgba(88,166,255,.12); color: var(--accent-color); }
 .tag-manual { background: rgba(63,185,80,.12);  color: var(--success-color); }
 .mail-status-dot { font-size: 6px; color: var(--success-color); }
 .mail-sent-status { font-size: 11px; color: var(--success-color); }
+.mail-sent-status.status-failed { color: var(--danger-color); }
 .mail-item-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
 .mail-time { font-size: 11px; color: var(--text-muted); white-space: nowrap; }
 .mail-chevron { width: 13px; height: 13px; color: var(--text-muted); transition: transform .2s; }
@@ -811,8 +873,9 @@ const statusClass = (status?: string) =>
 .mail-detail-label { font-size: 10px; font-weight: 700; letter-spacing: .08em; color: var(--text-tertiary); text-transform: uppercase; }
 .mail-recipients { display: flex; flex-wrap: wrap; gap: 5px; }
 .recipient-tag { background: var(--bg-tertiary); color: var(--text-tertiary); font-size: 11px; padding: 2px 8px; border-radius: 4px; }
-.mail-body-text { font-size: 12px; color: var(--text-tertiary); line-height: 1.6; margin: 0; }
+.mail-body-text { font-size: 12px; color: var(--text-tertiary); line-height: 1.6; margin: 0; white-space: pre-wrap; }
 
+/* ─── Members ─── */
 .av-owner   { background: #f85149; }
 .av-manager { background: #e3b341; color: #000; }
 .av-member  { background: #58a6ff; }
@@ -867,6 +930,7 @@ const statusClass = (status?: string) =>
 .btn-delete:hover:not(:disabled) { background: #da3633; }
 .btn-delete:disabled { opacity: .6; cursor: not-allowed; }
 
+/* ─── Compose Modal ─── */
 .compose-modal {
   background: var(--bg-secondary); border: 1px solid var(--input-border); border-radius: 12px;
   width: 560px; max-width: 95vw; max-height: 90vh;
@@ -922,26 +986,77 @@ const statusClass = (status?: string) =>
 .compose-input:focus { border-color: var(--accent-color); }
 .compose-input::placeholder { color: var(--text-muted); }
 .compose-textarea {
-  width: 100%; min-height: 140px; padding: 10px 12px;
+  width: 100%; min-height: 120px; padding: 10px 12px;
   background: var(--bg-primary); border: 1px solid var(--input-border); border-radius: 7px;
   color: var(--text-secondary); font-size: 13px; outline: none; resize: vertical;
   transition: border-color .15s; line-height: 1.6; font-family: inherit; box-sizing: border-box;
+  white-space: pre-wrap;   /* ← giữ xuống dòng khi hiển thị trong textarea */
 }
 .compose-textarea:focus { border-color: var(--accent-color); }
 .compose-textarea::placeholder { color: var(--text-muted); }
+
+/* ─── Priority Toggle ─── */
+.priority-toggle-wrap { display: flex; gap: 8px; }
+
+.priority-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 14px; border-radius: 7px;
+  border: 1px solid var(--border-color); background: transparent;
+  color: var(--text-muted); font-size: 13px; cursor: pointer; transition: all .15s;
+}
+.priority-btn svg { width: 14px; height: 14px; }
+.priority-btn:hover { border-color: var(--input-border); color: var(--text-secondary); }
+
+/* Normal active */
+.priority-btn--active:not(.priority-btn--high) {
+  background: var(--bg-tertiary);
+  border-color: var(--input-border);
+  color: var(--text-secondary);
+}
+
+/* High (quan trọng) */
+.priority-btn--high { color: #f59e0b; border-color: rgba(245,158,11,.25); }
+.priority-btn--high:hover { border-color: rgba(245,158,11,.5); background: rgba(245,158,11,.06); }
+.priority-btn--high.priority-btn--active {
+  background: rgba(245,158,11,.12);
+  border-color: #f59e0b;
+  color: #f59e0b;
+  font-weight: 600;
+}
+
+/* ─── Compose Footer ─── */
 .compose-footer {
   display: flex; align-items: center; justify-content: space-between;
   padding: 12px 20px; border-top: 1px solid var(--border-color); flex-shrink: 0; gap: 12px;
 }
-.compose-footer-left { display: flex; align-items: center; }
+.compose-footer-left { display: flex; align-items: center; gap: 10px; }
 .compose-hint { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--text-muted); }
 .compose-hint svg { width: 12px; height: 12px; }
 .compose-footer-actions { display: flex; align-items: center; gap: 8px; }
+
+/* Priority badge trong footer */
+.priority-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 2px 8px; border-radius: 999px;
+  background: rgba(245,158,11,.12); color: #f59e0b;
+  font-size: 11px; font-weight: 700;
+  border: 1px solid rgba(245,158,11,.3);
+  animation: badge-pop .2s ease;
+}
+.priority-badge svg { width: 11px; height: 11px; }
+@keyframes badge-pop {
+  from { opacity: 0; transform: scale(.85); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
 .btn-send {
   display: flex; align-items: center; gap: 6px; padding: 7px 16px; border-radius: 7px;
-  background: #238636; border: none; color: #fff; font-size: 13px; cursor: pointer; transition: background .15s;
+  background: #238636; border: none; color: #fff; font-size: 13px; cursor: pointer; transition: background .15s, box-shadow .15s;
 }
 .btn-send:hover:not(:disabled) { background: #2ea043; }
+/* Khi gửi quan trọng: nút đổi màu amber */
+.btn-send--important { background: #b45309; }
+.btn-send--important:hover:not(:disabled) { background: #d97706; box-shadow: 0 0 0 3px rgba(245,158,11,.2); }
 .btn-send:disabled { opacity: .5; cursor: not-allowed; }
 .btn-send svg { width: 13px; height: 13px; }
 </style>

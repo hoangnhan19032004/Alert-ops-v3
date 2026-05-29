@@ -1,12 +1,17 @@
 using System.Net;
 using System.Net.Mail;
+using System.Text;
 
 namespace AlertOpsBackend.Services
 {
     // Interface IEmailService
     public interface IEmailService
     {
-        Task<bool> SendEmailAsync(List<string> recipients, string subject, string body);
+        Task<bool> SendEmailAsync(
+            List<string> recipients,
+            string subject,
+            string body
+        );
     }
 
     // Class EmailService kế thừa interface IEmailService
@@ -15,62 +20,144 @@ namespace AlertOpsBackend.Services
         private readonly IConfiguration _config;
         private readonly ILogger<EmailService> _logger;
 
-        public EmailService(IConfiguration config, ILogger<EmailService> logger)
+        public EmailService(
+            IConfiguration config,
+            ILogger<EmailService> logger
+        )
         {
             _config = config;
             _logger = logger;
         }
 
-        // Hàm này dùng để gửi email
-        public async Task<bool> SendEmailAsync(List<string> recipients, string subject, string body)
+        // Hàm gửi email
+        public async Task<bool> SendEmailAsync(
+            List<string> recipients,
+            string subject,
+            string body
+        )
         {
             try
             {
-                // Lấy thông tin SMTP từ file appsettings.json
-                var smtpHost = _config["EmailSettings:SmtpHost"] ?? "localhost";
-                var smtpPort = int.Parse(_config["EmailSettings:SmtpPort"] ?? "587");
-                var smtpUser = _config["EmailSettings:SmtpUser"];
-                var smtpPassword = _config["EmailSettings:SmtpPassword"];
-                var senderEmail = _config["EmailSettings:SenderEmail"] ?? "noreply@alertops.com";
-                var senderName = _config["EmailSettings:SenderName"] ?? "AlertOps";
+                // SMTP config
+                var smtpHost =
+                    _config["EmailSettings:SmtpHost"]
+                    ?? "localhost";
 
-                // Nếu không có SMTP config, log warning và return true (để không block)
-                if (string.IsNullOrEmpty(smtpUser) || string.IsNullOrEmpty(smtpPassword))
+                var smtpPort = int.Parse(
+                    _config["EmailSettings:SmtpPort"]
+                    ?? "587"
+                );
+
+                var smtpUser =
+                    _config["EmailSettings:SmtpUser"];
+
+                var smtpPassword =
+                    _config["EmailSettings:SmtpPassword"];
+
+                var senderEmail =
+                    _config["EmailSettings:SenderEmail"]
+                    ?? "noreply@alertops.com";
+
+                var senderName =
+                    _config["EmailSettings:SenderName"]
+                    ?? "AlertOps";
+
+                // Nếu chưa cấu hình SMTP
+                if (
+                    string.IsNullOrWhiteSpace(smtpUser)
+                    || string.IsNullOrWhiteSpace(smtpPassword)
+                )
                 {
-                    _logger.LogWarning("SMTP configuration not set. Email would be sent to: {recipients}", 
-                        string.Join(", ", recipients));
-                    return true; // Assume success in dev mode
+                    _logger.LogWarning(
+                        "SMTP configuration not set. Email would be sent to: {recipients}",
+                        string.Join(", ", recipients)
+                    );
+
+                    return true;
                 }
 
-                // Sử dụng SmtpClient để gửi email
-                using (var client = new SmtpClient(smtpHost, smtpPort))
+                // Convert xuống dòng thành <br>    
+                var formattedBody = (body ?? string.Empty)
+                    .Split(new[] { "\r\n", "\n" }, StringSplitOptions.None)
+                    .Select(line => line.Trim())   // ← Trim() thay vì TrimStart()
+                    .Aggregate((a, b) => a + "<br>" + b);
+
+                // HTML email body
+                var htmlBody =
+                    $"<div style='font-family:Arial,sans-serif;font-size:14px;line-height:1.6;color:#333;'>{formattedBody}</div>";
+
+                using (var client = new SmtpClient(
+                    smtpHost,
+                    smtpPort
+                ))
                 {
                     client.EnableSsl = true;
-                    client.Credentials = new NetworkCredential(smtpUser, smtpPassword);
+
+                    client.Credentials =
+                        new NetworkCredential(
+                            smtpUser,
+                            smtpPassword
+                        );
 
                     using (var mailMessage = new MailMessage())
                     {
-                        mailMessage.From = new MailAddress(senderEmail, senderName);
+                        // Sender
+                        mailMessage.From = new MailAddress(
+                            senderEmail,
+                            senderName
+                        );
+
+                        // Recipients
                         foreach (var recipient in recipients)
                         {
-                            mailMessage.To.Add(recipient);
+                            if (
+                                !string.IsNullOrWhiteSpace(
+                                    recipient
+                                )
+                            )
+                            {
+                                mailMessage.To.Add(recipient);
+                            }
                         }
 
+                        // Subject
                         mailMessage.Subject = subject;
-                        mailMessage.Body = body;
+
+                        // Body
+                        mailMessage.Body = htmlBody;
+
+                        // HTML enabled
                         mailMessage.IsBodyHtml = true;
 
-                        await client.SendMailAsync(mailMessage);
-                        _logger.LogInformation("Email sent successfully to {recipients}", 
-                            string.Join(", ", recipients));
+                        // UTF8
+                        mailMessage.BodyEncoding =
+                            Encoding.UTF8;
+
+                        mailMessage.SubjectEncoding =
+                            Encoding.UTF8;
+
+                        // Send
+                        await client.SendMailAsync(
+                            mailMessage
+                        );
+
+                        _logger.LogInformation(
+                            "Email sent successfully to {recipients}",
+                            string.Join(", ", recipients)
+                        );
+
                         return true;
                     }
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to send email to {recipients}", 
-                    string.Join(", ", recipients));
+                _logger.LogError(
+                    ex,
+                    "Failed to send email to {recipients}",
+                    string.Join(", ", recipients)
+                );
+
                 return false;
             }
         }

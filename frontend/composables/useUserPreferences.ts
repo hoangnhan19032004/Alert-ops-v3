@@ -14,8 +14,10 @@ export interface UserPreferences {
   timezone: string
   dateFormat: string
 
-  // Thêm các thuộc tính modal cần vào đây để không bị lỗi TS
-  accentColor: string
+  // Font settings (thay thế accentColor)
+  fontFamily: string
+  fontSize: number
+
   criticalOnly: boolean
   soundEnabled: boolean
   soundVolume: number
@@ -41,7 +43,10 @@ const defaultPreferences: UserPreferences = {
   timezone: 'Asia/Ho_Chi_Minh',
   dateFormat: 'DD/MM/YYYY',
 
-  accentColor: 'blue',
+  // Font defaults
+  fontFamily: 'Inter, sans-serif',
+  fontSize: 14,
+
   criticalOnly: false,
   soundEnabled: true,
   soundVolume: 60,
@@ -49,7 +54,7 @@ const defaultPreferences: UserPreferences = {
   quietFrom: '22:00',
   quietTo: '07:00',
   defaultSeverityFilter: 'all',
-  showResolved: true
+  showResolved: true,
 }
 
 const preferences = ref<UserPreferences>({ ...defaultPreferences })

@@ -70,6 +70,7 @@ import { ref } from 'vue'
 import { useI18n } from '~/composables/useI18n'
 import { useAlertExport } from '~/composables/useAlertExport'
 import { useToast } from '~/composables/useToast'
+import { useTimezoneStore } from '~/stores/timezone'
 
 // composable
 const props = defineProps<{
@@ -87,6 +88,7 @@ const emit = defineEmits<{
 const { exportToCSV, exportToJSON } = useAlertExport()
 const { t } = useI18n()
 const { success, info, error } = useToast()
+const tzStore = useTimezoneStore()
 const showExportMenu = ref(false)
 
 const clearSelection = () => {
@@ -94,21 +96,27 @@ const clearSelection = () => {
 }
 
 const handleExportCSV = () => {
-  if (props.selectedCount > 0) {
-    exportToCSV(props.selectedAlerts, `alerts-export-${new Date().toISOString().slice(0, 10)}.csv`)
-  } else {
-    exportToCSV(props.alerts, `alerts-export-${new Date().toISOString().slice(0, 10)}.csv`)
-  }
+  const data = props.selectedCount > 0 ? props.selectedAlerts : props.alerts
+
+  const formattedData = data.map((row: any) => ({
+    ...row,
+    createdAt: row.createdAt ? tzStore.formatTimeFull(row.createdAt) : '—',
+  }))
+
+  exportToCSV(formattedData, `alerts-export-${new Date().toISOString().slice(0, 10)}.csv`)
   success('Alerts exported as CSV')
   showExportMenu.value = false
 }
 
 const handleExportJSON = () => {
-  if (props.selectedCount > 0) {
-    exportToJSON(props.selectedAlerts, `alerts-export-${new Date().toISOString().slice(0, 10)}.json`)
-  } else {
-    exportToJSON(props.alerts, `alerts-export-${new Date().toISOString().slice(0, 10)}.json`)
-  }
+  const data = props.selectedCount > 0 ? props.selectedAlerts : props.alerts
+
+  const formattedData = data.map((row: any) => ({
+    ...row,
+    createdAt: row.createdAt ? tzStore.formatTimeFull(row.createdAt) : '—',
+  }))
+
+  exportToJSON(formattedData, `alerts-export-${new Date().toISOString().slice(0, 10)}.json`)
   success('Alerts exported as JSON')
   showExportMenu.value = false
 }

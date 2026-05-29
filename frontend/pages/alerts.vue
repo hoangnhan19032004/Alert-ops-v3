@@ -18,6 +18,23 @@
           <Icon name="lucide:plus" /> {{ t('newAlert') }}
         </button>
         <input class="search-box" v-model="search" :placeholder="t('searchAlerts')" />
+
+        <!-- THÊM PICKER -->
+        <div class="tz-wrapper">
+          <span class="tz-label">🌐 </span>
+          <select
+            class="filter-select tz-select"
+            :value="tzStore.selectedTimezone"
+            @change="(e) => tzStore.setTimezone((e.target as HTMLSelectElement).value)"
+          >
+            <option value="Asia/Ho_Chi_Minh">🇻🇳 UTC+7</option>
+            <option value="Asia/Singapore">🇸🇬 UTC+8</option>
+            <option value="Asia/Tokyo">🇯🇵 UTC+9</option>
+            <option value="Europe/London">🇬🇧 UTC+0</option>
+            <option value="America/New_York">🇺🇸 UTC-5</option>
+            <option value="UTC">UTC</option>
+          </select>
+        </div>
       </div>
     </div>
 
@@ -157,7 +174,7 @@
             <span class="env-badge" :class="envClass(alert.env)">{{ alert.env }}</span>
           </td>
 
-          <td class="time-text" @click="openDetail(alert)">{{ formatTime(alert.createdAt) }}</td>
+          <td class="time-text" @click="openDetail(alert)">{{ tzStore.formatTime(alert.createdAt) }}</td>
 
           <td class="actions-col" @click.stop>
             <button class="row-action-btn" :title="t('viewDetail')" @click="openDetail(alert)">
@@ -242,7 +259,7 @@
 
             <div class="detail-section">
               <div class="detail-label">{{ t('createdAt') }}</div>
-              <div class="detail-value">{{ formatTimeFull(detailAlert.createdAt) }}</div>
+              <div class="detail-value">{{ tzStore.formatTimeFull(detailAlert.createdAt) }}</div>
             </div>
 
             <div class="detail-section full">
@@ -336,7 +353,9 @@ import type {
 } from '~/types'
 
 import { useI18n } from '~/composables/useI18n'
+import { useTimezoneStore } from '~/stores/timezone'
 
+const tzStore = useTimezoneStore()
 const { t } = useI18n()
 const router = useRouter()
 
@@ -1063,40 +1082,6 @@ const openDetail = (alert: any) => {
 // ─────────────────────────────────────────────
 // Helpers
 // ─────────────────────────────────────────────
-const formatTime = (
-  dt?: string
-) => {
-  if (!dt) return '—'
-
-  const diff =
-    (
-      Date.now() -
-      new Date(dt).getTime()
-    ) / 1000
-
-  if (diff < 60) {
-    return `${Math.round(diff)}s ago`
-  }
-
-  if (diff < 3600) {
-    return `${Math.round(diff / 60)}m ago`
-  }
-
-  if (diff < 86400) {
-    return `${Math.round(diff / 3600)}h ago`
-  }
-
-  return new Date(
-    dt
-  ).toLocaleDateString()
-}
-
-const formatTimeFull = (
-  dt?: string
-) =>
-  dt
-    ? new Date(dt).toLocaleString()
-    : '—'
 
 const severityRowClass = (
   s: string
@@ -1149,7 +1134,7 @@ const getTimeline = (alert: any) => {
   const events = [
     {
       label: 'Alert created',
-      time: formatTimeFull(
+      time: tzStore.formatTimeFull(
         alert.createdAt
       ),
       color: 'tl-blue'
@@ -1407,4 +1392,19 @@ const getTimeline = (alert: any) => {
 .submit-btn:hover { background: #2ea043; }
 .submit-btn:disabled { opacity: .5; cursor: default; }
 .page-wrap { width: 100%; min-width: 0; }
+.filter-select {
+  background: var(--input-bg);
+  color: var(--input-text);
+}
+.tz-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tz-label {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  white-space: nowrap;
+}
 </style>

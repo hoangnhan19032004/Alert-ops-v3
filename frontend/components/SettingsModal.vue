@@ -75,27 +75,57 @@
               </div>
             </div>
 
-            <!-- Color accent -->
+            <!-- Font Family -->
             <div class="setting-card">
               <div class="card-label-row">
                 <div>
-                  <span class="label-text">{{ t('accentColor') }}</span>
-                  <span class="label-desc">{{ t('accentColorDesc') }}</span>
+                  <span class="label-text">{{ t('fontFamily') }}</span>
+                  <span class="label-desc">{{ t('fontFamilyDesc') }}</span>
                 </div>
               </div>
-              <div class="accent-grid">
+              <div class="font-grid">
                 <button
-                  v-for="c in accentColors"
-                  :key="c.value"
-                  class="accent-dot"
-                  :class="{ active: preferences.accentColor === c.value }"
-                  :style="{ background: c.hex }"
-                  :title="c.label"
-                  @click="preferences.accentColor = c.value"
+                  v-for="f in fontOptions"
+                  :key="f.value"
+                  class="font-btn"
+                  :class="{ active: preferences.fontFamily === f.value }"
+                  :style="{ fontFamily: f.value }"
+                  @click="preferences.fontFamily = f.value"
                 >
-                  <Icon v-if="preferences.accentColor === c.value" name="lucide:check" class="check-icon" />
+                  <Icon v-if="preferences.fontFamily === f.value" name="lucide:check" class="check-icon" />
+                  <span class="font-preview-sample">Aa</span>
+                  <span class="font-label">{{ f.label }}</span>
                 </button>
               </div>
+            </div>
+
+            <!-- Font Size -->
+            <div class="setting-card">
+              <div class="card-label-row">
+                <div>
+                  <span class="label-text">{{ t('fontSize') }}</span>
+                  <span class="label-desc">{{ t('fontSizeDesc') }}</span>
+                </div>
+                <span class="font-size-value">{{ preferences.fontSize }}px</span>
+              </div>
+              <div class="font-size-row">
+                <span class="size-label">A</span>
+                <input
+                  type="range"
+                  min="12"
+                  max="20"
+                  step="1"
+                  v-model.number="preferences.fontSize"
+                  class="font-slider"
+                />
+                <span class="size-label large">A</span>
+              </div>
+              <p
+                class="font-preview-text"
+                :style="{ fontFamily: preferences.fontFamily, fontSize: preferences.fontSize + 'px' }"
+              >
+                {{ t('fontPreviewText') }}
+              </p>
             </div>
           </div>
 
@@ -125,27 +155,11 @@
               </div>
             </div>
 
-            <!-- Timezone -->
-            <div class="setting-card">
-              <div class="card-label-row">
-                <div>
-                  <span class="label-text">{{ t('timezone') }}</span>
-                  <span class="label-desc">{{ t('timezoneDesc') }}</span>
-                </div>
-              </div>
-              <select v-model="preferences.timezone" class="select-input">
-                <option v-for="tz in timezones" :key="tz.value" :value="tz.value">
-                  {{ tz.label }}
-                </option>
-              </select>
-            </div>
-
             <!-- Date format -->
             <div class="setting-card">
               <div class="card-label-row">
                 <div>
                   <span class="label-text">{{ t('dateFormat') }}</span>
-                  <!-- FIX: datePreview giờ reactive theo timezone + ticker -->
                   <span class="label-desc">{{ t('preview') }}: {{ datePreview }}</span>
                 </div>
               </div>
@@ -191,7 +205,6 @@
               </label>
             </div>
 
-            <!-- Notify only critical -->
             <div class="setting-card">
               <label class="toggle-row">
                 <div>
@@ -205,7 +218,6 @@
               </label>
             </div>
 
-            <!-- Browser push -->
             <div class="setting-card">
               <div class="toggle-row">
                 <div>
@@ -223,7 +235,6 @@
               </div>
             </div>
 
-            <!-- Sound notifications -->
             <div class="setting-card">
               <label class="toggle-row">
                 <div>
@@ -237,7 +248,6 @@
               </label>
             </div>
 
-            <!-- Sound volume -->
             <div v-if="preferences.soundEnabled" class="setting-card">
               <div class="card-label-row">
                 <div>
@@ -256,7 +266,6 @@
               <div class="slider-labels"><span>10%</span><span>100%</span></div>
             </div>
 
-            <!-- Quiet hours -->
             <div class="setting-card">
               <label class="toggle-row">
                 <div>
@@ -286,7 +295,6 @@
           <div v-if="activeTab === 'display'" class="tab-panel">
             <div class="panel-title">{{ t('display') }}</div>
 
-            <!-- Alerts per page -->
             <div class="setting-card">
               <div class="card-label-row">
                 <div>
@@ -299,7 +307,6 @@
               </div>
             </div>
 
-            <!-- Auto refresh -->
             <div class="setting-card">
               <label class="toggle-row">
                 <div>
@@ -326,7 +333,6 @@
               </div>
             </div>
 
-            <!-- Default severity filter -->
             <div class="setting-card">
               <div class="card-label-row">
                 <div>
@@ -345,7 +351,6 @@
               </div>
             </div>
 
-            <!-- Show resolved -->
             <div class="setting-card">
               <label class="toggle-row">
                 <div>
@@ -370,7 +375,7 @@
                 <span class="shortcut-label">{{ t(s.label as any) }}</span>
                 <div class="shortcut-keys">
                   <kbd class="kbd">Ctrl</kbd>
-                    <span class="key-plus">+</span>
+                  <span class="key-plus">+</span>
                   <kbd v-for="k in s.keys" :key="k" class="kbd">{{ k }}</kbd>
                 </div>
               </div>
@@ -406,7 +411,6 @@
               </div>
             </div>
 
-            <!-- Change password section -->
             <div class="setting-card">
               <div class="panel-title" style="font-size:13px; margin-bottom:12px;">{{ t('changePassword') }}</div>
               <div class="field-group">
@@ -429,7 +433,6 @@
               </div>
             </div>
 
-            <!-- Danger zone -->
             <div class="setting-card danger-card">
               <div class="danger-title">
                 <Icon name="lucide:shield-alert" /> {{ t('dangerZone') }}
@@ -492,6 +495,11 @@ interface ThemeOption {
   icon: string
 }
 
+interface FontOption {
+  value: string
+  label: string
+}
+
 interface ExtendedPreferences {
   theme: ThemeMode
   language: Language
@@ -508,7 +516,9 @@ interface ExtendedPreferences {
   soundEnabled: boolean
   soundVolume: number
 
-  accentColor: string
+  // Font settings (thay thế accentColor)
+  fontFamily: string
+  fontSize: number
 
   timezone: string
   dateFormat: string
@@ -552,7 +562,9 @@ const defaultPreferences: ExtendedPreferences = {
   soundEnabled: true,
   soundVolume: 60,
 
-  accentColor: 'blue',
+  // Font defaults
+  fontFamily: 'Inter, sans-serif',
+  fontSize: 14,
 
   timezone: 'Asia/Ho_Chi_Minh',
   dateFormat: 'DD/MM/YYYY',
@@ -609,19 +621,13 @@ const themeOptions: ThemeOption[] = [
   { value: 'dark', label: 'themeDark', icon: 'lucide:moon' }
 ]
 
-const accentColors = [
-  { value: 'blue', hex: '#2563eb', label: 'Blue' },
-  { value: 'violet', hex: '#7c3aed', label: 'Violet' },
-  { value: 'teal', hex: '#0d9488', label: 'Teal' },
-  { value: 'rose', hex: '#e11d48', label: 'Rose' },
-  { value: 'amber', hex: '#d97706', label: 'Amber' },
-  { value: 'slate', hex: '#475569', label: 'Slate' }
-]
-
-const timezones = [
-  { value: 'Asia/Ho_Chi_Minh', label: 'GMT+7 — Hồ Chí Minh' },
-  { value: 'Asia/Tokyo', label: 'GMT+9 — Tokyo' },
-  { value: 'UTC', label: 'UTC' }
+// Font options — thay thế accentColors
+const fontOptions: FontOption[] = [
+  { value: 'Inter, sans-serif',            label: 'Inter' },
+  { value: 'Roboto, sans-serif',           label: 'Roboto' },
+  { value: 'Poppins, sans-serif',          label: 'Poppins' },
+  { value: 'Nunito, sans-serif',           label: 'Nunito' },
+  { value: "'JetBrains Mono', monospace",  label: 'Mono' },
 ]
 
 const dateFormats = [
@@ -642,10 +648,9 @@ const buildDate = computed(() =>
 )
 
 /* =========================================
-   TICKER — dùng để cập nhật datePreview mỗi giây
+   TICKER
 ========================================= */
 
-// FIX: tách nowTicker ra khỏi onMounted để tránh khai báo 2 lần
 const nowTicker = ref(Date.now())
 let tickerInterval: ReturnType<typeof setInterval>
 
@@ -655,24 +660,12 @@ let tickerInterval: ReturnType<typeof setInterval>
 
 const executeShortcutAction = (label: string) => {
   switch (label) {
-    case 'goToDashboard':
-      if (router) router.push('/')
-      break
-    case 'goToAlerts':
-      if (router) router.push('/alerts')
-      break
-    case 'goToAnalytics':
-      if (router) router.push('/analytics')
-      break
-    case 'goToProjects':
-      if (router) router.push('/projects')
-      break
-    case 'goToEscalation':
-      if (router) router.push('/escalation')
-      break
-    default:
-      console.warn(`Chưa cấu hình hành động cho nhãn: ${label}`)
-      break
+    case 'goToDashboard':  if (router) router.push('/'); break
+    case 'goToAlerts':     if (router) router.push('/alerts'); break
+    case 'goToAnalytics':  if (router) router.push('/analytics'); break
+    case 'goToProjects':   if (router) router.push('/projects'); break
+    case 'goToEscalation': if (router) router.push('/escalation'); break
+    default: console.warn(`Chưa cấu hình hành động cho nhãn: ${label}`); break
   }
 }
 
@@ -682,16 +675,12 @@ const handleKeydown = (e: KeyboardEvent) => {
     target.tagName === 'INPUT' ||
     target.tagName === 'TEXTAREA' ||
     target.isContentEditable
-  ) {
-    return
-  }
+  ) return
 
   if (!e.ctrlKey && !e.metaKey) return
 
   let pressedKey = e.key
-  if (pressedKey.length === 1) {
-    pressedKey = pressedKey.toUpperCase()
-  }
+  if (pressedKey.length === 1) pressedKey = pressedKey.toUpperCase()
 
   const matchedShortcut = shortcuts.find(s => s.keys[0] === pressedKey)
   if (matchedShortcut) {
@@ -700,92 +689,67 @@ const handleKeydown = (e: KeyboardEvent) => {
   }
 }
 
-const registerShortcuts = () => window.addEventListener('keydown', handleKeydown)
+const registerShortcuts   = () => window.addEventListener('keydown', handleKeydown)
 const unregisterShortcuts = () => window.removeEventListener('keydown', handleKeydown)
 
 /* =========================================
    COMPUTED
 ========================================= */
 
-const hasChanges = computed(() => {
-  return JSON.stringify(preferences.value) !== originalPreferences.value
-})
+const hasChanges = computed(() =>
+  JSON.stringify(preferences.value) !== originalPreferences.value
+)
 
 const userInitials = computed(() => {
   const name = currentUser.value?.name || ''
   return (
-    name
-      .split(' ')
-      .map((w: string) => w[0])
-      .slice(0, 2)
-      .join('')
-      .toUpperCase() || '?'
+    name.split(' ').map((w: string) => w[0]).slice(0, 2).join('').toUpperCase() || '?'
   )
 })
 
-const canSavePassword = computed(() => {
-  return (
-    pwForm.value.current.length > 0 &&
-    pwForm.value.next.length >= 6 &&
-    pwForm.value.next === pwForm.value.confirm
-  )
-})
+const canSavePassword = computed(() =>
+  pwForm.value.current.length > 0 &&
+  pwForm.value.next.length >= 6 &&
+  pwForm.value.next === pwForm.value.confirm
+)
 
 const pushIcon = computed(() => ({
   granted: 'lucide:check-circle',
-  denied: 'lucide:x-circle',
+  denied:  'lucide:x-circle',
   default: 'lucide:bell-plus'
 }[pushPermission.value] || 'lucide:bell-plus'))
 
 const pushLabel = computed(() => ({
   granted: t('pushGranted'),
-  denied: t('pushDenied'),
+  denied:  t('pushDenied'),
   default: t('pushDefault')
 }[pushPermission.value] || t('pushDefault')))
 
-// FIX CHÍNH: void nowTicker.value để Vue track dependency
-// Khi tickerInterval cập nhật nowTicker mỗi giây → computed re-run → preview cập nhật
 const datePreview = computed(() => {
-  void nowTicker.value // 👈 bắt buộc để Vue track reactivity
-  return dayjs()
-    .tz(preferences.value.timezone)
-    .format(preferences.value.dateFormat)
+  void nowTicker.value
+  return dayjs().tz(preferences.value.timezone).format(preferences.value.dateFormat)
 })
 
 /* =========================================
    WATCHERS
 ========================================= */
 
-watch(
-  () => preferences.value.theme,
-  (v) => setTheme(v)
-)
+watch(() => preferences.value.theme,    (v) => setTheme(v))
+watch(() => preferences.value.language, (v) => setLanguage(v))
 
-watch(
-  () => preferences.value.language,
-  (v) => setLanguage(v)
-)
+// Áp dụng font lên toàn bộ app khi thay đổi
+watch(() => preferences.value.fontFamily, (v) => applyFont(v, preferences.value.fontSize))
+watch(() => preferences.value.fontSize,   (v) => applyFont(preferences.value.fontFamily, v))
 
-watch(
-  () => preferences.value.accentColor,
-  (v) => applyAccentColor(v)
-)
-
-watch(
-  preferences,
-  () => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(preferences.value))
-  },
-  { deep: true }
-)
+watch(preferences, () => {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(preferences.value))
+}, { deep: true })
 
 /* =========================================
    METHODS
 ========================================= */
 
-const closeModal = () => {
-  emit('close')
-}
+const closeModal = () => emit('close')
 
 const saveSettings = async () => {
   try {
@@ -803,29 +767,20 @@ const saveSettings = async () => {
 }
 
 const validateSettings = () => {
-  if (
-    preferences.value.refreshInterval < 10 ||
-    preferences.value.refreshInterval > 300
-  ) {
+  if (preferences.value.refreshInterval < 10 || preferences.value.refreshInterval > 300) {
     throw new Error(t('invalidRefreshInterval'))
   }
-
-  if (
-    preferences.value.alertsPerPage < 5 ||
-    preferences.value.alertsPerPage > 100
-  ) {
+  if (preferences.value.alertsPerPage < 5 || preferences.value.alertsPerPage > 100) {
     throw new Error(t('invalidAlertsPerPage'))
   }
 }
 
 const handleResetSettings = () => {
   if (!confirm(t('confirmReset'))) return
-
   preferences.value = { ...defaultPreferences }
-
   setLanguage(defaultPreferences.language)
   resetPreferences()
-  applyAccentColor(defaultPreferences.accentColor)
+  applyFont(defaultPreferences.fontFamily, defaultPreferences.fontSize)
   success(t('settingsReset'))
 }
 
@@ -834,22 +789,12 @@ const selectLanguage = (lang: Language) => {
   setLanguage(lang)
 }
 
-const colors = {
-  blue: '#2563eb',
-  violet: '#7c3aed',
-  teal: '#0d9488',
-  rose: '#e11d48',
-  amber: '#d97706',
-  slate: '#475569'
-} as const
-
-type AccentColor = keyof typeof colors
-
-const applyAccentColor = (color: string) => {
+// Áp dụng font & font-size lên :root
+const applyFont = (family: string, size: number) => {
   if (typeof document === 'undefined') return
   const root = document.documentElement
-  const hex = colors[color as AccentColor] ?? colors.blue
-  root.style.setProperty('--accent', hex)
+  root.style.setProperty('--font-family', family)
+  root.style.setProperty('--font-size-base', `${size}px`)
 }
 
 const testSound = async () => {
@@ -858,19 +803,13 @@ const testSound = async () => {
     const ctx = new AudioCtx()
     const oscillator = ctx.createOscillator()
     const gainNode = ctx.createGain()
-
     oscillator.connect(gainNode)
     gainNode.connect(ctx.destination)
-
     oscillator.type = 'sine'
     oscillator.frequency.value = 880
     gainNode.gain.value = preferences.value.soundVolume / 100 / 2
-
     oscillator.start()
-    setTimeout(() => {
-      oscillator.stop()
-      ctx.close()
-    }, 250)
+    setTimeout(() => { oscillator.stop(); ctx.close() }, 250)
   } catch {
     error(t('soundPlayError'))
   }
@@ -878,19 +817,11 @@ const testSound = async () => {
 
 const requestPushPermission = async () => {
   if (typeof window === 'undefined') return
-
-  if (!('Notification' in window)) {
-    error(t('pushNotSupported'))
-    return
-  }
-
+  if (!('Notification' in window)) { error(t('pushNotSupported')); return }
   const permission = await Notification.requestPermission()
   pushPermission.value = permission
-
   if (permission === 'granted') {
-    new Notification('AlertOps', {
-      body: t('pushEnabledMsg'),
-    })
+    new Notification('AlertOps', { body: t('pushEnabledMsg') })
     success(t('pushEnabledSuccess'))
   }
 }
@@ -898,14 +829,8 @@ const requestPushPermission = async () => {
 const changePassword = async () => {
   try {
     pwError.value = ''
-
-    if (pwForm.value.next !== pwForm.value.confirm) {
-      throw new Error(t('passwordMismatch'))
-    }
-    if (pwForm.value.next.length < 6) {
-      throw new Error(t('passwordTooShort'))
-    }
-
+    if (pwForm.value.next !== pwForm.value.confirm) throw new Error(t('passwordMismatch'))
+    if (pwForm.value.next.length < 6) throw new Error(t('passwordTooShort'))
     success(t('passwordChangeSuccess'))
     pwForm.value = { current: '', next: '', confirm: '' }
   } catch (e: any) {
@@ -917,44 +842,28 @@ const loadLocalDraft = () => {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (!raw) return
-
     const parsed = JSON.parse(raw)
-    preferences.value = {
-      ...preferences.value,
-      ...parsed
-    }
-
-    if (parsed.language) {
-      setLanguage(parsed.language)
-    }
+    preferences.value = { ...preferences.value, ...parsed }
+    if (parsed.language) setLanguage(parsed.language)
   } catch {}
 }
 
 /* =========================================
    LIFECYCLES
-   FIX: gộp 2 onMounted thành 1, gộp 2 onUnmounted thành 1
 ========================================= */
 
 onMounted(() => {
-  // 1. Khởi động ticker cập nhật mỗi giây → datePreview reactive
-  tickerInterval = setInterval(() => {
-    nowTicker.value = Date.now()
-  }, 1000)
-
-  // 2. Khởi tạo settings
+  tickerInterval = setInterval(() => { nowTicker.value = Date.now() }, 1000)
   originalPreferences.value = JSON.stringify(preferences.value)
   loadLocalDraft()
-
   if (typeof window !== 'undefined' && 'Notification' in window) {
     pushPermission.value = Notification.permission
   }
-
-  applyAccentColor(preferences.value.accentColor)
+  applyFont(preferences.value.fontFamily, preferences.value.fontSize)
   registerShortcuts()
 })
 
 onUnmounted(() => {
-  // Dọn dẹp cả ticker lẫn shortcuts
   clearInterval(tickerInterval)
   unregisterShortcuts()
 })
@@ -1154,10 +1063,7 @@ onUnmounted(() => {
   border: 1px solid var(--border);
 }
 
-.nav-icon {
-  font-size: 15px;
-  flex-shrink: 0;
-}
+.nav-icon { font-size: 15px; flex-shrink: 0; }
 
 .nav-badge {
   margin-left: auto;
@@ -1201,12 +1107,7 @@ onUnmounted(() => {
   border: 1px solid var(--border);
 }
 
-.user-info {
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-  overflow: hidden;
-}
+.user-info { display: flex; flex-direction: column; gap: 1px; overflow: hidden; }
 
 .user-name {
   font-size: 12px;
@@ -1217,10 +1118,7 @@ onUnmounted(() => {
   text-overflow: ellipsis;
 }
 
-.user-role {
-  font-size: 10px;
-  color: var(--text-hint);
-}
+.user-role { font-size: 10px; color: var(--text-hint); }
 
 /* ── Content area ── */
 .settings-content {
@@ -1231,11 +1129,7 @@ onUnmounted(() => {
   scrollbar-color: var(--border) transparent;
 }
 
-.tab-panel {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
+.tab-panel { display: flex; flex-direction: column; gap: 12px; }
 
 .panel-title {
   font-size: 11px;
@@ -1255,9 +1149,7 @@ onUnmounted(() => {
   transition: border-color 0.15s;
 }
 
-.setting-card:hover {
-  border-color: var(--accent);
-}
+.setting-card:hover { border-color: var(--accent); }
 
 .card-label-row {
   display: flex;
@@ -1291,13 +1183,8 @@ onUnmounted(() => {
   cursor: pointer;
 }
 
-.toggle-wrap {
-  flex-shrink: 0;
-}
-
-.toggle-input {
-  display: none;
-}
+.toggle-wrap { flex-shrink: 0; }
+.toggle-input { display: none; }
 
 .toggle-track {
   display: flex;
@@ -1355,9 +1242,98 @@ onUnmounted(() => {
 }
 
 .theme-icon { font-size: 18px; }
-
 .theme-btn:hover { border-color: var(--accent); color: var(--accent); }
 .theme-btn.active { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
+
+/* ── Font family grid ── */
+.font-grid {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.font-btn {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: var(--bg-primary);
+  border: 2px solid var(--border);
+  cursor: pointer;
+  color: var(--text-muted);
+  transition: all 0.15s;
+  min-width: 68px;
+}
+
+.font-btn:hover { border-color: var(--accent); color: var(--accent); }
+.font-btn.active { border-color: var(--accent); background: var(--accent-light); color: var(--text-primary); }
+
+.font-preview-sample {
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.font-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-hint);
+  font-family: inherit !important; /* label giữ font gốc để dễ đọc */
+}
+
+.font-btn .check-icon {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  font-size: 11px;
+  color: var(--accent);
+}
+
+/* ── Font size slider ── */
+.font-size-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.font-slider {
+  flex: 1;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.size-label {
+  font-size: 12px;
+  color: var(--text-hint);
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.size-label.large { font-size: 20px; }
+
+.font-size-value {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--accent);
+  background: var(--accent-light);
+  padding: 2px 8px;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+
+.font-preview-text {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: var(--bg-primary);
+  border: 1px dashed var(--border);
+  color: var(--text-muted);
+  line-height: 1.5;
+  transition: font-size 0.2s, font-family 0.2s;
+}
 
 /* ── Sound ── */
 .volume-slider {
@@ -1393,30 +1369,6 @@ onUnmounted(() => {
 
 .test-sound-btn:hover { background: var(--accent); color: var(--accent-text); }
 
-/* ── Accent colors ── */
-.accent-grid {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-.accent-dot {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  border: 2px solid transparent;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: transform 0.15s, box-shadow 0.15s;
-}
-
-.accent-dot:hover { transform: scale(1.15); }
-.accent-dot.active { border-color: var(--text-primary); box-shadow: 0 0 0 3px var(--bg-primary), 0 0 0 5px currentColor; }
-
-.check-icon { font-size: 14px; color: #fff; }
-
 /* ── Language ── */
 .language-selector {
   display: grid;
@@ -1444,26 +1396,8 @@ onUnmounted(() => {
 .lang-btn:hover { border-color: var(--accent); color: var(--accent); }
 .lang-btn.active { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
 
-/* ── Select ── */
-.select-input {
-  width: 100%;
-  padding: 9px 12px;
-  border-radius: 9px;
-  background: var(--bg-primary);
-  border: 1px solid var(--border);
-  color: var(--text-primary);
-  font-size: 13px;
-  cursor: pointer;
-  transition: border-color 0.15s;
-}
-
-.select-input:focus { outline: none; border-color: var(--accent); }
-
 /* ── Date format ── */
-.date-format-group {
-  display: flex;
-  gap: 8px;
-}
+.date-format-group { display: flex; gap: 8px; }
 
 .format-btn {
   padding: 7px 14px;
@@ -1512,17 +1446,8 @@ onUnmounted(() => {
   border-top: 1px solid var(--border-subtle);
 }
 
-.time-field {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.time-label {
-  font-size: 11px;
-  color: var(--text-hint);
-  font-weight: 600;
-}
+.time-field { display: flex; flex-direction: column; gap: 4px; }
+.time-label { font-size: 11px; color: var(--text-hint); font-weight: 600; }
 
 .time-input {
   padding: 7px 10px;
@@ -1536,7 +1461,6 @@ onUnmounted(() => {
 }
 
 .time-input:focus { outline: none; border-color: var(--accent); }
-
 .time-arrow { font-size: 14px; color: var(--text-hint); margin-top: 18px; }
 
 /* ── Num input ── */
@@ -1559,11 +1483,7 @@ onUnmounted(() => {
 .num-unit { font-size: 12px; color: var(--text-hint); }
 
 /* ── Severity filter ── */
-.severity-filter-group {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
+.severity-filter-group { display: flex; gap: 8px; flex-wrap: wrap; }
 
 .sev-btn {
   padding: 6px 14px;
@@ -1579,18 +1499,13 @@ onUnmounted(() => {
 
 .sev-btn:hover { border-color: var(--accent); }
 .sev-btn.active { border-color: currentColor; }
-
 .sev-all.active      { color: var(--accent); background: var(--accent-light); }
 .sev-critical.active { color: #cf222e; background: rgba(207,34,46,0.08); }
 .sev-error.active    { color: #b45309; background: rgba(180,83,9,0.08); }
 .sev-warning.active  { color: #d97706; background: rgba(217,119,6,0.08); }
 
 /* ── Shortcuts ── */
-.shortcut-desc {
-  font-size: 12px;
-  color: var(--text-hint);
-  margin-bottom: 4px;
-}
+.shortcut-desc { font-size: 12px; color: var(--text-hint); margin-bottom: 4px; }
 
 .shortcut-list {
   display: flex;
@@ -1612,17 +1527,8 @@ onUnmounted(() => {
 }
 
 .shortcut-row:last-child { border-bottom: none; }
-
-.shortcut-label {
-  font-size: 13px;
-  color: var(--text-muted);
-}
-
-.shortcut-keys {
-  display: flex;
-  gap: 4px;
-  flex-shrink: 0;
-}
+.shortcut-label { font-size: 13px; color: var(--text-muted); }
+.shortcut-keys { display: flex; gap: 4px; flex-shrink: 0; }
 
 .kbd {
   padding: 2px 7px;
@@ -1637,11 +1543,7 @@ onUnmounted(() => {
 }
 
 /* ── Version card ── */
-.version-card {
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  overflow: hidden;
-}
+.version-card { border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
 
 .version-row {
   display: flex;
@@ -1652,17 +1554,12 @@ onUnmounted(() => {
 }
 
 .version-row:last-child { border-bottom: none; }
-
 .version-label { font-size: 12px; color: var(--text-hint); font-weight: 600; }
 .version-value { font-size: 12px; color: var(--text-muted); font-family: 'SF Mono', monospace; }
 .status-ok { color: #16a34a !important; }
 
 /* ── Account ── */
-.account-info-card {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
+.account-info-card { display: flex; align-items: center; gap: 16px; }
 
 .account-avatar {
   width: 52px;
@@ -1679,22 +1576,9 @@ onUnmounted(() => {
   border: 2px solid var(--border);
 }
 
-.account-meta {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.account-name {
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--text-primary);
-}
-
-.account-email {
-  font-size: 12px;
-  color: var(--text-hint);
-}
+.account-meta { display: flex; flex-direction: column; gap: 4px; }
+.account-name { font-size: 15px; font-weight: 700; color: var(--text-primary); }
+.account-email { font-size: 12px; color: var(--text-hint); }
 
 .role-badge {
   display: inline-block;
@@ -1711,23 +1595,9 @@ onUnmounted(() => {
 .role-viewer   { background: rgba(107,114,128,0.1); color: #6b7280; }
 
 /* ── Password form ── */
-.field-group {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.field-item {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.field-label {
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--text-hint);
-}
+.field-group { display: flex; flex-direction: column; gap: 10px; }
+.field-item  { display: flex; flex-direction: column; gap: 4px; }
+.field-label { font-size: 11px; font-weight: 600; color: var(--text-hint); }
 
 .text-input {
   padding: 9px 12px;
@@ -1770,10 +1640,7 @@ onUnmounted(() => {
 .save-pw-btn:not(:disabled):hover { opacity: 0.85; }
 
 /* ── Danger zone ── */
-.danger-card {
-  border-color: var(--danger);
-  background: var(--danger-bg);
-}
+.danger-card { border-color: var(--danger); background: var(--danger-bg); }
 
 .danger-title {
   display: flex;
@@ -1785,12 +1652,7 @@ onUnmounted(() => {
   margin-bottom: 6px;
 }
 
-.danger-desc {
-  font-size: 12px;
-  color: var(--text-hint);
-  margin-bottom: 12px;
-  line-height: 1.5;
-}
+.danger-desc { font-size: 12px; color: var(--text-hint); margin-bottom: 12px; line-height: 1.5; }
 
 .danger-btn {
   display: flex;
@@ -1823,12 +1685,7 @@ onUnmounted(() => {
   flex-shrink: 0;
 }
 
-.unsaved-hint {
-  font-size: 12px;
-  color: var(--danger);
-  font-weight: 600;
-  margin-right: auto;
-}
+.unsaved-hint { font-size: 12px; color: var(--danger); font-weight: 600; margin-right: auto; }
 
 .btn-cancel {
   padding: 8px 18px;
