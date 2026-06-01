@@ -234,18 +234,18 @@ const handleLogin = async () => {
   border-radius: 14px;
   background: linear-gradient(135deg, #6e40c9 0%, #3a7bd5 100%);
   display: flex; align-items: center; justify-content: center;
-  font-size: 22px;
+  font-size: 1.5714rem;
   box-shadow: 0 8px 24px rgba(110, 64, 201, 0.35);
 }
 .brand-name {
   display: block;
-  font-size: 22px; font-weight: 800;
+  font-size: 1.5714rem; font-weight: 800;
   color: var(--text-primary);
   letter-spacing: -0.5px;
 }
 .brand-sub {
   display: block;
-  font-size: 11px;
+  font-size: 0.7857rem;
   color: var(--text-tertiary);
   margin-top: 1px;
   letter-spacing: 0.3px;
@@ -276,14 +276,14 @@ const handleLogin = async () => {
 .login-card.shake { animation: shake 0.45s ease-out; }
 
 .card-header { margin-bottom: 24px; }
-.card-title { font-size: 20px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px; }
-.card-desc  { font-size: 13px; color: var(--text-tertiary); }
+.card-title { font-size: 1.4286rem; font-weight: 700; color: var(--text-primary); margin-bottom: 4px; }
+.card-desc  { font-size: 0.9286rem; color: var(--text-tertiary); }
 
 /* ── Form ── */
 .login-form { display: flex; flex-direction: column; gap: 16px; }
 
 .field { display: flex; flex-direction: column; gap: 6px; }
-.field-label { font-size: 12px; font-weight: 600; color: var(--text-secondary); letter-spacing: 0.2px; }
+.field-label { font-size: 0.8571rem; font-weight: 600; color: var(--text-secondary); letter-spacing: 0.2px; }
 
 .input-wrap {
   display: flex;
@@ -306,7 +306,7 @@ const handleLogin = async () => {
 .input-icon {
   padding: 0 12px;
   color: var(--text-tertiary);
-  font-size: 15px;
+  font-size: 1.0714rem;
   flex-shrink: 0;
   transition: color 0.15s;
 }
@@ -318,7 +318,7 @@ const handleLogin = async () => {
   border: none;
   outline: none;
   padding: 11px 4px 11px 0;
-  font-size: 14px;
+  font-size: 1.0000rem;
   color: var(--text-primary);
   font-family: inherit;
 }
@@ -347,7 +347,7 @@ const handleLogin = async () => {
   border: 1px solid rgba(248, 81, 73, 0.25);
   border-radius: 7px;
   color: var(--danger-color);
-  font-size: 13px;
+  font-size: 0.9286rem;
 }
 .err-fade-enter-active, .err-fade-leave-active { transition: all 0.25s ease; }
 .err-fade-enter-from, .err-fade-leave-to { opacity: 0; transform: translateY(-4px); }
@@ -360,7 +360,7 @@ const handleLogin = async () => {
   border: none;
   background: linear-gradient(135deg, #6e40c9 0%, #3a7bd5 100%);
   color: #fff;
-  font-size: 14px;
+  font-size: 1.0000rem;
   font-weight: 700;
   cursor: pointer;
   transition: opacity 0.15s, transform 0.15s, box-shadow 0.15s;
@@ -390,7 +390,7 @@ const handleLogin = async () => {
 
 /* ── Footer ── */
 .login-footer {
-  font-size: 11px;
+  font-size: 0.7857rem;
   color: var(--text-tertiary);
   text-align: center;
 }

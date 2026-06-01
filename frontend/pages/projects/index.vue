@@ -500,13 +500,13 @@ const badgeClass = (
 }
 
 .page-title {
-  font-size: 24px;
+  font-size: 1.7143rem;
   font-weight: 700;
   color: var(--text-primary);
 }
 
 .page-sub {
-  font-size: 13px;
+  font-size: 0.9286rem;
   color: var(--text-muted);
   margin-top: 4px;
 }
@@ -520,7 +520,7 @@ const badgeClass = (
   background: transparent;
   border: 1px solid var(--input-border);
   color: var(--text-secondary);
-  font-size: 13px;
+  font-size: 0.9286rem;
   cursor: pointer;
   transition: .15s;
 }
@@ -588,13 +588,13 @@ const badgeClass = (
 }
 
 .proj-name {
-  font-size: 15px;
+  font-size: 1.0714rem;
   font-weight: 700;
   color: var(--text-primary);
 }
 
 .proj-id {
-  font-size: 11px;
+  font-size: 0.7857rem;
   color: var(--text-muted);
 }
 
@@ -606,7 +606,7 @@ const badgeClass = (
 
 /* Desc */
 .proj-desc {
-  font-size: 13px;
+  font-size: 0.9286rem;
   line-height: 1.6;
   color: var(--text-tertiary);
   min-height: 42px;
@@ -623,7 +623,7 @@ const badgeClass = (
   display: flex;
   align-items: center;
   gap: 5px;
-  font-size: 12px;
+  font-size: 0.8571rem;
   color: var(--text-tertiary);
 }
 
@@ -651,7 +651,7 @@ const badgeClass = (
   border-radius: 50%;
   border: 2px solid #161b22;
   margin-right: -6px;
-  font-size: 10px;
+  font-size: 0.7143rem;
   font-weight: 700;
   color: white;
   display: flex;
@@ -673,12 +673,12 @@ const badgeClass = (
 }
 
 .no-members {
-  font-size: 12px;
+  font-size: 0.8571rem;
   color: var(--text-muted);
 }
 
 .proj-alert-count {
-  font-size: 12px;
+  font-size: 0.8571rem;
   color: var(--text-tertiary);
 }
 
@@ -689,7 +689,7 @@ const badgeClass = (
   gap: 5px;
   padding: 3px 9px;
   border-radius: 999px;
-  font-size: 11px;
+  font-size: 0.7857rem;
   font-weight: 600;
 }
 
@@ -775,7 +775,7 @@ const badgeClass = (
   border: none;
   background: transparent;
   color: var(--text-secondary);
-  font-size: 13px;
+  font-size: 0.9286rem;
   border-radius: 6px;
   padding: 8px 10px;
   display: flex;
@@ -846,7 +846,7 @@ const badgeClass = (
 }
 
 .confirm-modal p {
-  font-size: 13px;
+  font-size: 0.9286rem;
   line-height: 1.6;
   color: var(--text-tertiary);
 }
@@ -867,7 +867,7 @@ const badgeClass = (
   border: none;
   border-radius: 8px;
   padding: 8px 16px;
-  font-size: 13px;
+  font-size: 0.9286rem;
   cursor: pointer;
 }
 

@@ -169,11 +169,11 @@ const statusActions = [
   position: sticky; top: 0; background: var(--bg-secondary); z-index: 10;
 }
 .header-info { display: flex; flex-direction: column; gap: 8px; }
-.panel-id { font-family: 'Courier New', monospace; font-size: 18px; font-weight: 700; color: var(--accent-color); }
+.panel-id { font-family: 'Courier New', monospace; font-size: 1.2857rem; font-weight: 700; color: var(--accent-color); }
 .close-btn {
   background: var(--bg-tertiary); border: 1px solid var(--border-color); color: var(--text-tertiary);
   cursor: pointer; width: 32px; height: 32px; border-radius: 6px;
-  display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; font-size: 1.0000rem; flex-shrink: 0;
   transition: all .15s;
 }
 .close-btn:hover { color: var(--text-secondary); border-color: var(--text-secondary); }
@@ -182,11 +182,11 @@ const statusActions = [
 
 .meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 .meta-item { display: flex; flex-direction: column; gap: 5px; }
-.meta-label { font-size: 11px; font-weight: 600; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: .06em; }
-.meta-value { font-size: 13px; color: var(--text-secondary); }
+.meta-label { font-size: 0.7857rem; font-weight: 600; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: .06em; }
+.meta-value { font-size: 0.9286rem; color: var(--text-secondary); }
 .meta-value.mono { font-family: 'Courier New', monospace; }
 
-.env-badge { padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+.env-badge { padding: 2px 8px; border-radius: 4px; font-size: 0.7857rem; font-weight: 600; }
 .env-production { background: rgba(248,81,73,.15); color: var(--danger-color); }
 .env-staging    { background: rgba(210,153,34,.15); color: var(--warning-color); }
 .status-open { color: var(--success-color); font-weight: 600; }
@@ -194,7 +194,7 @@ const statusActions = [
 .status-esc  { color: var(--danger-color); font-weight: 600; }
 .status-res  { color: var(--accent-color); font-weight: 600; }
 
-.badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; width: fit-content; }
+.badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 6px; font-size: 0.8571rem; font-weight: 600; width: fit-content; }
 .badge-dot { width: 7px; height: 7px; border-radius: 50%; }
 .badge-critical { background: rgba(248,81,73,.12);  color: var(--danger-color); } .badge-critical .badge-dot { background: #f85149; }
 .badge-error    { background: rgba(227,179,65,.12); color: #e3b341; } .badge-error    .badge-dot { background: #e3b341; }
@@ -202,10 +202,10 @@ const statusActions = [
 .badge-info     { background: rgba(88,166,255,.12); color: var(--accent-color); } .badge-info     .badge-dot { background: #58a6ff; }
 
 .section { display: flex; flex-direction: column; gap: 10px; }
-.section-label { font-size: 11px; font-weight: 600; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: .06em; }
+.section-label { font-size: 0.7857rem; font-weight: 600; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: .06em; }
 .message-box {
   background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 8px;
-  padding: 14px; color: var(--text-secondary); font-size: 13px; line-height: 1.6;
+  padding: 14px; color: var(--text-secondary); font-size: 0.9286rem; line-height: 1.6;
 }
 
 /* Timeline */
@@ -218,14 +218,14 @@ const statusActions = [
 .tl-red    { background: #f85149; }
 .tl-green  { background: #3fb950; }
 .tl-text   { display: flex; flex-direction: column; gap: 2px; padding-bottom: 16px; }
-.tl-label  { font-size: 13px; color: var(--text-secondary); font-weight: 500; }
-.tl-time   { font-size: 11px; color: var(--text-tertiary); }
+.tl-label  { font-size: 0.9286rem; color: var(--text-secondary); font-weight: 500; }
+.tl-time   { font-size: 0.7857rem; color: var(--text-tertiary); }
 
 /* Action buttons */
 .action-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .action-btn {
   display: flex; align-items: center; justify-content: center; gap: 6px;
-  padding: 9px 12px; border-radius: 7px; font-size: 12px; font-weight: 600;
+  padding: 9px 12px; border-radius: 7px; font-size: 0.8571rem; font-weight: 600;
   cursor: pointer; border: 1px solid; transition: all .15s;
 }
 .action-btn:disabled { opacity: .35; cursor: default; }
@@ -243,7 +243,7 @@ const statusActions = [
 .delete-btn {
   display: flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 7px;
   background: transparent; border: 1px solid #f85149; color: var(--danger-color);
-  font-size: 13px; font-weight: 600; cursor: pointer; transition: all .15s;
+  font-size: 0.9286rem; font-weight: 600; cursor: pointer; transition: all .15s;
 }
 .delete-btn:hover { background: rgba(248,81,73,.1); }
 </style>

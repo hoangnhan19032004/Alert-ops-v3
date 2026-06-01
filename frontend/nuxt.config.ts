@@ -20,6 +20,17 @@ export default defineNuxtConfig({
       ],
       link: [
         { rel: 'stylesheet', href: 'https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap' }
+      ],
+      style: [
+        {
+          innerHTML: `
+            html, body {
+              font-family: var(--font-family, 'Inter', sans-serif);
+              font-size: var(--font-size-base, 14px);
+            }
+            * { font-family: inherit; }
+          `
+        }
       ]
     },
   },
@@ -40,11 +51,10 @@ export default defineNuxtConfig({
 
   compatibilityDate: '2024-04-03',
 
-  // Runtime config - API base URL
   runtimeConfig: {
-    apiBase: 'http://localhost:5000',  // ← private, chỉ server đọc được
+    apiBase: 'http://localhost:5000',
     public: {
-      apiBase: 'http://localhost:5000' // ← public, client + server đều đọc được
+      apiBase: 'http://localhost:5000'
     }
   },
 

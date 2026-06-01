@@ -345,7 +345,7 @@ watch(() => [form.value.triggerType, form.value.triggerSeverity, form.value.trig
 }
 
 .modal-title {
-  font-size: 18px;
+  font-size: 1.2857rem;
   font-weight: 700;
   color: var(--text-primary);
 }
@@ -379,7 +379,7 @@ watch(() => [form.value.triggerType, form.value.triggerSeverity, form.value.trig
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 13px;
+  font-size: 0.9286rem;
   font-weight: 600;
   color: var(--text-secondary);
   margin-bottom: 8px;
@@ -399,7 +399,7 @@ watch(() => [form.value.triggerType, form.value.triggerSeverity, form.value.trig
   border: 1px solid #1e2735;
   border-radius: 6px;
   color: var(--text-secondary);
-  font-size: 13px;
+  font-size: 0.9286rem;
   transition: all 0.15s;
 }
 
@@ -450,7 +450,7 @@ watch(() => [form.value.triggerType, form.value.triggerSeverity, form.value.trig
 }
 
 .preview-label {
-  font-size: 11px;
+  font-size: 0.7857rem;
   color: var(--text-tertiary);
   text-transform: uppercase;
   font-weight: 600;
@@ -459,7 +459,7 @@ watch(() => [form.value.triggerType, form.value.triggerSeverity, form.value.trig
 
 .preview-value {
   font-family: 'Courier New', monospace;
-  font-size: 12px;
+  font-size: 0.8571rem;
   color: var(--accent-color);
 }
 
@@ -501,7 +501,7 @@ watch(() => [form.value.triggerType, form.value.triggerSeverity, form.value.trig
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 13px;
+  font-size: 0.9286rem;
   color: var(--text-secondary);
   transition: color 0.15s;
 }
@@ -514,7 +514,7 @@ watch(() => [form.value.triggerType, form.value.triggerSeverity, form.value.trig
 }
 
 .selected-channels {
-  font-size: 12px;
+  font-size: 0.8571rem;
   color: var(--text-tertiary);
   margin-top: 8px;
 }
@@ -533,20 +533,20 @@ watch(() => [form.value.triggerType, form.value.triggerSeverity, form.value.trig
 }
 
 .label-text {
-  font-size: 13px;
+  font-size: 0.9286rem;
   font-weight: 600;
   color: var(--text-secondary);
   margin-bottom: 2px;
 }
 
 .label-desc {
-  font-size: 12px;
+  font-size: 0.8571rem;
   color: var(--text-tertiary);
 }
 
 .error-text {
   display: block;
-  font-size: 12px;
+  font-size: 0.8571rem;
   color: var(--danger-color);
   margin-top: 4px;
 }
@@ -567,7 +567,7 @@ watch(() => [form.value.triggerType, form.value.triggerSeverity, form.value.trig
   border-radius: 6px;
   color: var(--text-secondary);
   cursor: pointer;
-  font-size: 13px;
+  font-size: 0.9286rem;
   font-weight: 600;
   transition: all 0.15s;
 }
@@ -586,7 +586,7 @@ watch(() => [form.value.triggerType, form.value.triggerSeverity, form.value.trig
   border-radius: 6px;
   color: #fff;
   cursor: pointer;
-  font-size: 13px;
+  font-size: 0.9286rem;
   font-weight: 600;
   transition: all 0.15s;
 }

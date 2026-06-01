@@ -212,11 +212,11 @@ onMounted(() => {
 
 <style scoped>
 .page-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 22px; }
-.page-title  { font-size: 22px; font-weight: 700; color: #e6edf3; }
-.page-sub    { font-size: 13px; color: #586069; margin-top: 3px; }
+.page-title  { font-size: 1.5714rem; font-weight: 700; color: #e6edf3; }
+.page-sub    { font-size: 0.9286rem; color: #586069; margin-top: 3px; }
 
 .section-card { background: #161b22; border: 1px solid #21262d; border-radius: 10px; padding: 20px; margin-bottom: 20px; }
-.section-label { font-size: 11px; font-weight: 600; color: #586069; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 16px; }
+.section-label { font-size: 0.7857rem; font-weight: 600; color: #586069; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 16px; }
 
 .status-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; margin-bottom: 20px; }
 .status-item { display: flex; align-items: center; gap: 12px; padding: 16px; background: #0d1117; border: 1px solid #1e2735; border-radius: 8px; }
@@ -225,13 +225,13 @@ onMounted(() => {
 .status-icon:not(.connected) { background: rgba(248,81,73,.15); color: #f85149; }
 .status-info { flex: 1; }
 .status-title { font-weight: 600; color: #e6edf3; margin-bottom: 4px; }
-.status-desc { font-size: 13px; color: #8b949e; margin-bottom: 4px; }
-.status-url { font-family: 'Courier New', monospace; font-size: 12px; color: #58a6ff; }
+.status-desc { font-size: 0.9286rem; color: #8b949e; margin-bottom: 4px; }
+.status-url { font-family: 'Courier New', monospace; font-size: 0.8571rem; color: #58a6ff; }
 
 .action-buttons { display: flex; gap: 12px; }
 .btn-primary, .btn-secondary, .btn-submit {
   display: flex; align-items: center; gap: 8px; padding: 8px 16px; border-radius: 6px;
-  font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.15s;
+  font-size: 0.9286rem; font-weight: 600; cursor: pointer; transition: all 0.15s;
 }
 .btn-primary { background: #238636; border: 1px solid #238636; color: #fff; }
 .btn-primary:hover:not(:disabled) { background: #2ea043; }
@@ -246,10 +246,10 @@ onMounted(() => {
 .test-form { max-width: 600px; }
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
 .form-group { margin-bottom: 16px; }
-.form-label { display: block; font-size: 13px; font-weight: 600; color: #c9d1d9; margin-bottom: 6px; }
+.form-label { display: block; font-size: 0.9286rem; font-weight: 600; color: #c9d1d9; margin-bottom: 6px; }
 .form-input, .form-select, .form-textarea {
   width: 100%; padding: 8px 12px; background: #0d1117; border: 1px solid #1e2735; border-radius: 6px;
-  color: #c9d1d9; font-size: 13px; transition: border-color 0.15s;
+  color: #c9d1d9; font-size: 0.9286rem; transition: border-color 0.15s;
 }
 .form-input:focus, .form-select:focus, .form-textarea:focus {
   outline: none; border-color: #58a6ff;
@@ -272,16 +272,16 @@ onMounted(() => {
 .error-item.severity-medium { border-left-color: #e3b341; }
 .error-item.severity-low { border-left-color: #3fb950; }
 .error-header { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
-.error-id { font-family: 'Courier New', monospace; font-size: 12px; color: #58a6ff; font-weight: 600; }
+.error-id { font-family: 'Courier New', monospace; font-size: 0.8571rem; color: #58a6ff; font-weight: 600; }
 .error-severity {
-  padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600;
+  padding: 2px 8px; border-radius: 4px; font-size: 0.7857rem; font-weight: 600;
   background: rgba(248,81,73,.15); color: #f85149;
 }
 .error-severity:has(.severity-medium) { background: rgba(227,179,65,.15); color: #e3b341; }
 .error-severity:has(.severity-low) { background: rgba(63,185,80,.15); color: #3fb950; }
-.error-time { font-size: 12px; color: #586069; margin-left: auto; }
-.error-service { font-family: 'Courier New', monospace; font-size: 12px; color: #8b949e; margin-bottom: 4px; }
-.error-message { font-size: 13px; color: #c9d1d9; line-height: 1.4; }
+.error-time { font-size: 0.8571rem; color: #586069; margin-left: auto; }
+.error-service { font-family: 'Courier New', monospace; font-size: 0.8571rem; color: #8b949e; margin-bottom: 4px; }
+.error-message { font-size: 0.9286rem; color: #c9d1d9; line-height: 1.4; }
 
 @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 .page-wrap { width: 100%; min-width: 0; }

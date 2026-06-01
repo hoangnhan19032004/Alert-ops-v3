@@ -168,50 +168,50 @@ const addRule = async (newRule) => {
 
 <style scoped>
 .page-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 22px; }
-.page-title  { font-size: 22px; font-weight: 700; color: var(--text-primary); }
-.page-sub    { font-size: 13px; color: var(--text-muted); margin-top: 3px; }
+.page-title  { font-size: 1.5714rem; font-weight: 700; color: var(--text-primary); }
+.page-sub    { font-size: 0.9286rem; color: var(--text-muted); margin-top: 3px; }
 .add-btn {
   padding: 8px 16px; border-radius: 7px; background: transparent;
-  border: 1px solid var(--input-border); color: var(--text-secondary); font-size: 13px; cursor: pointer; transition: all .15s;
+  border: 1px solid var(--input-border); color: var(--text-secondary); font-size: 0.9286rem; cursor: pointer; transition: all .15s;
 }
 .add-btn:hover { border-color: var(--accent-color); color: var(--accent-color); }
 
 .section-card { background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 10px; padding: 20px; }
-.section-label { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 14px; }
+.section-label { font-size: 0.7857rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 14px; }
 
 .channels-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1px; background: var(--bg-tertiary); border-radius: 8px; overflow: hidden; }
 .channel { background: var(--bg-primary); padding: 16px 18px; }
 .channel-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
-.ch-name { font-weight: 600; font-size: 14px; }
+.ch-name { font-weight: 600; font-size: 1.0000rem; }
 .email-name  { color: var(--accent-color); }
 .slack-name  { color: #e3b341; }
 .pd-name     { color: var(--danger-color); }
-.ch-sub      { font-family: 'Courier New', monospace; font-size: 12px; color: var(--text-muted); }
-.active-badge { background: rgba(63,185,80,.15); color: var(--success-color); font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 4px; }
+.ch-sub      { font-family: 'Courier New', monospace; font-size: 0.8571rem; color: var(--text-muted); }
+.active-badge { background: rgba(63,185,80,.15); color: var(--success-color); font-size: 0.7857rem; font-weight: 600; padding: 2px 8px; border-radius: 4px; }
 
 .esc-table { width: 100%; border-collapse: collapse; }
 .esc-table th {
-  text-align: left; font-size: 11px; font-weight: 600; color: var(--text-muted);
+  text-align: left; font-size: 0.7857rem; font-weight: 600; color: var(--text-muted);
   text-transform: uppercase; letter-spacing: .05em; padding: 8px 12px;
   border-bottom: 1px solid var(--border-color);
 }
-.esc-table td { padding: 14px 12px; border-bottom: 1px solid #161b22; font-size: 13px; color: var(--text-secondary); }
+.esc-table td { padding: 14px 12px; border-bottom: 1px solid #161b22; font-size: 0.9286rem; color: var(--text-secondary); }
 .esc-table tr:last-child td { border-bottom: none; }
 
 .proj-link { font-family: 'Courier New', monospace; color: var(--accent-color); }
 
-.trigger-badge { padding: 3px 9px; border-radius: 4px; font-size: 12px; font-weight: 600; }
+.trigger-badge { padding: 3px 9px; border-radius: 4px; font-size: 0.8571rem; font-weight: 600; }
 .trig-critical { background: rgba(248,81,73,.18);  color: var(--danger-color); }
 .trig-warning  { background: rgba(210,153,34,.18); color: var(--warning-color); }
 .trig-other    { background: rgba(227,179,65,.18); color: #e3b341; }
 
 .toggle-btn {
-  padding: 3px 12px; border-radius: 20px; font-size: 12px; font-weight: 700;
+  padding: 3px 12px; border-radius: 20px; font-size: 0.8571rem; font-weight: 700;
   border: none; cursor: pointer; transition: all .15s;
 }
 .toggle-on  { background: #1a7f37; color: var(--success-color); }
 .toggle-off { background: var(--bg-tertiary); color: var(--text-muted); }
-.del-btn { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 18px; padding: 2px 6px; }
+.del-btn { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 1.2857rem; padding: 2px 6px; }
 .del-btn:hover { color: var(--danger-color); }
 .page-wrap { width: 100%; min-width: 0; }
 </style>

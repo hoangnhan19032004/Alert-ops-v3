@@ -461,7 +461,7 @@ onMounted(() => {
   background: var(--bg-tertiary);
   border: 1px solid var(--input-border);
   color: var(--text-secondary);
-  font-size: 12px;
+  font-size: 0.8571rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.15s;
@@ -473,7 +473,7 @@ onMounted(() => {
 }
 
 .edit-title {
-  font-size: 24px;
+  font-size: 1.7143rem;
   font-weight: 700;
   color: var(--text-primary);
   margin: 0;
@@ -530,7 +530,7 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 12px;
+  font-size: 0.8571rem;
   font-weight: 600;
   color: var(--text-secondary);
   text-transform: uppercase;
@@ -544,7 +544,7 @@ onMounted(() => {
   border: 1px solid var(--input-border);
   background: var(--bg-primary);
   color: var(--text-secondary);
-  font-size: 13px;
+  font-size: 0.9286rem;
   font-family: inherit;
   outline: none;
   transition: all 0.15s;
@@ -567,7 +567,7 @@ onMounted(() => {
 }
 
 .error-text {
-  font-size: 12px;
+  font-size: 0.8571rem;
   color: var(--danger-color);
 }
 
@@ -586,7 +586,7 @@ onMounted(() => {
   border: 1px solid var(--input-border);
   background: var(--bg-primary);
   color: var(--text-tertiary);
-  font-size: 13px;
+  font-size: 0.9286rem;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.15s;
@@ -637,7 +637,7 @@ onMounted(() => {
   background: rgba(88, 166, 255, 0.1);
   border: 1px solid rgba(88, 166, 255, 0.2);
   color: var(--accent-color);
-  font-size: 12px;
+  font-size: 0.8571rem;
   font-weight: 500;
 }
 
@@ -680,7 +680,7 @@ onMounted(() => {
   background: #238636;
   border: 1px solid #238636;
   color: #fff;
-  font-size: 12px;
+  font-size: 0.8571rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.15s;
@@ -707,7 +707,7 @@ onMounted(() => {
   gap: 6px;
   padding: 10px 20px;
   border-radius: 6px;
-  font-size: 13px;
+  font-size: 0.9286rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.15s;
@@ -757,7 +757,7 @@ onMounted(() => {
 }
 
 .empty-state p {
-  font-size: 14px;
+  font-size: 1.0000rem;
   margin-bottom: 16px;
 }
 
@@ -767,7 +767,7 @@ onMounted(() => {
   background: var(--bg-tertiary);
   border: 1px solid var(--input-border);
   color: var(--text-secondary);
-  font-size: 13px;
+  font-size: 0.9286rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.15s;

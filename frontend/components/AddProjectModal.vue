@@ -544,7 +544,7 @@ watch(() => form.value.owner, () => {
 
 .modal-title {
   color: var(--text-primary);
-  font-size: 18px;
+  font-size: 1.2857rem;
   font-weight: 700;
 }
 
@@ -569,7 +569,7 @@ watch(() => form.value.owner, () => {
   gap: 8px;
   margin-bottom: 8px;
   color: var(--text-secondary);
-  font-size: 13px;
+  font-size: 0.9286rem;
   font-weight: 600;
 }
 
@@ -581,7 +581,7 @@ watch(() => form.value.owner, () => {
   border-radius: 8px;
   padding: 11px 12px;
   color: var(--text-secondary);
-  font-size: 13px;
+  font-size: 0.9286rem;
 }
 
 .form-input:focus,
@@ -603,7 +603,7 @@ watch(() => form.value.owner, () => {
   display: block;
   margin-top: 6px;
   color: var(--danger-color);
-  font-size: 12px;
+  font-size: 0.8571rem;
 }
 
 .severity-options {
@@ -655,7 +655,7 @@ watch(() => form.value.owner, () => {
   padding: 0 16px;
   color: white;
   cursor: pointer;
-  font-size: 13px;
+  font-size: 0.9286rem;
   font-weight: 600;
 }
 
@@ -695,7 +695,7 @@ watch(() => form.value.owner, () => {
   align-items: center;
   justify-content: center;
   color: white;
-  font-size: 13px;
+  font-size: 0.9286rem;
   font-weight: 700;
 }
 
@@ -710,12 +710,12 @@ watch(() => form.value.owner, () => {
 
 .member-email {
   color: var(--text-primary);
-  font-size: 13px;
+  font-size: 0.9286rem;
 }
 
 .member-role {
   color: var(--text-tertiary);
-  font-size: 11px;
+  font-size: 0.7857rem;
 }
 
 .manager-role {
@@ -736,7 +736,7 @@ watch(() => form.value.owner, () => {
 .selected-count {
   margin-top: 10px;
   color: var(--text-tertiary);
-  font-size: 12px;
+  font-size: 0.8571rem;
 }
 
 .modal-footer {

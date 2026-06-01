@@ -161,7 +161,7 @@ const formatTime = (timestamp: number) => {
   border: 1px solid #1e2735;
   border-radius: 8px;
   color: var(--text-secondary);
-  font-size: 13px;
+  font-size: 0.9286rem;
   transition: all 0.15s;
 }
 
@@ -225,7 +225,7 @@ const formatTime = (timestamp: number) => {
 }
 
 .history-title {
-  font-size: 11px;
+  font-size: 0.7857rem;
   font-weight: 700;
   color: var(--text-tertiary);
   text-transform: uppercase;
@@ -257,7 +257,7 @@ const formatTime = (timestamp: number) => {
   border: none;
   color: var(--text-secondary);
   cursor: pointer;
-  font-size: 13px;
+  font-size: 0.9286rem;
   text-align: left;
   transition: background 0.15s;
 }
@@ -281,7 +281,7 @@ const formatTime = (timestamp: number) => {
 }
 
 .history-time {
-  font-size: 11px;
+  font-size: 0.7857rem;
   color: var(--text-tertiary);
   white-space: nowrap;
   flex-shrink: 0;

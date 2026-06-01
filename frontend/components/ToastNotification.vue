@@ -98,7 +98,7 @@ const { toasts, removeToast } = useToast()
 
 .toast-message {
   flex: 1;
-  font-size: 13px;
+  font-size: 0.9286rem;
   color: var(--text-secondary);
   font-weight: 500;
 }

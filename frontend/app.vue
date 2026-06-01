@@ -5,12 +5,31 @@
 </template>
 
 <script setup lang="ts">
+import { watch } from 'vue'
 import { useTheme } from '~/composables/useTheme'
 import { useI18n } from '~/composables/useI18n'
 import { useAuth } from '~/composables/useAuth'
+import { useUserPreferences } from '~/composables/useUserPreferences'
 
 useTheme()
 useI18n()
+
+const { preferences } = useUserPreferences()
+
+if (import.meta.client) {
+  const applyFont = () => {
+    const root = document.documentElement
+    root.style.setProperty('--font-family', preferences.value.fontFamily)
+    root.style.setProperty('--font-size-base', `${preferences.value.fontSize}px`)
+    root.style.fontSize = `${preferences.value.fontSize}px`
+    document.body.style.fontFamily = preferences.value.fontFamily
+  }
+
+  applyFont()
+
+  watch(() => preferences.value.fontFamily, applyFont)
+  watch(() => preferences.value.fontSize, applyFont)
+}
 
 const { restoreSession } = useAuth()
 if (import.meta.client) {
@@ -219,13 +238,13 @@ html, body {
 
 /* Page titles */
 .page-title {
-  font-size: 22px;
+  font-size: 1.5714rem;
   font-weight: 700;
   color: var(--text-primary);
 }
 
 .page-sub {
-  font-size: 13px;
+  font-size: 0.9286rem;
   color: var(--text-tertiary);
   margin-top: 4px;
 }
@@ -280,7 +299,7 @@ table {
 th {
   background: var(--table-header-bg);
   color: var(--text-tertiary);
-  font-size: 11px;
+  font-size: 0.7857rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -294,7 +313,7 @@ td {
   border-bottom: 1px solid var(--border-color);
   color: var(--text-secondary);
   background: var(--table-row-bg);
-  font-size: 13px;
+  font-size: 0.9286rem;
 }
 
 tr:hover td {

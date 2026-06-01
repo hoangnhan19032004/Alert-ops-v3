@@ -384,14 +384,14 @@ const projDotClass = (sev) => ({
 }
 
 .page-title {
-  font-size: 22px;
+  font-size: 1.5714rem;
   font-weight: 700;
   color: var(--text-primary);
   margin: 0;
 }
 
 .page-sub {
-  font-size: 13px;
+  font-size: 0.9286rem;
   color: var(--text-hint);
   margin: 4px 0 0;
 }
@@ -408,7 +408,7 @@ const projDotClass = (sev) => ({
   gap: 5px;
   padding: 5px 11px;
   border-radius: 20px;
-  font-size: 11px;
+  font-size: 0.7857rem;
   font-weight: 700;
   letter-spacing: 0.06em;
 }
@@ -446,13 +446,13 @@ const projDotClass = (sev) => ({
   background: var(--bg-surface);
   border: 1px solid var(--border);
   border-radius: 20px;
-  font-size: 11px;
+  font-size: 0.7857rem;
   color: var(--text-hint);
   font-variant-numeric: tabular-nums;
 }
 
 .countdown-icon {
-  font-size: 12px;
+  font-size: 0.8571rem;
 }
 
 .icon-btn {
@@ -466,7 +466,7 @@ const projDotClass = (sev) => ({
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 15px;
+  font-size: 1.0714rem;
   transition: all 0.15s;
 }
 
@@ -527,7 +527,7 @@ const projDotClass = (sev) => ({
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 17px;
+  font-size: 1.2143rem;
 }
 
 .kpi-icon-wrap.blue   { background: var(--blue-bg);  color: var(--blue-text); }
@@ -536,7 +536,7 @@ const projDotClass = (sev) => ({
 .kpi-icon-wrap.green  { background: var(--green-bg); color: var(--green-text);}
 
 .kpi-badge {
-  font-size: 10px;
+  font-size: 0.7143rem;
   font-weight: 700;
   padding: 2px 8px;
   border-radius: 6px;
@@ -548,7 +548,7 @@ const projDotClass = (sev) => ({
 }
 
 .kpi-value {
-  font-size: 34px;
+  font-size: 2.4286rem;
   font-weight: 700;
   line-height: 1;
   margin-bottom: 4px;
@@ -560,14 +560,14 @@ const projDotClass = (sev) => ({
 .kpi-value.green { color: var(--green); }
 
 .kpi-label {
-  font-size: 12px;
+  font-size: 0.8571rem;
   font-weight: 600;
   color: var(--text-muted);
   margin-bottom: 2px;
 }
 
 .kpi-sub {
-  font-size: 11px;
+  font-size: 0.7857rem;
   color: var(--text-hint);
 }
 
@@ -606,13 +606,13 @@ const projDotClass = (sev) => ({
 }
 
 .card-title {
-  font-size: 13px;
+  font-size: 0.9286rem;
   font-weight: 700;
   color: var(--text-primary);
 }
 
 .card-link {
-  font-size: 12px;
+  font-size: 0.8571rem;
   color: var(--accent);
   text-decoration: none;
   font-weight: 600;
@@ -635,12 +635,12 @@ const projDotClass = (sev) => ({
   align-items: center;
   gap: 8px;
   color: var(--text-hint);
-  font-size: 13px;
+  font-size: 0.9286rem;
   padding: 12px 0;
 }
 
 .empty-icon {
-  font-size: 18px;
+  font-size: 1.2857rem;
   color: var(--green);
 }
 
@@ -679,7 +679,7 @@ const projDotClass = (sev) => ({
 }
 
 .sev-badge {
-  font-size: 10px;
+  font-size: 0.7143rem;
   font-weight: 700;
   padding: 2px 7px;
   border-radius: 5px;
@@ -697,7 +697,7 @@ const projDotClass = (sev) => ({
 }
 
 .item-msg {
-  font-size: 12px;
+  font-size: 0.8571rem;
   color: var(--text-muted);
   white-space: nowrap;
   overflow: hidden;
@@ -705,13 +705,13 @@ const projDotClass = (sev) => ({
 }
 
 .item-service {
-  font-size: 11px;
+  font-size: 0.7857rem;
   color: var(--accent);
   font-family: 'SF Mono', 'Fira Code', monospace;
 }
 
 .item-time {
-  font-size: 11px;
+  font-size: 0.7857rem;
   color: var(--text-hint);
 }
 
@@ -729,7 +729,7 @@ const projDotClass = (sev) => ({
 }
 
 .sev-name {
-  font-size: 12px;
+  font-size: 0.8571rem;
   font-weight: 600;
   min-width: 58px;
 }
@@ -760,7 +760,7 @@ const projDotClass = (sev) => ({
 .fill-info     { background: var(--blue);  }
 
 .sev-count {
-  font-size: 12px;
+  font-size: 0.8571rem;
   color: var(--text-hint);
   min-width: 22px;
   text-align: right;
@@ -797,7 +797,7 @@ const projDotClass = (sev) => ({
 
 .service-name {
   position: relative;
-  font-size: 12px;
+  font-size: 0.8571rem;
   color: var(--text-muted);
   font-family: 'SF Mono', 'Fira Code', monospace;
   padding: 4px 8px;
@@ -805,7 +805,7 @@ const projDotClass = (sev) => ({
 }
 
 .service-count {
-  font-size: 12px;
+  font-size: 0.8571rem;
   font-weight: 700;
   flex-shrink: 0;
 }
@@ -851,13 +851,13 @@ const projDotClass = (sev) => ({
 .dot-muted  { background: var(--text-hint); }
 
 .pill-name {
-  font-size: 13px;
+  font-size: 0.9286rem;
   color: var(--text-muted);
   font-family: 'SF Mono', 'Fira Code', monospace;
 }
 
 .pill-count {
-  font-size: 11px;
+  font-size: 0.7857rem;
   font-weight: 700;
   background: var(--bg-hover);
   color: var(--text-hint);
@@ -871,7 +871,7 @@ const projDotClass = (sev) => ({
 }
 
 .qa-label {
-  font-size: 11px;
+  font-size: 0.7857rem;
   font-weight: 700;
   color: var(--text-hint);
   text-transform: uppercase;
@@ -894,7 +894,7 @@ const projDotClass = (sev) => ({
   border: 1px solid var(--border);
   border-radius: 9px;
   color: var(--text-muted);
-  font-size: 13px;
+  font-size: 0.9286rem;
   font-weight: 600;
   text-decoration: none;
   transition: all 0.15s;
@@ -908,6 +908,6 @@ const projDotClass = (sev) => ({
 }
 
 .qa-icon {
-  font-size: 15px;
+  font-size: 1.0714rem;
 }
 </style>

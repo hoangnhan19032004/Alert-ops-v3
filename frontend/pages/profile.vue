@@ -371,7 +371,7 @@ function confirmDeleteAccount() {}
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  font-size: 12px;
+  font-size: 0.8571rem;
   transition: opacity 0.15s;
 }
 

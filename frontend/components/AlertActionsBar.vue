@@ -162,7 +162,7 @@ const handleBulkResolve = () => {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 12px;
+  font-size: 0.8571rem;
   color: var(--text-tertiary);
 }
 
@@ -181,7 +181,7 @@ const handleBulkResolve = () => {
   border-radius: 6px;
   color: var(--text-secondary);
   cursor: pointer;
-  font-size: 12px;
+  font-size: 0.8571rem;
   font-weight: 600;
   transition: all 0.15s;
   white-space: nowrap;
@@ -254,7 +254,7 @@ const handleBulkResolve = () => {
   border: none;
   color: var(--text-secondary);
   cursor: pointer;
-  font-size: 12px;
+  font-size: 0.8571rem;
   text-align: left;
   transition: all 0.15s;
 }

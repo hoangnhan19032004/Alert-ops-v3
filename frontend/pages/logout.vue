@@ -200,11 +200,11 @@ const handleLogout = async () => {
   border-radius: 12px;
   background: linear-gradient(135deg, #6e40c9, #3a7bd5);
   display: flex; align-items: center; justify-content: center;
-  font-size: 18px;
+  font-size: 1.2857rem;
   box-shadow: 0 6px 18px rgba(110, 64, 201, 0.3);
 }
 .brand-name {
-  font-size: 20px; font-weight: 800;
+  font-size: 1.4286rem; font-weight: 800;
   color: var(--text-primary);
   letter-spacing: -0.5px;
 }
@@ -247,18 +247,18 @@ const handleLogout = async () => {
   border-radius: 50%;
   background: linear-gradient(135deg, #3a7bd5, #6e40c9);
   display: flex; align-items: center; justify-content: center;
-  font-size: 13px; font-weight: 700; color: #fff;
+  font-size: 0.9286rem; font-weight: 700; color: #fff;
   flex-shrink: 0;
 }
 .av-admin   { background: linear-gradient(135deg, #da3633, #9b1c1c) !important; }
 .av-manager { background: linear-gradient(135deg, #3a7bd5, #6e40c9) !important; }
 .av-operator{ background: linear-gradient(135deg, #1d9e75, #0f6e56) !important; }
-.user-name  { font-size: 14px; font-weight: 600; color: var(--text-primary); }
-.user-meta  { font-size: 11px; color: var(--text-tertiary); margin-top: 1px; }
+.user-name  { font-size: 1.0000rem; font-weight: 600; color: var(--text-primary); }
+.user-meta  { font-size: 0.7857rem; color: var(--text-tertiary); margin-top: 1px; }
 
-.confirm-icon  { font-size: 36px; text-align: center; margin-top: 4px; }
-.confirm-title { font-size: 18px; font-weight: 700; color: var(--text-primary); text-align: center; }
-.confirm-desc  { font-size: 13px; color: var(--text-tertiary); text-align: center; line-height: 1.6; }
+.confirm-icon  { font-size: 2.5714rem; text-align: center; margin-top: 4px; }
+.confirm-title { font-size: 1.2857rem; font-weight: 700; color: var(--text-primary); text-align: center; }
+.confirm-desc  { font-size: 0.9286rem; color: var(--text-tertiary); text-align: center; line-height: 1.6; }
 
 .btn-row {
   display: flex;
@@ -273,7 +273,7 @@ const handleLogout = async () => {
   gap: 7px;
   padding: 11px 16px;
   border-radius: 8px;
-  font-size: 14px;
+  font-size: 1.0000rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.15s;
@@ -306,7 +306,7 @@ const handleLogout = async () => {
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 .loading-text {
-  font-size: 14px;
+  font-size: 1.0000rem;
   color: var(--text-secondary);
 }
 
@@ -316,7 +316,7 @@ const handleLogout = async () => {
   background: rgba(63, 185, 80, 0.15);
   border: 2px solid #3fb950;
   color: #3fb950;
-  font-size: 22px;
+  font-size: 1.5714rem;
   display: flex; align-items: center; justify-content: center;
   animation: popIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
@@ -324,8 +324,8 @@ const handleLogout = async () => {
   from { opacity: 0; transform: scale(0.5); }
   to   { opacity: 1; transform: scale(1); }
 }
-.done-title { font-size: 18px; font-weight: 700; color: var(--text-primary); }
-.done-desc  { font-size: 13px; color: var(--text-tertiary); }
+.done-title { font-size: 1.2857rem; font-weight: 700; color: var(--text-primary); }
+.done-desc  { font-size: 0.9286rem; color: var(--text-tertiary); }
 
 .progress-bar {
   width: 100%;
@@ -349,7 +349,7 @@ const handleLogout = async () => {
 .slide-leave-to  { opacity: 0; transform: translateX(-20px); }
 
 .footer-text {
-  font-size: 11px;
+  font-size: 0.7857rem;
   color: var(--text-tertiary);
   text-align: center;
 }

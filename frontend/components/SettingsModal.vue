@@ -106,26 +106,54 @@
                   <span class="label-text">{{ t('fontSize') }}</span>
                   <span class="label-desc">{{ t('fontSizeDesc') }}</span>
                 </div>
-                <span class="font-size-value">{{ preferences.fontSize }}px</span>
+                <!-- Badge hiển thị giá trị hiện tại -->
+                <div class="font-size-badges">
+                  <span
+                    v-for="preset in fontSizePresets"
+                    :key="preset.value"
+                    class="size-preset-badge"
+                    :class="{ active: preferences.fontSize === preset.value }"
+                    @click="preferences.fontSize = preset.value"
+                  >{{ preset.label }}</span>
+                  <span class="font-size-value">{{ preferences.fontSize }}px</span>
+                </div>
               </div>
+
+              <!-- Slider row -->
               <div class="font-size-row">
-                <span class="size-label">A</span>
-                <input
-                  type="range"
-                  min="12"
-                  max="20"
-                  step="1"
-                  v-model.number="preferences.fontSize"
-                  class="font-slider"
-                />
-                <span class="size-label large">A</span>
+                <span class="size-label-a small">A</span>
+                <div class="slider-track-wrap">
+                  <input
+                    type="range"
+                    min="12"
+                    max="20"
+                    step="1"
+                    v-model.number="preferences.fontSize"
+                    class="font-slider"
+                  />
+                  <!-- Tick marks -->
+                  <div class="slider-ticks">
+                    <span v-for="n in 9" :key="n" class="tick" :class="{ active: preferences.fontSize === n + 11 }"></span>
+                  </div>
+                </div>
+                <span class="size-label-a large">A</span>
               </div>
-              <p
-                class="font-preview-text"
-                :style="{ fontFamily: preferences.fontFamily, fontSize: preferences.fontSize + 'px' }"
-              >
-                {{ t('fontPreviewText') }}
-              </p>
+
+              <!-- Scale indicator -->
+              <div class="scale-indicator">
+                <span class="scale-label">{{ t('fontPreviewText') }}</span>
+                <div class="scale-samples">
+                  <span class="scale-sample" :style="{ fontSize: preferences.fontSize + 'px', fontFamily: preferences.fontFamily }">
+                    {{ t('fontPreviewText') }}
+                  </span>
+                </div>
+              </div>
+
+              <!-- Affected scope note -->
+              <div class="scope-note">
+                <Icon name="lucide:info" class="scope-icon" />
+                <span>{{ t('fontSizeDesc') }}</span>
+              </div>
             </div>
           </div>
 
@@ -133,7 +161,6 @@
           <div v-if="activeTab === 'language'" class="tab-panel">
             <div class="panel-title">{{ t('languageRegion') }}</div>
 
-            <!-- Language -->
             <div class="setting-card">
               <div class="card-label-row">
                 <div>
@@ -155,7 +182,6 @@
               </div>
             </div>
 
-            <!-- Date format -->
             <div class="setting-card">
               <div class="card-label-row">
                 <div>
@@ -412,7 +438,7 @@
             </div>
 
             <div class="setting-card">
-              <div class="panel-title" style="font-size:13px; margin-bottom:12px;">{{ t('changePassword') }}</div>
+              <div class="panel-title" style="font-size: 0.9286rem; margin-bottom:12px;">{{ t('changePassword') }}</div>
               <div class="field-group">
                 <div class="field-item">
                   <label class="field-label">{{ t('currentPassword') }}</label>
@@ -480,7 +506,7 @@ dayjs.extend(utc)
 dayjs.extend(timezone)
 
 type ThemeMode = 'auto' | 'light' | 'dark'
-type Language = 'vi' | 'en'
+type Language  = 'vi' | 'en'
 
 interface TabItem {
   id: string
@@ -503,78 +529,56 @@ interface FontOption {
 interface ExtendedPreferences {
   theme: ThemeMode
   language: Language
-
   emailNotifications: boolean
   slackNotifications: boolean
-
   alertsPerPage: number
   autoRefreshAlerts: boolean
   refreshInterval: number
-
   compactView: boolean
-
   soundEnabled: boolean
   soundVolume: number
-
-  // Font settings (thay thế accentColor)
   fontFamily: string
   fontSize: number
-
   timezone: string
   dateFormat: string
-
   criticalOnly: boolean
-
   quietHours: boolean
   quietFrom: string
   quietTo: string
-
   defaultSeverityFilter: string
   showResolved: boolean
 }
 
 const router = useRouter()
 
-const emit = defineEmits<{
-  close: []
-}>()
+const emit = defineEmits<{ close: [] }>()
 
-const { success, error, info } = useToast()
-const { setTheme } = useTheme()
+const { success, error } = useToast()
+const { setTheme }       = useTheme()
 const { t, setLanguage, language } = useI18n()
-const { currentUser } = useAuth()
+const { currentUser }    = useAuth()
 
 const STORAGE_KEY = 'alertops-settings-v3'
 
 const defaultPreferences: ExtendedPreferences = {
   theme: 'dark',
   language: 'vi',
-
   emailNotifications: true,
   slackNotifications: false,
-
   alertsPerPage: 20,
   autoRefreshAlerts: true,
   refreshInterval: 30,
-
   compactView: false,
-
   soundEnabled: true,
   soundVolume: 60,
-
-  // Font defaults
   fontFamily: 'Inter, sans-serif',
   fontSize: 14,
-
   timezone: 'Asia/Ho_Chi_Minh',
   dateFormat: 'DD/MM/YYYY',
-
   criticalOnly: false,
-
   quietHours: false,
   quietFrom: '22:00',
   quietTo: '07:00',
-
   defaultSeverityFilter: 'all',
   showResolved: true,
 }
@@ -582,21 +586,22 @@ const defaultPreferences: ExtendedPreferences = {
 const { preferences, savePreferences, resetPreferences } = useUserPreferences()
 
 const originalPreferences = ref('')
-const activeTab = ref('appearance')
-const saving = ref(false)
+const activeTab  = ref('appearance')
+const saving     = ref(false)
 const pushPermission = ref<NotificationPermission>('default')
 
-const pwForm = ref({
-  current: '',
-  next: '',
-  confirm: ''
-})
-
+const pwForm = ref({ current: '', next: '', confirm: '' })
 const pwError = ref('')
 
-/* =========================================
-   UI DATA
-========================================= */
+/* ── UI DATA ── */
+
+const fontSizePresets = [
+  { value: 12, label: 'XS' },
+  { value: 13, label: 'S'  },
+  { value: 14, label: 'M'  },
+  { value: 16, label: 'L'  },
+  { value: 18, label: 'XL' },
+]
 
 const shortcuts = [
   { label: 'goToDashboard',  keys: ['D'] },
@@ -607,104 +612,77 @@ const shortcuts = [
 ]
 
 const tabs: TabItem[] = [
-  { id: 'appearance', label: 'appearance', icon: 'lucide:palette' },
-  { id: 'language', label: 'language', icon: 'lucide:languages' },
-  { id: 'notifications', label: 'notifications', icon: 'lucide:bell' },
-  { id: 'display', label: 'display', icon: 'lucide:monitor' },
-  { id: 'shortcuts', label: 'shortcuts', icon: 'lucide:keyboard' },
-  { id: 'account', label: 'account', icon: 'lucide:user' }
+  { id: 'appearance',    label: 'appearance',    icon: 'lucide:palette'   },
+  { id: 'language',      label: 'language',      icon: 'lucide:languages' },
+  { id: 'notifications', label: 'notifications', icon: 'lucide:bell'      },
+  { id: 'display',       label: 'display',       icon: 'lucide:monitor'   },
+  { id: 'shortcuts',     label: 'shortcuts',     icon: 'lucide:keyboard'  },
+  { id: 'account',       label: 'account',       icon: 'lucide:user'      },
 ]
 
 const themeOptions: ThemeOption[] = [
-  { value: 'auto', label: 'themeAuto', icon: 'lucide:monitor' },
-  { value: 'light', label: 'themeLight', icon: 'lucide:sun' },
-  { value: 'dark', label: 'themeDark', icon: 'lucide:moon' }
+  { value: 'auto',  label: 'themeAuto',  icon: 'lucide:monitor' },
+  { value: 'light', label: 'themeLight', icon: 'lucide:sun'     },
+  { value: 'dark',  label: 'themeDark',  icon: 'lucide:moon'    },
 ]
 
-// Font options — thay thế accentColors
 const fontOptions: FontOption[] = [
-  { value: 'Inter, sans-serif',            label: 'Inter' },
-  { value: 'Roboto, sans-serif',           label: 'Roboto' },
-  { value: 'Poppins, sans-serif',          label: 'Poppins' },
-  { value: 'Nunito, sans-serif',           label: 'Nunito' },
-  { value: "'JetBrains Mono', monospace",  label: 'Mono' },
+  { value: 'Inter, sans-serif',           label: 'Inter'  },
+  { value: 'Roboto, sans-serif',          label: 'Roboto' },
+  { value: 'Poppins, sans-serif',         label: 'Poppins'},
+  { value: 'Nunito, sans-serif',          label: 'Nunito' },
+  { value: "'JetBrains Mono', monospace", label: 'Mono'   },
 ]
 
 const dateFormats = [
   { value: 'DD/MM/YYYY', label: 'DD/MM/YYYY' },
   { value: 'MM/DD/YYYY', label: 'MM/DD/YYYY' },
-  { value: 'YYYY-MM-DD', label: 'ISO 8601' }
+  { value: 'YYYY-MM-DD', label: 'ISO 8601'   },
 ]
 
 const severities = [
-  { value: 'all', label: 'all', cls: 'sev-all' },
+  { value: 'all',      label: 'all',      cls: 'sev-all'      },
   { value: 'Critical', label: 'critical', cls: 'sev-critical' },
-  { value: 'Error', label: 'error', cls: 'sev-error' },
-  { value: 'Warning', label: 'warning', cls: 'sev-warning' }
+  { value: 'Error',    label: 'error',    cls: 'sev-error'    },
+  { value: 'Warning',  label: 'warning',  cls: 'sev-warning'  },
 ]
 
-const buildDate = computed(() =>
-  new Date().toLocaleDateString('vi-VN')
-)
+const buildDate = computed(() => new Date().toLocaleDateString('vi-VN'))
 
-/* =========================================
-   TICKER
-========================================= */
-
+/* ── TICKER ── */
 const nowTicker = ref(Date.now())
 let tickerInterval: ReturnType<typeof setInterval>
 
-/* =========================================
-   KEYBOARD SHORTCUTS LOGIC
-========================================= */
-
+/* ── KEYBOARD SHORTCUTS ── */
 const executeShortcutAction = (label: string) => {
-  switch (label) {
-    case 'goToDashboard':  if (router) router.push('/'); break
-    case 'goToAlerts':     if (router) router.push('/alerts'); break
-    case 'goToAnalytics':  if (router) router.push('/analytics'); break
-    case 'goToProjects':   if (router) router.push('/projects'); break
-    case 'goToEscalation': if (router) router.push('/escalation'); break
-    default: console.warn(`Chưa cấu hình hành động cho nhãn: ${label}`); break
+  const routes: Record<string, string> = {
+    goToDashboard: '/', goToAlerts: '/alerts', goToAnalytics: '/analytics',
+    goToProjects: '/projects', goToEscalation: '/escalation',
   }
+  if (routes[label] && router) router.push(routes[label])
 }
 
 const handleKeydown = (e: KeyboardEvent) => {
   const target = e.target as HTMLElement
-  if (
-    target.tagName === 'INPUT' ||
-    target.tagName === 'TEXTAREA' ||
-    target.isContentEditable
-  ) return
-
+  if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) return
   if (!e.ctrlKey && !e.metaKey) return
-
-  let pressedKey = e.key
-  if (pressedKey.length === 1) pressedKey = pressedKey.toUpperCase()
-
-  const matchedShortcut = shortcuts.find(s => s.keys[0] === pressedKey)
-  if (matchedShortcut) {
-    e.preventDefault()
-    executeShortcutAction(matchedShortcut.label)
-  }
+  let key = e.key
+  if (key.length === 1) key = key.toUpperCase()
+  const match = shortcuts.find(s => s.keys[0] === key)
+  if (match) { e.preventDefault(); executeShortcutAction(match.label) }
 }
 
 const registerShortcuts   = () => window.addEventListener('keydown', handleKeydown)
 const unregisterShortcuts = () => window.removeEventListener('keydown', handleKeydown)
 
-/* =========================================
-   COMPUTED
-========================================= */
-
+/* ── COMPUTED ── */
 const hasChanges = computed(() =>
   JSON.stringify(preferences.value) !== originalPreferences.value
 )
 
 const userInitials = computed(() => {
   const name = currentUser.value?.name || ''
-  return (
-    name.split(' ').map((w: string) => w[0]).slice(0, 2).join('').toUpperCase() || '?'
-  )
+  return name.split(' ').map((w: string) => w[0]).slice(0, 2).join('').toUpperCase() || '?'
 })
 
 const canSavePassword = computed(() =>
@@ -716,13 +694,13 @@ const canSavePassword = computed(() =>
 const pushIcon = computed(() => ({
   granted: 'lucide:check-circle',
   denied:  'lucide:x-circle',
-  default: 'lucide:bell-plus'
+  default: 'lucide:bell-plus',
 }[pushPermission.value] || 'lucide:bell-plus'))
 
 const pushLabel = computed(() => ({
   granted: t('pushGranted'),
   denied:  t('pushDenied'),
-  default: t('pushDefault')
+  default: t('pushDefault'),
 }[pushPermission.value] || t('pushDefault')))
 
 const datePreview = computed(() => {
@@ -730,14 +708,11 @@ const datePreview = computed(() => {
   return dayjs().tz(preferences.value.timezone).format(preferences.value.dateFormat)
 })
 
-/* =========================================
-   WATCHERS
-========================================= */
-
+/* ── WATCHERS ── */
 watch(() => preferences.value.theme,    (v) => setTheme(v))
 watch(() => preferences.value.language, (v) => setLanguage(v))
 
-// Áp dụng font lên toàn bộ app khi thay đổi
+// ✅ Áp dụng font lên toàn bộ app ngay khi slider thay đổi (real-time)
 watch(() => preferences.value.fontFamily, (v) => applyFont(v, preferences.value.fontSize))
 watch(() => preferences.value.fontSize,   (v) => applyFont(preferences.value.fontFamily, v))
 
@@ -745,10 +720,7 @@ watch(preferences, () => {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(preferences.value))
 }, { deep: true })
 
-/* =========================================
-   METHODS
-========================================= */
-
+/* ── METHODS ── */
 const closeModal = () => emit('close')
 
 const saveSettings = async () => {
@@ -767,12 +739,10 @@ const saveSettings = async () => {
 }
 
 const validateSettings = () => {
-  if (preferences.value.refreshInterval < 10 || preferences.value.refreshInterval > 300) {
+  if (preferences.value.refreshInterval < 10 || preferences.value.refreshInterval > 300)
     throw new Error(t('invalidRefreshInterval'))
-  }
-  if (preferences.value.alertsPerPage < 5 || preferences.value.alertsPerPage > 100) {
+  if (preferences.value.alertsPerPage < 5 || preferences.value.alertsPerPage > 100)
     throw new Error(t('invalidAlertsPerPage'))
-  }
 }
 
 const handleResetSettings = () => {
@@ -789,38 +759,52 @@ const selectLanguage = (lang: Language) => {
   setLanguage(lang)
 }
 
-// Áp dụng font & font-size lên :root
+/**
+ * ✅ applyFont — áp dụng font lên toàn bộ app
+ *
+ * Cơ chế:
+ *  1. Set --font-size-base và --font-family lên :root  → dùng var() ở bất kỳ đâu
+ *  2. Set html.style.fontSize                          → rem của toàn app dựa vào đây
+ *  3. Set body.style.fontFamily                        → cascade xuống tất cả element
+ *
+ * Lưu ý: KHÔNG set body.style.fontSize để tránh override rem cascade.
+ * Các component phải dùng rem/em thay vì px hardcoded để nhận scale.
+ */
 const applyFont = (family: string, size: number) => {
   if (typeof document === 'undefined') return
   const root = document.documentElement
+
+  // 1. CSS variables — để các component có thể dùng var(--font-size-base)
   root.style.setProperty('--font-family', family)
   root.style.setProperty('--font-size-base', `${size}px`)
+
+  // 2. html font-size — root của hệ rem
+  root.style.fontSize = `${size}px`
+
+  // 3. font-family cascade
+  document.body.style.fontFamily = family
 }
 
 const testSound = async () => {
   try {
     const AudioCtx = window.AudioContext || (window as any).webkitAudioContext
     const ctx = new AudioCtx()
-    const oscillator = ctx.createOscillator()
-    const gainNode = ctx.createGain()
-    oscillator.connect(gainNode)
-    gainNode.connect(ctx.destination)
-    oscillator.type = 'sine'
-    oscillator.frequency.value = 880
-    gainNode.gain.value = preferences.value.soundVolume / 100 / 2
-    oscillator.start()
-    setTimeout(() => { oscillator.stop(); ctx.close() }, 250)
-  } catch {
-    error(t('soundPlayError'))
-  }
+    const osc = ctx.createOscillator()
+    const gain = ctx.createGain()
+    osc.connect(gain); gain.connect(ctx.destination)
+    osc.type = 'sine'; osc.frequency.value = 880
+    gain.gain.value = preferences.value.soundVolume / 100 / 2
+    osc.start()
+    setTimeout(() => { osc.stop(); ctx.close() }, 250)
+  } catch { error(t('soundPlayError')) }
 }
 
 const requestPushPermission = async () => {
   if (typeof window === 'undefined') return
   if (!('Notification' in window)) { error(t('pushNotSupported')); return }
-  const permission = await Notification.requestPermission()
-  pushPermission.value = permission
-  if (permission === 'granted') {
+  const perm = await Notification.requestPermission()
+  pushPermission.value = perm
+  if (perm === 'granted') {
     new Notification('AlertOps', { body: t('pushEnabledMsg') })
     success(t('pushEnabledSuccess'))
   }
@@ -833,9 +817,7 @@ const changePassword = async () => {
     if (pwForm.value.next.length < 6) throw new Error(t('passwordTooShort'))
     success(t('passwordChangeSuccess'))
     pwForm.value = { current: '', next: '', confirm: '' }
-  } catch (e: any) {
-    pwError.value = e.message
-  }
+  } catch (e: any) { pwError.value = e.message }
 }
 
 const loadLocalDraft = () => {
@@ -848,17 +830,14 @@ const loadLocalDraft = () => {
   } catch {}
 }
 
-/* =========================================
-   LIFECYCLES
-========================================= */
-
+/* ── LIFECYCLES ── */
 onMounted(() => {
   tickerInterval = setInterval(() => { nowTicker.value = Date.now() }, 1000)
   originalPreferences.value = JSON.stringify(preferences.value)
   loadLocalDraft()
-  if (typeof window !== 'undefined' && 'Notification' in window) {
+  if (typeof window !== 'undefined' && 'Notification' in window)
     pushPermission.value = Notification.permission
-  }
+  // ✅ Áp dụng ngay khi modal mở (đảm bảo setting đã lưu được restore)
   applyFont(preferences.value.fontFamily, preferences.value.fontSize)
   registerShortcuts()
 })
@@ -871,7 +850,7 @@ onUnmounted(() => {
 
 <style scoped>
 /* ══════════════════════════════════════════════
-   VARIABLES — light / dark
+   CSS VARIABLES
 ══════════════════════════════════════════════ */
 .settings-modal-overlay {
   --bg-primary:    #ffffff;
@@ -915,33 +894,23 @@ onUnmounted(() => {
 }
 
 /* ══════════════════════════════════════════════
-   OVERLAY
+   OVERLAY & MODAL
 ══════════════════════════════════════════════ */
 .settings-modal-overlay {
-  position: fixed;
-  inset: 0;
+  position: fixed; inset: 0;
   background: rgba(0,0,0,0.5);
   backdrop-filter: blur(8px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 9999;
-  padding: 16px;
+  display: flex; align-items: center; justify-content: center;
+  z-index: 9999; padding: 16px;
 }
 
-/* ══════════════════════════════════════════════
-   MODAL SHELL
-══════════════════════════════════════════════ */
 .settings-modal {
-  width: 100%;
-  max-width: 860px;
-  max-height: 90vh;
+  width: 100%; max-width: 860px; max-height: 90vh;
   background: var(--bg-primary);
   border: 1px solid var(--border);
   border-radius: 20px;
   box-shadow: var(--shadow);
-  display: flex;
-  flex-direction: column;
+  display: flex; flex-direction: column;
   overflow: hidden;
   color: var(--text-primary);
 }
@@ -950,553 +919,365 @@ onUnmounted(() => {
    HEADER
 ══════════════════════════════════════════════ */
 .modal-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  display: flex; align-items: center; justify-content: space-between;
   padding: 18px 24px;
   border-bottom: 1px solid var(--border-subtle);
   background: var(--bg-secondary);
   flex-shrink: 0;
 }
-
-.header-left {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
+.header-left { display: flex; align-items: center; gap: 12px; }
 .header-icon-wrap {
-  width: 38px;
-  height: 38px;
-  border-radius: 10px;
-  background: var(--accent-light);
-  border: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--accent);
-  font-size: 17px;
+  width: 38px; height: 38px; border-radius: 10px;
+  background: var(--accent-light); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--accent); font-size: 1.2143rem;
 }
-
-.modal-title {
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin: 0;
-}
-
-.modal-subtitle {
-  font-size: 11px;
-  color: var(--text-hint);
-  margin: 2px 0 0;
-}
-
+.modal-title   { font-size: 1.1429rem; font-weight: 700; color: var(--text-primary); margin: 0; }
+.modal-subtitle{ font-size: 0.7857rem; color: var(--text-hint); margin: 2px 0 0; }
 .modal-close {
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-  background: transparent;
-  border: 1px solid transparent;
-  color: var(--text-hint);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 16px;
-  transition: all 0.15s;
+  width: 32px; height: 32px; border-radius: 8px;
+  background: transparent; border: 1px solid transparent;
+  color: var(--text-hint); cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.1429rem; transition: all 0.15s;
 }
-
-.modal-close:hover {
-  background: var(--bg-tertiary);
-  border-color: var(--border);
-  color: var(--text-muted);
-}
+.modal-close:hover { background: var(--bg-tertiary); border-color: var(--border); color: var(--text-muted); }
 
 /* ══════════════════════════════════════════════
-   BODY
+   BODY / SIDEBAR
 ══════════════════════════════════════════════ */
-.modal-body {
-  display: flex;
-  flex: 1;
-  overflow: hidden;
-}
+.modal-body { display: flex; flex: 1; overflow: hidden; }
 
-/* ── Sidebar nav ── */
 .settings-nav {
-  width: var(--nav-w);
-  flex-shrink: 0;
+  width: var(--nav-w); flex-shrink: 0;
   border-right: 1px solid var(--border-subtle);
   background: var(--bg-secondary);
   padding: 12px 8px;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
+  display: flex; flex-direction: column; gap: 2px;
   overflow-y: auto;
 }
-
 .nav-item {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  padding: 9px 12px;
-  border-radius: 9px;
-  background: transparent;
-  border: none;
-  color: var(--text-muted);
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  text-align: left;
-  transition: all 0.15s;
-  width: 100%;
-  position: relative;
+  display: flex; align-items: center; gap: 9px;
+  padding: 9px 12px; border-radius: 9px;
+  background: transparent; border: none;
+  color: var(--text-muted); font-size: 0.9286rem; font-weight: 600;
+  cursor: pointer; text-align: left; transition: all 0.15s;
+  width: 100%; position: relative;
 }
-
-.nav-item:hover {
-  background: var(--bg-tertiary);
-  color: var(--text-primary);
-}
-
-.nav-item.active {
-  background: var(--accent-light);
-  color: var(--accent);
-  border: 1px solid var(--border);
-}
-
-.nav-icon { font-size: 15px; flex-shrink: 0; }
-
+.nav-item:hover { background: var(--bg-tertiary); color: var(--text-primary); }
+.nav-item.active { background: var(--accent-light); color: var(--accent); border: 1px solid var(--border); }
+.nav-icon { font-size: 1.0714rem; flex-shrink: 0; }
 .nav-badge {
-  margin-left: auto;
-  background: var(--danger);
-  color: #fff;
-  font-size: 10px;
-  font-weight: 700;
-  padding: 1px 6px;
-  border-radius: 10px;
+  margin-left: auto; background: var(--danger); color: #fff;
+  font-size: 0.7143rem; font-weight: 700; padding: 1px 6px; border-radius: 10px;
 }
-
-.nav-divider {
-  height: 1px;
-  background: var(--border-subtle);
-  margin: 8px 4px;
-}
-
+.nav-divider { height: 1px; background: var(--border-subtle); margin: 8px 4px; }
 .nav-user-card {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  padding: 10px 12px;
-  border-radius: 9px;
-  background: var(--bg-tertiary);
-  border: 1px solid var(--border-subtle);
-  margin-top: auto;
+  display: flex; align-items: center; gap: 9px; padding: 10px 12px;
+  border-radius: 9px; background: var(--bg-tertiary);
+  border: 1px solid var(--border-subtle); margin-top: auto;
 }
-
 .user-avatar {
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  background: var(--accent-light);
-  color: var(--accent);
-  font-size: 11px;
-  font-weight: 700;
+  width: 30px; height: 30px; border-radius: 50%;
+  background: var(--accent-light); color: var(--accent);
+  font-size: 0.7857rem; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; border: 1px solid var(--border);
+}
+.user-info { display: flex; flex-direction: column; gap: 1px; overflow: hidden; }
+.user-name  { font-size: 0.8571rem; font-weight: 700; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.user-role  { font-size: 0.7143rem; color: var(--text-hint); }
+
+/* ══════════════════════════════════════════════
+   CONTENT
+══════════════════════════════════════════════ */
+.settings-content {
+  flex: 1; overflow-y: auto; padding: 20px 24px;
+  scrollbar-width: thin; scrollbar-color: var(--border) transparent;
+}
+.tab-panel { display: flex; flex-direction: column; gap: 12px; }
+.panel-title {
+  font-size: 0.7857rem; font-weight: 700; color: var(--text-hint);
+  text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 4px;
+}
+.setting-card {
+  background: var(--bg-secondary); border: 1px solid var(--border);
+  border-radius: 12px; padding: 14px 16px; transition: border-color 0.15s;
+}
+.setting-card:hover { border-color: var(--accent); }
+.card-label-row {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; margin-bottom: 12px;
+}
+.label-text { display: block; font-size: 0.9286rem; font-weight: 600; color: var(--text-primary); }
+.label-desc { display: block; font-size: 0.7857rem; color: var(--text-hint); margin-top: 2px; line-height: 1.4; }
+
+/* ══════════════════════════════════════════════
+   FONT SIZE CONTROL (UPDATED)
+══════════════════════════════════════════════ */
+
+/* Preset badges + current value */
+.font-size-badges {
   display: flex;
   align-items: center;
-  justify-content: center;
+  gap: 5px;
   flex-shrink: 0;
-  border: 1px solid var(--border);
 }
 
-.user-info { display: flex; flex-direction: column; gap: 1px; overflow: hidden; }
-
-.user-name {
-  font-size: 12px;
+.size-preset-badge {
+  padding: 2px 8px;
+  border-radius: 5px;
+  font-size: 0.7857rem;
   font-weight: 700;
-  color: var(--text-primary);
+  color: var(--text-hint);
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: all 0.15s;
+  user-select: none;
+}
+.size-preset-badge:hover { border-color: var(--accent); color: var(--accent); }
+.size-preset-badge.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-text);
+}
+
+.font-size-value {
+  font-size: 0.8571rem; font-weight: 700;
+  color: var(--accent);
+  background: var(--accent-light);
+  padding: 2px 10px;
+  border-radius: 6px;
+  min-width: 46px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+/* Slider row */
+.font-size-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+.size-label-a {
+  font-weight: 700;
+  color: var(--text-hint);
+  flex-shrink: 0;
+  user-select: none;
+  line-height: 1;
+}
+.size-label-a.small { font-size: 0.8571rem; }
+.size-label-a.large { font-size: 1.5714rem; }
+
+.slider-track-wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.font-slider {
+  width: 100%;
+  accent-color: var(--accent);
+  cursor: pointer;
+  height: 4px;
+}
+
+/* Tick marks under slider */
+.slider-ticks {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 1px;
+}
+.tick {
+  width: 4px; height: 4px;
+  border-radius: 50%;
+  background: var(--border);
+  transition: background 0.15s;
+}
+.tick.active { background: var(--accent); }
+
+/* Scale preview */
+.scale-indicator {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: var(--bg-primary);
+  border: 1px dashed var(--border);
+}
+.scale-label {
+  display: block;
+  font-size: 0.7143rem;
+  font-weight: 600;
+  color: var(--text-hint);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 6px;
+}
+.scale-samples { display: flex; flex-direction: column; gap: 2px; }
+.scale-sample {
+  color: var(--text-muted);
+  line-height: 1.5;
+  transition: font-size 0.2s ease, font-family 0.2s ease;
+  display: block;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.user-role { font-size: 10px; color: var(--text-hint); }
-
-/* ── Content area ── */
-.settings-content {
-  flex: 1;
-  overflow-y: auto;
-  padding: 20px 24px;
-  scrollbar-width: thin;
-  scrollbar-color: var(--border) transparent;
-}
-
-.tab-panel { display: flex; flex-direction: column; gap: 12px; }
-
-.panel-title {
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--text-hint);
-  text-transform: uppercase;
-  letter-spacing: 0.07em;
-  margin-bottom: 4px;
-}
-
-/* ── Setting card ── */
-.setting-card {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 14px 16px;
-  transition: border-color 0.15s;
-}
-
-.setting-card:hover { border-color: var(--accent); }
-
-.card-label-row {
+/* Scope note */
+.scope-note {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 12px;
-}
-
-.label-text {
-  display: block;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text-primary);
-}
-
-.label-desc {
-  display: block;
-  font-size: 11px;
-  color: var(--text-hint);
-  margin-top: 2px;
-  line-height: 1.4;
-}
-
-/* ── Toggle row ── */
-.toggle-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  cursor: pointer;
-}
-
-.toggle-wrap { flex-shrink: 0; }
-.toggle-input { display: none; }
-
-.toggle-track {
-  display: flex;
-  align-items: center;
-  width: 42px;
-  height: 23px;
-  border-radius: 12px;
-  background: var(--toggle-off);
-  border: 1px solid var(--border);
-  padding: 2px;
-  cursor: pointer;
-  transition: background 0.2s, border-color 0.2s;
-}
-
-.toggle-input:checked + .toggle-track {
-  background: var(--toggle-on);
-  border-color: var(--toggle-on);
-}
-
-.toggle-thumb {
-  width: 17px;
-  height: 17px;
-  border-radius: 50%;
-  background: #fff;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-  transition: transform 0.2s cubic-bezier(0.34,1.56,0.64,1);
-  display: block;
-}
-
-.toggle-input:checked + .toggle-track .toggle-thumb {
-  transform: translateX(19px);
-}
-
-/* ── Theme selector ── */
-.theme-selector {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-}
-
-.theme-btn {
-  display: flex;
-  flex-direction: column;
   align-items: center;
   gap: 6px;
-  padding: 12px 8px;
-  border-radius: 10px;
-  background: var(--bg-primary);
-  border: 1px solid var(--border);
-  color: var(--text-muted);
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.15s;
+  margin-top: 10px;
+  padding: 6px 10px;
+  border-radius: 7px;
+  background: var(--accent-light);
+  border: 1px solid rgba(88,166,255,0.2);
 }
+.scope-icon { font-size: 0.9286rem; color: var(--accent); flex-shrink: 0; }
+.scope-note span { font-size: 0.7857rem; color: var(--accent); }
 
-.theme-icon { font-size: 18px; }
+/* ══════════════════════════════════════════════
+   THEME / FONT FAMILY
+══════════════════════════════════════════════ */
+.theme-selector { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.theme-btn {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  padding: 12px 8px; border-radius: 10px;
+  background: var(--bg-primary); border: 1px solid var(--border);
+  color: var(--text-muted); font-size: 0.8571rem; font-weight: 600;
+  cursor: pointer; transition: all 0.15s;
+}
+.theme-icon { font-size: 1.2857rem; }
 .theme-btn:hover { border-color: var(--accent); color: var(--accent); }
 .theme-btn.active { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
 
-/* ── Font family grid ── */
-.font-grid {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
+.font-grid { display: flex; gap: 8px; flex-wrap: wrap; }
 .font-btn {
   position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 5px;
-  padding: 10px 14px;
-  border-radius: 10px;
-  background: var(--bg-primary);
-  border: 2px solid var(--border);
-  cursor: pointer;
-  color: var(--text-muted);
-  transition: all 0.15s;
-  min-width: 68px;
+  display: flex; flex-direction: column; align-items: center; gap: 5px;
+  padding: 10px 14px; border-radius: 10px;
+  background: var(--bg-primary); border: 2px solid var(--border);
+  cursor: pointer; color: var(--text-muted);
+  transition: all 0.15s; min-width: 68px;
 }
-
-.font-btn:hover { border-color: var(--accent); color: var(--accent); }
+.font-btn:hover  { border-color: var(--accent); color: var(--accent); }
 .font-btn.active { border-color: var(--accent); background: var(--accent-light); color: var(--text-primary); }
+.font-preview-sample { font-size: 1.4286rem; font-weight: 600; line-height: 1; }
+.font-label { font-size: 0.7143rem; font-weight: 600; color: var(--text-hint); font-family: inherit !important; }
+.font-btn .check-icon { position: absolute; top: 5px; right: 5px; font-size: 0.7857rem; color: var(--accent); }
 
-.font-preview-sample {
-  font-size: 20px;
-  font-weight: 600;
-  line-height: 1;
+/* ══════════════════════════════════════════════
+   TOGGLES
+══════════════════════════════════════════════ */
+.toggle-row {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 16px; cursor: pointer;
 }
-
-.font-label {
-  font-size: 10px;
-  font-weight: 600;
-  color: var(--text-hint);
-  font-family: inherit !important; /* label giữ font gốc để dễ đọc */
+.toggle-wrap   { flex-shrink: 0; }
+.toggle-input  { display: none; }
+.toggle-track  {
+  display: flex; align-items: center;
+  width: 42px; height: 23px; border-radius: 12px;
+  background: var(--toggle-off); border: 1px solid var(--border);
+  padding: 2px; cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
 }
-
-.font-btn .check-icon {
-  position: absolute;
-  top: 5px;
-  right: 5px;
-  font-size: 11px;
-  color: var(--accent);
+.toggle-input:checked + .toggle-track { background: var(--toggle-on); border-color: var(--toggle-on); }
+.toggle-thumb {
+  width: 17px; height: 17px; border-radius: 50%;
+  background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  transition: transform 0.2s cubic-bezier(0.34,1.56,0.64,1); display: block;
 }
+.toggle-input:checked + .toggle-track .toggle-thumb { transform: translateX(19px); }
 
-/* ── Font size slider ── */
-.font-size-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.font-slider {
-  flex: 1;
-  accent-color: var(--accent);
-  cursor: pointer;
-}
-
-.size-label {
-  font-size: 12px;
-  color: var(--text-hint);
-  font-weight: 600;
-  flex-shrink: 0;
-}
-
-.size-label.large { font-size: 20px; }
-
-.font-size-value {
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--accent);
-  background: var(--accent-light);
-  padding: 2px 8px;
-  border-radius: 6px;
-  flex-shrink: 0;
-}
-
-.font-preview-text {
-  margin-top: 10px;
-  padding: 10px 12px;
-  border-radius: 8px;
-  background: var(--bg-primary);
-  border: 1px dashed var(--border);
-  color: var(--text-muted);
-  line-height: 1.5;
-  transition: font-size 0.2s, font-family 0.2s;
-}
-
-/* ── Sound ── */
-.volume-slider {
-  width: 100%;
-  accent-color: var(--accent);
-  cursor: pointer;
-  margin-top: 2px;
-}
-
-.slider-labels {
-  display: flex;
-  justify-content: space-between;
-  font-size: 10px;
-  color: var(--text-hint);
-  margin-top: 4px;
-}
-
-.test-sound-btn {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  padding: 5px 12px;
-  border-radius: 7px;
-  background: var(--accent-light);
-  border: 1px solid var(--border);
-  color: var(--accent);
-  font-size: 11px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.15s;
-  white-space: nowrap;
-}
-
-.test-sound-btn:hover { background: var(--accent); color: var(--accent-text); }
-
-/* ── Language ── */
-.language-selector {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 8px;
-}
-
+/* ══════════════════════════════════════════════
+   LANGUAGE / DATE / SOUND / QUIET
+══════════════════════════════════════════════ */
+.language-selector { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
 .lang-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 11px;
-  border-radius: 10px;
-  background: var(--bg-primary);
-  border: 1px solid var(--border);
-  color: var(--text-muted);
-  font-size: 13px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.15s;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 11px; border-radius: 10px;
+  background: var(--bg-primary); border: 1px solid var(--border);
+  color: var(--text-muted); font-size: 0.9286rem; font-weight: 700;
+  cursor: pointer; transition: all 0.15s;
 }
-
-.flag { font-size: 16px; }
-.lang-btn:hover { border-color: var(--accent); color: var(--accent); }
+.flag { font-size: 1.1429rem; }
+.lang-btn:hover  { border-color: var(--accent); color: var(--accent); }
 .lang-btn.active { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
 
-/* ── Date format ── */
 .date-format-group { display: flex; gap: 8px; }
-
 .format-btn {
-  padding: 7px 14px;
-  border-radius: 8px;
-  background: var(--bg-primary);
-  border: 1px solid var(--border);
-  color: var(--text-muted);
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.15s;
+  padding: 7px 14px; border-radius: 8px;
+  background: var(--bg-primary); border: 1px solid var(--border);
+  color: var(--text-muted); font-size: 0.8571rem; font-weight: 600;
+  cursor: pointer; transition: all 0.15s;
   font-family: 'SF Mono', 'Fira Code', monospace;
 }
-
-.format-btn:hover { border-color: var(--accent); color: var(--accent); }
+.format-btn:hover  { border-color: var(--accent); color: var(--accent); }
 .format-btn.active { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
 
-/* ── Push permission ── */
-.permission-btn {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 7px 14px;
-  border-radius: 8px;
-  background: var(--bg-tertiary);
-  border: 1px solid var(--border);
-  color: var(--text-muted);
-  font-size: 12px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.15s;
-  white-space: nowrap;
-  flex-shrink: 0;
-}
+.volume-slider { width: 100%; accent-color: var(--accent); cursor: pointer; margin-top: 2px; }
+.slider-labels { display: flex; justify-content: space-between; font-size: 0.7143rem; color: var(--text-hint); margin-top: 4px; }
 
+.test-sound-btn {
+  display: flex; align-items: center; gap: 5px;
+  padding: 5px 12px; border-radius: 7px;
+  background: var(--accent-light); border: 1px solid var(--border);
+  color: var(--accent); font-size: 0.7857rem; font-weight: 700;
+  cursor: pointer; transition: all 0.15s; white-space: nowrap;
+}
+.test-sound-btn:hover { background: var(--accent); color: var(--accent-text); }
+
+.permission-btn {
+  display: flex; align-items: center; gap: 6px;
+  padding: 7px 14px; border-radius: 8px;
+  background: var(--bg-tertiary); border: 1px solid var(--border);
+  color: var(--text-muted); font-size: 0.8571rem; font-weight: 700;
+  cursor: pointer; transition: all 0.15s; white-space: nowrap; flex-shrink: 0;
+}
 .permission-btn.granted { color: #16a34a; border-color: #16a34a; background: rgba(22,163,74,0.08); }
 .permission-btn.denied  { color: var(--danger); border-color: var(--danger); background: var(--danger-bg); cursor: not-allowed; }
 
-/* ── Quiet hours ── */
 .time-range {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-top: 12px;
-  padding-top: 12px;
-  border-top: 1px solid var(--border-subtle);
+  display: flex; align-items: center; gap: 12px;
+  margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border-subtle);
 }
-
 .time-field { display: flex; flex-direction: column; gap: 4px; }
-.time-label { font-size: 11px; color: var(--text-hint); font-weight: 600; }
-
+.time-label { font-size: 0.7857rem; color: var(--text-hint); font-weight: 600; }
 .time-input {
-  padding: 7px 10px;
-  border-radius: 8px;
-  background: var(--bg-primary);
-  border: 1px solid var(--border);
-  color: var(--text-primary);
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
+  padding: 7px 10px; border-radius: 8px;
+  background: var(--bg-primary); border: 1px solid var(--border);
+  color: var(--text-primary); font-size: 0.9286rem; font-weight: 600; cursor: pointer;
 }
-
 .time-input:focus { outline: none; border-color: var(--accent); }
-.time-arrow { font-size: 14px; color: var(--text-hint); margin-top: 18px; }
+.time-arrow { font-size: 1.0000rem; color: var(--text-hint); margin-top: 18px; }
 
-/* ── Num input ── */
-.num-wrap { display: flex; align-items: center; gap: 6px; }
-
+/* ══════════════════════════════════════════════
+   DISPLAY TAB
+══════════════════════════════════════════════ */
+.num-wrap  { display: flex; align-items: center; gap: 6px; }
 .num-input {
-  width: 70px;
-  padding: 7px 10px;
-  border-radius: 8px;
-  background: var(--bg-primary);
-  border: 1px solid var(--border);
-  color: var(--text-primary);
-  font-size: 13px;
-  font-weight: 600;
-  text-align: center;
-  transition: border-color 0.15s;
+  width: 70px; padding: 7px 10px; border-radius: 8px;
+  background: var(--bg-primary); border: 1px solid var(--border);
+  color: var(--text-primary); font-size: 0.9286rem; font-weight: 600;
+  text-align: center; transition: border-color 0.15s;
 }
-
 .num-input:focus { outline: none; border-color: var(--accent); }
-.num-unit { font-size: 12px; color: var(--text-hint); }
+.num-unit { font-size: 0.8571rem; color: var(--text-hint); }
 
-/* ── Severity filter ── */
 .severity-filter-group { display: flex; gap: 8px; flex-wrap: wrap; }
-
 .sev-btn {
-  padding: 6px 14px;
-  border-radius: 8px;
-  background: var(--bg-primary);
-  border: 1px solid var(--border);
-  font-size: 12px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.15s;
-  color: var(--text-muted);
+  padding: 6px 14px; border-radius: 8px;
+  background: var(--bg-primary); border: 1px solid var(--border);
+  font-size: 0.8571rem; font-weight: 700; cursor: pointer;
+  transition: all 0.15s; color: var(--text-muted);
 }
-
 .sev-btn:hover { border-color: var(--accent); }
 .sev-btn.active { border-color: currentColor; }
 .sev-all.active      { color: var(--accent); background: var(--accent-light); }
@@ -1504,218 +1285,126 @@ onUnmounted(() => {
 .sev-error.active    { color: #b45309; background: rgba(180,83,9,0.08); }
 .sev-warning.active  { color: #d97706; background: rgba(217,119,6,0.08); }
 
-/* ── Shortcuts ── */
-.shortcut-desc { font-size: 12px; color: var(--text-hint); margin-bottom: 4px; }
-
+/* ══════════════════════════════════════════════
+   SHORTCUTS / VERSION
+══════════════════════════════════════════════ */
+.shortcut-desc { font-size: 0.8571rem; color: var(--text-hint); margin-bottom: 4px; }
 .shortcut-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  overflow: hidden;
+  display: flex; flex-direction: column; gap: 0;
+  border: 1px solid var(--border); border-radius: 12px; overflow: hidden;
 }
-
 .shortcut-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 16px;
-  border-bottom: 1px solid var(--border-subtle);
-  background: var(--bg-secondary);
-  gap: 16px;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 16px; border-bottom: 1px solid var(--border-subtle);
+  background: var(--bg-secondary); gap: 16px;
 }
-
 .shortcut-row:last-child { border-bottom: none; }
-.shortcut-label { font-size: 13px; color: var(--text-muted); }
-.shortcut-keys { display: flex; gap: 4px; flex-shrink: 0; }
-
+.shortcut-label { font-size: 0.9286rem; color: var(--text-muted); }
+.shortcut-keys  { display: flex; gap: 4px; flex-shrink: 0; }
 .kbd {
-  padding: 2px 7px;
-  border-radius: 5px;
-  background: var(--bg-tertiary);
-  border: 1px solid var(--border);
-  font-size: 11px;
-  font-family: 'SF Mono', 'Fira Code', monospace;
-  font-weight: 700;
-  color: var(--text-muted);
+  padding: 2px 7px; border-radius: 5px;
+  background: var(--bg-tertiary); border: 1px solid var(--border);
+  font-size: 0.7857rem; font-family: 'SF Mono', 'Fira Code', monospace;
+  font-weight: 700; color: var(--text-muted);
   box-shadow: 0 1px 0 var(--border);
 }
 
-/* ── Version card ── */
 .version-card { border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
-
 .version-row {
-  display: flex;
-  justify-content: space-between;
-  padding: 9px 14px;
-  border-bottom: 1px solid var(--border-subtle);
+  display: flex; justify-content: space-between;
+  padding: 9px 14px; border-bottom: 1px solid var(--border-subtle);
   background: var(--bg-secondary);
 }
-
 .version-row:last-child { border-bottom: none; }
-.version-label { font-size: 12px; color: var(--text-hint); font-weight: 600; }
-.version-value { font-size: 12px; color: var(--text-muted); font-family: 'SF Mono', monospace; }
-.status-ok { color: #16a34a !important; }
+.version-label { font-size: 0.8571rem; color: var(--text-hint); font-weight: 600; }
+.version-value { font-size: 0.8571rem; color: var(--text-muted); font-family: 'SF Mono', monospace; }
+.status-ok     { color: #16a34a !important; }
 
-/* ── Account ── */
+/* ══════════════════════════════════════════════
+   ACCOUNT
+══════════════════════════════════════════════ */
 .account-info-card { display: flex; align-items: center; gap: 16px; }
-
 .account-avatar {
-  width: 52px;
-  height: 52px;
-  border-radius: 50%;
-  background: var(--accent-light);
-  color: var(--accent);
-  font-size: 18px;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  border: 2px solid var(--border);
+  width: 52px; height: 52px; border-radius: 50%;
+  background: var(--accent-light); color: var(--accent);
+  font-size: 1.2857rem; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; border: 2px solid var(--border);
 }
-
-.account-meta { display: flex; flex-direction: column; gap: 4px; }
-.account-name { font-size: 15px; font-weight: 700; color: var(--text-primary); }
-.account-email { font-size: 12px; color: var(--text-hint); }
-
+.account-meta  { display: flex; flex-direction: column; gap: 4px; }
+.account-name  { font-size: 1.0714rem; font-weight: 700; color: var(--text-primary); }
+.account-email { font-size: 0.8571rem; color: var(--text-hint); }
 .role-badge {
-  display: inline-block;
-  padding: 2px 10px;
-  border-radius: 20px;
-  font-size: 11px;
-  font-weight: 700;
-  width: fit-content;
+  display: inline-block; padding: 2px 10px;
+  border-radius: 20px; font-size: 0.7857rem; font-weight: 700; width: fit-content;
 }
-
 .role-admin    { background: rgba(207,34,46,0.1);   color: #cf222e; }
 .role-manager  { background: rgba(37,99,235,0.1);   color: #2563eb; }
 .role-operator { background: rgba(22,163,74,0.1);   color: #16a34a; }
 .role-viewer   { background: rgba(107,114,128,0.1); color: #6b7280; }
 
-/* ── Password form ── */
 .field-group { display: flex; flex-direction: column; gap: 10px; }
 .field-item  { display: flex; flex-direction: column; gap: 4px; }
-.field-label { font-size: 11px; font-weight: 600; color: var(--text-hint); }
-
+.field-label { font-size: 0.7857rem; font-weight: 600; color: var(--text-hint); }
 .text-input {
-  padding: 9px 12px;
-  border-radius: 9px;
-  background: var(--bg-primary);
-  border: 1px solid var(--border);
-  color: var(--text-primary);
-  font-size: 13px;
-  transition: border-color 0.15s;
+  padding: 9px 12px; border-radius: 9px;
+  background: var(--bg-primary); border: 1px solid var(--border);
+  color: var(--text-primary); font-size: 0.9286rem; transition: border-color 0.15s;
 }
-
 .text-input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-light); }
-
 .pw-error {
-  font-size: 12px;
-  color: var(--danger);
-  padding: 6px 10px;
-  background: var(--danger-bg);
-  border-radius: 7px;
-  border: 1px solid var(--danger);
+  font-size: 0.8571rem; color: var(--danger);
+  padding: 6px 10px; background: var(--danger-bg);
+  border-radius: 7px; border: 1px solid var(--danger);
 }
-
 .save-pw-btn {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  padding: 9px 16px;
-  border-radius: 9px;
-  background: var(--accent);
-  border: none;
-  color: var(--accent-text);
-  font-size: 13px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: opacity 0.15s;
-  width: fit-content;
+  display: flex; align-items: center; gap: 7px;
+  padding: 9px 16px; border-radius: 9px;
+  background: var(--accent); border: none; color: var(--accent-text);
+  font-size: 0.9286rem; font-weight: 700; cursor: pointer;
+  transition: opacity 0.15s; width: fit-content;
 }
-
 .save-pw-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 .save-pw-btn:not(:disabled):hover { opacity: 0.85; }
 
-/* ── Danger zone ── */
-.danger-card { border-color: var(--danger); background: var(--danger-bg); }
-
+.danger-card  { border-color: var(--danger); background: var(--danger-bg); }
 .danger-title {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--danger);
-  margin-bottom: 6px;
+  display: flex; align-items: center; gap: 7px;
+  font-size: 0.9286rem; font-weight: 700; color: var(--danger); margin-bottom: 6px;
 }
-
-.danger-desc { font-size: 12px; color: var(--text-hint); margin-bottom: 12px; line-height: 1.5; }
-
+.danger-desc { font-size: 0.8571rem; color: var(--text-hint); margin-bottom: 12px; line-height: 1.5; }
 .danger-btn {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  padding: 8px 16px;
-  border-radius: 9px;
-  background: transparent;
-  border: 1px solid var(--danger);
-  color: var(--danger);
-  font-size: 13px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: background 0.15s;
+  display: flex; align-items: center; gap: 7px;
+  padding: 8px 16px; border-radius: 9px;
+  background: transparent; border: 1px solid var(--danger);
+  color: var(--danger); font-size: 0.9286rem; font-weight: 700;
+  cursor: pointer; transition: background 0.15s;
 }
-
 .danger-btn:hover { background: var(--danger-hover); }
 
 /* ══════════════════════════════════════════════
    FOOTER
 ══════════════════════════════════════════════ */
 .modal-footer {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 10px;
-  padding: 14px 24px;
+  display: flex; align-items: center; justify-content: flex-end;
+  gap: 10px; padding: 14px 24px;
   border-top: 1px solid var(--border-subtle);
-  background: var(--bg-secondary);
-  flex-shrink: 0;
+  background: var(--bg-secondary); flex-shrink: 0;
 }
-
-.unsaved-hint { font-size: 12px; color: var(--danger); font-weight: 600; margin-right: auto; }
-
+.unsaved-hint { font-size: 0.8571rem; color: var(--danger); font-weight: 600; margin-right: auto; }
 .btn-cancel {
-  padding: 8px 18px;
-  border-radius: 9px;
-  background: transparent;
-  border: 1px solid var(--border);
-  color: var(--text-muted);
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.15s;
+  padding: 8px 18px; border-radius: 9px;
+  background: transparent; border: 1px solid var(--border);
+  color: var(--text-muted); font-size: 0.9286rem; font-weight: 600;
+  cursor: pointer; transition: all 0.15s;
 }
-
 .btn-cancel:hover { background: var(--bg-tertiary); }
-
 .btn-save {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  padding: 8px 20px;
-  border-radius: 9px;
-  background: var(--accent);
-  border: none;
-  color: var(--accent-text);
-  font-size: 13px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: opacity 0.15s;
+  display: flex; align-items: center; gap: 7px;
+  padding: 8px 20px; border-radius: 9px;
+  background: var(--accent); border: none; color: var(--accent-text);
+  font-size: 0.9286rem; font-weight: 700; cursor: pointer; transition: opacity 0.15s;
 }
-
 .btn-save:disabled { opacity: 0.35; cursor: not-allowed; }
 .btn-save:not(:disabled):hover { opacity: 0.85; }
 
@@ -1724,9 +1413,10 @@ onUnmounted(() => {
 ══════════════════════════════════════════════ */
 @media (max-width: 640px) {
   .settings-modal { max-width: 100%; max-height: 100vh; border-radius: 0; }
-  .settings-nav { width: 56px; }
+  .settings-nav   { width: 56px; }
   .nav-item span, .user-info { display: none; }
-  .nav-badge { position: absolute; top: 4px; right: 4px; }
+  .nav-badge      { position: absolute; top: 4px; right: 4px; }
   .settings-content { padding: 16px; }
+  .font-size-badges { display: none; }
 }
 </style>

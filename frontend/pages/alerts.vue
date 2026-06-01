@@ -390,14 +390,10 @@ const getProjectId = (
   projectId: string | null | undefined
 ) => {
   if (!projectId) return null
-
   const id = String(projectId)
-
   const found = projects.value.find((p: any) =>
-    String(p.id) === id ||
-    String(p._id) === id
+    String(p.id) === id || String(p._id) === id
   )
-
   return found?.id ?? found?._id ?? null
 }
 
@@ -405,69 +401,45 @@ const getProjectName = (
   projectId: string | null | undefined
 ) => {
   if (!projectId) return '—'
-
   const id = String(projectId)
-
   const project = projects.value.find((p: any) =>
-    String(p.id) === id ||
-    String(p._id) === id
+    String(p.id) === id || String(p._id) === id
   )
-
   return project?.name ?? '—'
 }
 
-// Navigate project detail
 const goToProject = (
   projectId: string | null | undefined
 ) => {
   const id = getProjectId(projectId)
-
-  if (id) {
-    router.push(`/projects/${id}`)
-  }
+  if (id) router.push(`/projects/${id}`)
 }
 
 // ─────────────────────────────────────────────
 // State
 // ─────────────────────────────────────────────
-const search = ref('')
-
-const activeFilter = ref('all')
+const search         = ref('')
+const activeFilter   = ref('all')
 const severityFilter = ref('all')
-const envFilter = ref('all')
+const envFilter      = ref('all')
+const sortField      = ref('createdAt')
+const sortDir        = ref('desc')
+const selectedIds    = ref(new Set<string>())
+const detailAlertId  = ref<string | null>(null)
+const showCreateModal = ref(false)
+const currentPage    = ref(1)
+const pageSize       = ref(25)
 
-const sortField = ref('createdAt')
-const sortDir = ref('desc')
-
-const selectedIds = ref(
-  new Set<string>()
-)
-
-const detailAlertId = ref<
-  string | null
->(null)
+// ✅ Flag để biết alert nào vừa được tạo từ client này
+// tránh SignalR echo lại và toast trùng
+const pendingCreatedMessage = ref<string | null>(null)
 
 const detailAlert = computed(() => {
-  if (!detailAlertId.value) {
-    return null
-  }
-
-  return (
-    alerts.value.find(
-      (a: any) =>
-        a.id === detailAlertId.value
-    ) ?? null
-  )
+  if (!detailAlertId.value) return null
+  return alerts.value.find((a: any) => a.id === detailAlertId.value) ?? null
 })
 
-const showCreateModal = ref(false)
-
-const currentPage = ref(1)
-const pageSize = ref(25)
-
-const newAlert = ref<
-  Omit<Alert, 'id' | 'createdAt'>
->({
+const newAlert = ref<Omit<Alert, 'id' | 'createdAt'>>({
   message: '',
   service: '',
   projectId: '',
@@ -480,69 +452,47 @@ const newAlert = ref<
 // SIGNALR EVENT HANDLERS
 // ─────────────────────────────────────────────
 const onNewAlert = (alert: any) => {
-  const exists = alerts.value.some(
-    (a: any) => a.id === alert.id
-  )
-
-  if (exists) return  // ✅ Thêm dòng này, bỏ qua nếu đã có
+  // Bỏ qua nếu đã có trong danh sách
+  const exists = alerts.value.some((a: any) => a.id === alert.id)
+  if (exists) return
 
   alerts.value.unshift(alert)
-  success(`🚨 New alert: ${alert.message}`)
+
+  // ✅ Nếu alert này chính là alert vừa tạo từ client này
+  // thì toast đúng message của alert mới, không phải alert cũ
+  if (
+    pendingCreatedMessage.value !== null &&
+    alert.message === pendingCreatedMessage.value
+  ) {
+    success(`✅ Alert created: ${alert.message}`)
+    pendingCreatedMessage.value = null
+  } else {
+    // Alert đến từ người khác / hệ thống khác
+    success(`🚨 New alert: ${alert.message}`)
+  }
 }
 
-const onUpdatedAlert = (
-  updatedAlert: any
-) => {
-  const index = alerts.value.findIndex(
-    (a: any) =>
-      a.id === updatedAlert.id
-  )
-
-  if (index !== -1) {
-    alerts.value[index] = updatedAlert
-  }
-
+const onUpdatedAlert = (updatedAlert: any) => {
+  const index = alerts.value.findIndex((a: any) => a.id === updatedAlert.id)
+  if (index !== -1) alerts.value[index] = updatedAlert
   success('✏️ Alert updated')
 }
 
-const onDeletedAlert = (
-  id: string
-) => {
-  alerts.value = alerts.value.filter(
-    (a: any) => a.id !== id
-  )
-
+const onDeletedAlert = (id: string) => {
+  alerts.value = alerts.value.filter((a: any) => a.id !== id)
   success('🗑️ Alert deleted')
 }
 
-const onBulkDeleted = (
-  ids: string[]
-) => {
-  alerts.value = alerts.value.filter(
-    (a: any) => !ids.includes(a.id)
-  )
-
+const onBulkDeleted = (ids: string[]) => {
+  alerts.value = alerts.value.filter((a: any) => !ids.includes(a.id))
   success('🗑️ Bulk delete completed')
 }
 
-const onBulkUpdated = (
-  payload: any
-) => {
+const onBulkUpdated = (payload: any) => {
   const { ids, status } = payload
-
-  alerts.value = alerts.value.map(
-    (a: any) => {
-      if (ids.includes(a.id)) {
-        return {
-          ...a,
-          status
-        }
-      }
-
-      return a
-    }
+  alerts.value = alerts.value.map((a: any) =>
+    ids.includes(a.id) ? { ...a, status } : a
   )
-
   success('⚡ Bulk status updated')
 }
 
@@ -556,48 +506,18 @@ onMounted(async () => {
   ])
 
   try {
-    // ✅ START SIGNALR
     await $signalr.start()
+    console.log('✅ SignalR Connected')
 
-    console.log(
-      '✅ SignalR Connected'
-    )
-
-    // ✅ REGISTER EVENTS
-    $signalr.on(
-      'alert:new',
-      onNewAlert
-    )
-
-    $signalr.on(
-      'alert:updated',
-      onUpdatedAlert
-    )
-
-    $signalr.on(
-      'alert:deleted',
-      onDeletedAlert
-    )
-
-    $signalr.on(
-      'alerts:bulkDeleted',
-      onBulkDeleted
-    )
-
-    $signalr.on(
-      'alerts:bulkUpdated',
-      onBulkUpdated
-    )
+    $signalr.on('alert:new',           onNewAlert)
+    $signalr.on('alert:updated',       onUpdatedAlert)
+    $signalr.on('alert:deleted',       onDeletedAlert)
+    $signalr.on('alerts:bulkDeleted',  onBulkDeleted)
+    $signalr.on('alerts:bulkUpdated',  onBulkUpdated)
   }
   catch (err) {
-    console.error(
-      '❌ SignalR Error:',
-      err
-    )
-
-    showError(
-      'Realtime connection failed'
-    )
+    console.error('❌ SignalR Error:', err)
+    showError('Realtime connection failed')
   }
 })
 
@@ -605,33 +525,11 @@ onMounted(async () => {
 // Before Unmount
 // ─────────────────────────────────────────────
 onBeforeUnmount(async () => {
-  // REMOVE EVENTS
-  $signalr.off(
-    'alert:new',
-    onNewAlert
-  )
-
-  $signalr.off(
-    'alert:updated',
-    onUpdatedAlert
-  )
-
-  $signalr.off(
-    'alert:deleted',
-    onDeletedAlert
-  )
-
-  $signalr.off(
-    'alerts:bulkDeleted',
-    onBulkDeleted
-  )
-
-  $signalr.off(
-    'alerts:bulkUpdated',
-    onBulkUpdated
-  )
-
-  // STOP CONNECTION
+  $signalr.off('alert:new',           onNewAlert)
+  $signalr.off('alert:updated',       onUpdatedAlert)
+  $signalr.off('alert:deleted',       onDeletedAlert)
+  $signalr.off('alerts:bulkDeleted',  onBulkDeleted)
+  $signalr.off('alerts:bulkUpdated',  onBulkUpdated)
   await $signalr.stop()
 })
 
@@ -643,55 +541,14 @@ const refetchAlerts = async () => {
 // Tabs
 // ─────────────────────────────────────────────
 const tabs = computed(() => [
-  {
-    key: 'all',
-    label: t('tabAll'),
-    count: alerts.value.length
-  },
-
-  {
-    key: 'open',
-    label: t('tabOpen'),
-    count: alerts.value.filter(
-      (a: any) =>
-        a.status === 'Open'
-    ).length
-  },
-
-  {
-    key: 'acknowledged',
-    label: t('tabAck'),
-    count: alerts.value.filter(
-      (a: any) =>
-        a.status === 'Acknowledged'
-    ).length
-  },
-
-  {
-    key: 'escalated',
-    label: t('tabEscalated'),
-    count: alerts.value.filter(
-      (a: any) =>
-        a.status === 'Escalated'
-    ).length
-  },
-
-  {
-    key: 'resolved',
-    label: t('tabResolved'),
-    count: alerts.value.filter(
-      (a: any) =>
-        a.status === 'Resolved'
-    ).length
-  }
+  { key: 'all',          label: t('tabAll'),      count: alerts.value.length },
+  { key: 'open',         label: t('tabOpen'),     count: alerts.value.filter((a: any) => a.status === 'Open').length },
+  { key: 'acknowledged', label: t('tabAck'),      count: alerts.value.filter((a: any) => a.status === 'Acknowledged').length },
+  { key: 'escalated',    label: t('tabEscalated'),count: alerts.value.filter((a: any) => a.status === 'Escalated').length },
+  { key: 'resolved',     label: t('tabResolved'), count: alerts.value.filter((a: any) => a.status === 'Resolved').length }
 ])
 
-const severityOrder: any = {
-  Critical: 0,
-  Error: 1,
-  Warning: 2,
-  Info: 3
-}
+const severityOrder: any = { Critical: 0, Error: 1, Warning: 2, Info: 3 }
 
 // ─────────────────────────────────────────────
 // Filtered + Sorted
@@ -701,365 +558,176 @@ const filteredAlerts = computed(() => {
 
   if (activeFilter.value !== 'all') {
     const map: any = {
-      open: 'Open',
-      acknowledged: 'Acknowledged',
-      escalated: 'Escalated',
-      resolved: 'Resolved'
+      open: 'Open', acknowledged: 'Acknowledged',
+      escalated: 'Escalated', resolved: 'Resolved'
     }
-
-    list = list.filter(
-      (a: any) =>
-        a.status ===
-        map[activeFilter.value]
-    )
+    list = list.filter((a: any) => a.status === map[activeFilter.value])
   }
 
-  if (
-    severityFilter.value !== 'all'
-  ) {
-    list = list.filter(
-      (a: any) =>
-        a.severity ===
-        severityFilter.value
-    )
-  }
+  if (severityFilter.value !== 'all')
+    list = list.filter((a: any) => a.severity === severityFilter.value)
 
-  if (envFilter.value !== 'all') {
-    list = list.filter(
-      (a: any) =>
-        a.env === envFilter.value
-    )
-  }
+  if (envFilter.value !== 'all')
+    list = list.filter((a: any) => a.env === envFilter.value)
 
   if (search.value) {
-    const q =
-      search.value.toLowerCase()
-
+    const q = search.value.toLowerCase()
     list = list.filter((a: any) => {
-      const projectName =
-        getProjectName(
-          a.projectId
-        ).toLowerCase()
-
+      const projectName = getProjectName(a.projectId).toLowerCase()
       return (
-        (a.id || '')
-          .toLowerCase()
-          .includes(q) ||
-
-        (a.message || '')
-          .toLowerCase()
-          .includes(q) ||
-
-        (a.service || '')
-          .toLowerCase()
-          .includes(q) ||
-
+        (a.id || '').toLowerCase().includes(q) ||
+        (a.message || '').toLowerCase().includes(q) ||
+        (a.service || '').toLowerCase().includes(q) ||
         projectName.includes(q)
       )
     })
   }
 
-  list = [...list].sort(
-    (a: any, b: any) => {
-      let av: any =
-        a[sortField.value]
+  list = [...list].sort((a: any, b: any) => {
+    let av: any = a[sortField.value]
+    let bv: any = b[sortField.value]
 
-      let bv: any =
-        b[sortField.value]
-
-      if (
-        sortField.value ===
-        'severity'
-      ) {
-        av =
-          severityOrder[av] ?? 9
-
-        bv =
-          severityOrder[bv] ?? 9
-      }
-
-      if (
-        sortField.value ===
-        'projectId'
-      ) {
-        av = getProjectName(
-          a.projectId
-        )
-
-        bv = getProjectName(
-          b.projectId
-        )
-      }
-
-      if (
-        sortField.value ===
-        'createdAt'
-      ) {
-        av = new Date(av || 0)
-        bv = new Date(bv || 0)
-      }
-
-      if (av < bv) {
-        return sortDir.value ===
-          'asc'
-          ? -1
-          : 1
-      }
-
-      if (av > bv) {
-        return sortDir.value ===
-          'asc'
-          ? 1
-          : -1
-      }
-
-      return 0
+    if (sortField.value === 'severity') {
+      av = severityOrder[av] ?? 9
+      bv = severityOrder[bv] ?? 9
     }
-  )
+    if (sortField.value === 'projectId') {
+      av = getProjectName(a.projectId)
+      bv = getProjectName(b.projectId)
+    }
+    if (sortField.value === 'createdAt') {
+      av = new Date(av || 0)
+      bv = new Date(bv || 0)
+    }
+
+    if (av < bv) return sortDir.value === 'asc' ? -1 : 1
+    if (av > bv) return sortDir.value === 'asc' ? 1 : -1
+    return 0
+  })
 
   return list
 })
 
 const totalPages = computed(() =>
-  Math.ceil(
-    filteredAlerts.value.length /
-    pageSize.value
-  )
+  Math.ceil(filteredAlerts.value.length / pageSize.value)
 )
 
 const paginatedAlerts = computed(() => {
-  const start =
-    (currentPage.value - 1) *
-    pageSize.value
-
-  return filteredAlerts.value.slice(
-    start,
-    start + pageSize.value
-  )
+  const start = (currentPage.value - 1) * pageSize.value
+  return filteredAlerts.value.slice(start, start + pageSize.value)
 })
 
-watch(
-  [
-    activeFilter,
-    search,
-    severityFilter,
-    envFilter
-  ],
-  () => {
-    currentPage.value = 1
-  }
-)
+watch([activeFilter, search, severityFilter, envFilter], () => {
+  currentPage.value = 1
+})
 
 // ─────────────────────────────────────────────
 // Sort / Select
 // ─────────────────────────────────────────────
-const toggleSort = (
-  field: string
-) => {
+const toggleSort = (field: string) => {
   if (sortField.value === field) {
-    sortDir.value =
-      sortDir.value === 'asc'
-        ? 'desc'
-        : 'asc'
-  }
-  else {
+    sortDir.value = sortDir.value === 'asc' ? 'desc' : 'asc'
+  } else {
     sortField.value = field
     sortDir.value = 'asc'
   }
 }
 
-const allSelected = computed(
-  () =>
-    paginatedAlerts.value.length >
-      0 &&
-    paginatedAlerts.value.every(
-      (a: any) =>
-        a.id
-          ? selectedIds.value.has(a.id)
-          : false
-    )
+const allSelected = computed(() =>
+  paginatedAlerts.value.length > 0 &&
+  paginatedAlerts.value.every((a: any) => a.id ? selectedIds.value.has(a.id) : false)
 )
 
-const selectedAlertObjects =
-  computed(() =>
-    filteredAlerts.value.filter(
-      (a: any) =>
-        a.id
-          ? selectedIds.value.has(
-              a.id
-            )
-          : false
-    )
-  )
+const selectedAlertObjects = computed(() =>
+  filteredAlerts.value.filter((a: any) => a.id ? selectedIds.value.has(a.id) : false)
+)
 
-const toggleSelect = (
-  id?: string
-) => {
+const toggleSelect = (id?: string) => {
   if (!id) return
-
-  const s = new Set(
-    selectedIds.value
-  )
-
-  if (s.has(id)) {
-    s.delete(id)
-  }
-  else {
-    s.add(id)
-  }
-
+  const s = new Set(selectedIds.value)
+  s.has(id) ? s.delete(id) : s.add(id)
   selectedIds.value = s
 }
 
 const toggleSelectAll = () => {
-  const s = new Set(
-    selectedIds.value
-  )
-
+  const s = new Set(selectedIds.value)
   if (allSelected.value) {
-    paginatedAlerts.value.forEach(
-      (a: any) => {
-        if (a.id) {
-          s.delete(a.id)
-        }
-      }
-    )
+    paginatedAlerts.value.forEach((a: any) => { if (a.id) s.delete(a.id) })
+  } else {
+    paginatedAlerts.value.forEach((a: any) => { if (a.id) s.add(a.id) })
   }
-  else {
-    paginatedAlerts.value.forEach(
-      (a: any) => {
-        if (a.id) {
-          s.add(a.id)
-        }
-      }
-    )
-  }
-
   selectedIds.value = s
 }
 
 // ─────────────────────────────────────────────
 // Actions
 // ─────────────────────────────────────────────
-const changeStatus = async (
-  alert: any,
-  newStatus: AlertStatus
-) => {
-  if (!alert.id) {
-    return false
-  }
-
-  const ok = await updateAlert(
-    alert.id,
-    {
-      ...alert,
-      status: newStatus
-    }
-  )
-
-  if (ok) {
-    success(
-      `Alert marked as ${newStatus}`
-    )
-  }
-
+const changeStatus = async (alert: any, newStatus: AlertStatus) => {
+  if (!alert.id) return false
+  const ok = await updateAlert(alert.id, { ...alert, status: newStatus })
+  if (ok) success(`Alert marked as ${newStatus}`)
   return ok
 }
 
-const onStatusChange = (
-  alert: any,
-  event: Event
-) => {
-  const target =
-    event.target as
-    HTMLSelectElement | null
-
+const onStatusChange = (alert: any, event: Event) => {
+  const target = event.target as HTMLSelectElement | null
   if (!target) return
-
-  changeStatus(
-    alert,
-    target.value as AlertStatus
-  )
+  changeStatus(alert, target.value as AlertStatus)
 }
 
-const isSelected = (
-  id?: string
-) => !!id && selectedIds.value.has(id)
+const isSelected = (id?: string) => !!id && selectedIds.value.has(id)
 
 const handleBulkDelete = async () => {
-  for (const id of selectedIds.value) {
-    await deleteAlert(id)
-  }
-
+  for (const id of selectedIds.value) await deleteAlert(id)
   selectedIds.value = new Set()
 }
 
 const handleBulkResolve = async () => {
   for (const a of selectedAlertObjects.value) {
     if (!a.id) continue
-
-    await updateAlert(a.id, {
-      ...a,
-      status: 'Resolved'
-    })
+    await updateAlert(a.id, { ...a, status: 'Resolved' })
   }
-
   selectedIds.value = new Set()
 }
 
 const handleBulkAcknowledge = async () => {
   for (const a of selectedAlertObjects.value) {
     if (!a.id) continue
-
-    await updateAlert(a.id, {
-      ...a,
-      status: 'Acknowledged'
-    })
+    await updateAlert(a.id, { ...a, status: 'Acknowledged' })
   }
-
   selectedIds.value = new Set()
-
   success('Alerts acknowledged')
 }
 
 const handleBulkEscalate = async () => {
   for (const a of selectedAlertObjects.value) {
     if (!a.id) continue
-
-    await updateAlert(a.id, {
-      ...a,
-      status: 'Escalated'
-    })
+    await updateAlert(a.id, { ...a, status: 'Escalated' })
   }
-
   selectedIds.value = new Set()
-
   success('Alerts escalated')
 }
 
-const deleteSingle = async (
-  id?: string
-) => {
+const deleteSingle = async (id?: string) => {
   if (!id) return
-
-  if (
-    confirm(
-      'Delete this alert?'
-    )
-  ) {
-    await deleteAlert(id)
-  }
+  if (confirm('Delete this alert?')) await deleteAlert(id)
 }
 
 const submitCreate = async () => {
+  // ✅ Lưu lại message trước khi gửi API
+  // để onNewAlert nhận ra đây là alert vừa tạo và toast đúng nội dung
+  const messageSnapshot = newAlert.value.message
+
   const ok = await createAlert({
     ...newAlert.value,
     status: 'Open'
   })
 
   if (ok) {
-    showCreateModal.value = false
+    // ✅ Đánh dấu pending — onNewAlert sẽ dùng cái này để toast
+    pendingCreatedMessage.value = messageSnapshot
 
+    showCreateModal.value = false
     newAlert.value = {
       message: '',
       service: '',
@@ -1069,129 +737,56 @@ const submitCreate = async () => {
       status: 'Open'
     }
 
-    success('Alert created')
+    // ✅ Fallback: nếu sau 3s SignalR chưa echo về thì vẫn toast
+    setTimeout(() => {
+      if (pendingCreatedMessage.value !== null) {
+        success(`✅ Alert created: ${messageSnapshot}`)
+        pendingCreatedMessage.value = null
+      }
+    }, 3000)
   }
 }
 
 const openDetail = (alert: any) => {
   if (!alert.id) return
-
   detailAlertId.value = alert.id
 }
 
 // ─────────────────────────────────────────────
 // Helpers
 // ─────────────────────────────────────────────
-
-const severityRowClass = (
-  s: string
-) =>
-({
-  Critical: 'sev-critical',
-  Error: 'sev-error',
-  Warning: 'sev-warning',
-  Info: 'sev-info'
-}[s] || '')
-
-const severityBadgeClass = (
-  s: string
-) =>
-({
-  Critical: 'badge-critical',
-  Error: 'badge-error',
-  Warning: 'badge-warning',
-  Info: 'badge-info'
-}[s] || '')
-
-const statusClass = (
-  s: string
-) =>
-({
-  Open: 'status-open',
-  Acknowledged: 'status-ack',
-  Escalated: 'status-esc',
-  Resolved: 'status-res'
-}[s] || '')
-
-const statusSelectClass = (
-  s: string
-) =>
-({
-  Open: 'ss-open',
-  Acknowledged: 'ss-ack',
-  Escalated: 'ss-esc',
-  Resolved: 'ss-res'
-}[s] || '')
-
-const envClass = (
-  e: string
-) =>
-  e === 'Staging'
-    ? 'env-staging'
-    : 'env-production'
+const severityRowClass  = (s: string) => ({ Critical: 'sev-critical', Error: 'sev-error', Warning: 'sev-warning', Info: 'sev-info' }[s] || '')
+const severityBadgeClass = (s: string) => ({ Critical: 'badge-critical', Error: 'badge-error', Warning: 'badge-warning', Info: 'badge-info' }[s] || '')
+const statusClass        = (s: string) => ({ Open: 'status-open', Acknowledged: 'status-ack', Escalated: 'status-esc', Resolved: 'status-res' }[s] || '')
+const statusSelectClass  = (s: string) => ({ Open: 'ss-open', Acknowledged: 'ss-ack', Escalated: 'ss-esc', Resolved: 'ss-res' }[s] || '')
+const envClass           = (e: string) => e === 'Staging' ? 'env-staging' : 'env-production'
 
 const getTimeline = (alert: any) => {
   const events = [
-    {
-      label: 'Alert created',
-      time: tzStore.formatTimeFull(
-        alert.createdAt
-      ),
-      color: 'tl-blue'
-    }
+    { label: 'Alert created', time: tzStore.formatTimeFull(alert.createdAt), color: 'tl-blue' }
   ]
-
-  if (
-    [
-      'Acknowledged',
-      'Escalated',
-      'Resolved'
-    ].includes(alert.status)
-  ) {
-    events.push({
-      label: 'Acknowledged',
-      time: '—',
-      color: 'tl-yellow'
-    })
-  }
-
-  if (
-    [
-      'Escalated',
-      'Resolved'
-    ].includes(alert.status)
-  ) {
-    events.push({
-      label: 'Escalated',
-      time: '—',
-      color: 'tl-red'
-    })
-  }
-
-  if (alert.status === 'Resolved') {
-    events.push({
-      label: 'Resolved',
-      time: '—',
-      color: 'tl-green'
-    })
-  }
-
+  if (['Acknowledged', 'Escalated', 'Resolved'].includes(alert.status))
+    events.push({ label: 'Acknowledged', time: '—', color: 'tl-yellow' })
+  if (['Escalated', 'Resolved'].includes(alert.status))
+    events.push({ label: 'Escalated', time: '—', color: 'tl-red' })
+  if (alert.status === 'Resolved')
+    events.push({ label: 'Resolved', time: '—', color: 'tl-green' })
   return events
 }
 </script>
 
 <style scoped>
 .page-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 16px; }
-.page-title  { font-size: 22px; font-weight: 700; color: var(--text-primary); }
-.page-sub    { font-size: 13px; color: var(--text-tertiary); margin-top: 3px; }
-.connection-status { margin-left: 8px; font-size: 11px; font-weight: 600; padding: 2px 6px; border-radius: 3px; }
+.page-title  { font-size: 1.5714rem; font-weight: 700; color: var(--text-primary); }
+.page-sub    { font-size: 0.9286rem; color: var(--text-tertiary); margin-top: 3px; }
+.connection-status { margin-left: 8px; font-size: 0.7857rem; font-weight: 600; padding: 2px 6px; border-radius: 3px; }
 .connection-status.online  { color: var(--success-color); background: var(--success-subtle); }
 .connection-status.offline { color: var(--danger-color); background: var(--danger-subtle); }
 
 .header-actions { display: flex; align-items: center; gap: 10px; }
 .retry-btn, .add-alert-btn {
   display: flex; align-items: center; gap: 6px;
-  padding: 7px 14px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all .15s;
+  padding: 7px 14px; border-radius: 6px; font-size: 0.8571rem; font-weight: 600; cursor: pointer; transition: all .15s;
 }
 .retry-btn    { background: var(--bg-secondary); border: 1px solid var(--input-border); color: var(--text-secondary); }
 .retry-btn:hover { border-color: var(--text-tertiary); }
@@ -1200,7 +795,7 @@ const getTimeline = (alert: any) => {
 .sort-icon { width: 14px; height: 14px; margin-left: 4px; vertical-align: middle; opacity: 0.7; }
 .search-box {
   padding: 7px 14px; border-radius: 6px; border: 1px solid var(--input-border);
-  background: var(--input-bg); color: var(--input-text); font-size: 13px; width: 220px; outline: none;
+  background: var(--input-bg); color: var(--input-text); font-size: 0.9286rem; width: 220px; outline: none;
 }
 .search-box:focus { border-color: var(--accent-color); box-shadow: 0 0 0 3px var(--accent-subtle); }
 .search-box::placeholder { color: var(--text-muted); }
@@ -1208,7 +803,7 @@ const getTimeline = (alert: any) => {
 .bulk-ack-row { display: flex; gap: 8px; margin-bottom: 10px; }
 .ack-btn, .esc-btn {
   display: flex; align-items: center; gap: 6px; padding: 6px 14px;
-  border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; border: 1px solid;
+  border-radius: 6px; font-size: 0.8571rem; font-weight: 600; cursor: pointer; border: 1px solid;
 }
 .ack-btn { background: rgba(227,179,65,.1); border-color: #e3b341; color: #e3b341; }
 .esc-btn { background: var(--danger-subtle); border-color: var(--danger-color); color: var(--danger-color); }
@@ -1216,29 +811,29 @@ const getTimeline = (alert: any) => {
 .filter-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; flex-wrap: wrap; gap: 10px; }
 .filter-tabs { display: flex; gap: 6px; }
 .tab-btn {
-  padding: 6px 14px; border-radius: 6px; font-size: 13px; cursor: pointer;
+  padding: 6px 14px; border-radius: 6px; font-size: 0.9286rem; cursor: pointer;
   border: 1px solid var(--border-color); background: transparent; color: var(--text-tertiary); transition: all .15s;
 }
 .tab-btn:hover { border-color: var(--accent-color); color: var(--accent-color); }
 .tab-btn.active { background: var(--accent-color); border-color: var(--accent-color); color: #fff; }
-.tab-count { background: rgba(128,128,128,.15); padding: 1px 6px; border-radius: 3px; font-size: 11px; margin-left: 4px; }
+.tab-count { background: rgba(128,128,128,.15); padding: 1px 6px; border-radius: 3px; font-size: 0.7857rem; margin-left: 4px; }
 
 .filter-right { display: flex; gap: 8px; }
 .filter-select {
   padding: 6px 28px 6px 10px; border-radius: 6px; border: 1px solid var(--input-border);
-  background: var(--input-bg); color: var(--text-tertiary); font-size: 12px; cursor: pointer; outline: none;
+  background: var(--input-bg); color: var(--text-tertiary); font-size: 0.8571rem; cursor: pointer; outline: none;
 }
 
 .alerts-table { width: 100%; border-collapse: collapse; }
 .alerts-table th {
-  text-align: left; font-size: 11px; font-weight: 600; color: var(--text-tertiary);
+  text-align: left; font-size: 0.7857rem; font-weight: 600; color: var(--text-tertiary);
   text-transform: uppercase; letter-spacing: .05em; padding: 8px 10px;
   border-bottom: 1px solid var(--border-color); white-space: nowrap;
   background: var(--table-header-bg);
 }
 .sortable { cursor: pointer; user-select: none; }
 .sortable:hover { color: var(--text-secondary); }
-.alerts-table td { padding: 12px 10px; border-bottom: 1px solid var(--border-color); font-size: 13px; background: var(--table-row-bg); }
+.alerts-table td { padding: 12px 10px; border-bottom: 1px solid var(--border-color); font-size: 0.9286rem; background: var(--table-row-bg); }
 .col-check { width: 36px; }
 .alert-row { cursor: pointer; transition: background .1s; }
 .alert-row:hover td { background: var(--table-row-hover); }
@@ -1251,7 +846,7 @@ const getTimeline = (alert: any) => {
 
 .alert-id { color: var(--accent-color); font-weight: 600; font-family: 'Courier New', monospace; }
 
-.badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px; border-radius: 5px; font-size: 12px; font-weight: 500; }
+.badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px; border-radius: 5px; font-size: 0.8571rem; font-weight: 500; }
 .badge-dot { width: 7px; height: 7px; border-radius: 50%; }
 .badge-critical { background: var(--badge-critical-bg); color: var(--badge-critical-text); }
 .badge-critical .badge-dot { background: var(--badge-critical-text); }
@@ -1266,7 +861,7 @@ const getTimeline = (alert: any) => {
   display: inline-flex; align-items: center; gap: 5px; justify-content: center;
   padding: 3px 10px; border-radius: 999px;
   background: var(--accent-subtle); border: 1px solid rgba(88,166,255,.25);
-  color: var(--accent-color); font-size: 12px; font-weight: 600; min-width: 70px;
+  color: var(--accent-color); font-size: 0.8571rem; font-weight: 600; min-width: 70px;
   transition: all .15s;
 }
 .project-badge-link { cursor: pointer; }
@@ -1275,7 +870,7 @@ const getTimeline = (alert: any) => {
 
 .status-select {
   padding: 3px 28px 3px 8px; border-radius: 5px; border: 1px solid var(--input-border);
-  background: var(--input-bg); color: var(--input-text); font-size: 12px; font-weight: 500; cursor: pointer; outline: none;
+  background: var(--input-bg); color: var(--input-text); font-size: 0.8571rem; font-weight: 500; cursor: pointer; outline: none;
 }
 .ss-open { color: var(--success-color); border-color: var(--success-color); }
 .ss-ack  { color: #e3b341; border-color: #e3b341; }
@@ -1287,13 +882,13 @@ const getTimeline = (alert: any) => {
 .status-esc  { color: var(--danger-color); font-weight: 500; }
 .status-res  { color: var(--accent-color); font-weight: 500; }
 
-.env-badge { padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+.env-badge { padding: 2px 8px; border-radius: 4px; font-size: 0.7857rem; font-weight: 600; }
 .env-production { background: var(--danger-subtle); color: var(--danger-color); }
 .env-staging    { background: var(--warning-subtle); color: var(--warning-color); }
 
 .msg-text     { color: var(--text-secondary); max-width: 420px; }
-.service-text { font-family: 'Courier New', monospace; font-size: 12px; color: var(--text-tertiary); }
-.time-text    { color: var(--text-muted); font-size: 12px; white-space: nowrap; }
+.service-text { font-family: 'Courier New', monospace; font-size: 0.8571rem; color: var(--text-tertiary); }
+.time-text    { color: var(--text-muted); font-size: 0.8571rem; white-space: nowrap; }
 
 .actions-col { white-space: nowrap; }
 .row-action-btn {
@@ -1308,14 +903,14 @@ const getTimeline = (alert: any) => {
 .pagination { display: flex; align-items: center; gap: 10px; margin-top: 16px; justify-content: flex-end; }
 .page-btn {
   padding: 5px 12px; border-radius: 5px; background: var(--bg-secondary); border: 1px solid var(--input-border);
-  color: var(--text-secondary); cursor: pointer; font-size: 14px;
+  color: var(--text-secondary); cursor: pointer; font-size: 1.0000rem;
 }
 .page-btn:hover { border-color: var(--accent-color); color: var(--accent-color); }
 .page-btn:disabled { opacity: .4; cursor: default; }
-.page-info { font-size: 12px; color: var(--text-tertiary); }
+.page-info { font-size: 0.8571rem; color: var(--text-tertiary); }
 .page-size-select {
   padding: 4px 28px 4px 8px; border-radius: 5px; background: var(--bg-secondary); border: 1px solid var(--input-border);
-  color: var(--text-tertiary); font-size: 12px; cursor: pointer;
+  color: var(--text-tertiary); font-size: 0.8571rem; cursor: pointer;
 }
 
 .loading-state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 60px 20px; color: var(--text-tertiary); }
@@ -1332,15 +927,15 @@ const getTimeline = (alert: any) => {
   display: flex; align-items: flex-start; justify-content: space-between;
   padding: 20px; border-bottom: 1px solid var(--border-color); position: sticky; top: 0; background: var(--card-bg); z-index: 1;
 }
-.detail-id { font-size: 16px; font-weight: 700; color: var(--accent-color); font-family: 'Courier New', monospace; }
-.detail-service { font-size: 12px; color: var(--text-tertiary); margin-top: 2px; }
-.close-btn { background: none; border: none; color: var(--text-tertiary); cursor: pointer; font-size: 18px; padding: 2px 6px; border-radius: 4px; }
+.detail-id { font-size: 1.1429rem; font-weight: 700; color: var(--accent-color); font-family: 'Courier New', monospace; }
+.detail-service { font-size: 0.8571rem; color: var(--text-tertiary); margin-top: 2px; }
+.close-btn { background: none; border: none; color: var(--text-tertiary); cursor: pointer; font-size: 1.2857rem; padding: 2px 6px; border-radius: 4px; }
 .close-btn:hover { color: var(--text-primary); background: var(--bg-tertiary); }
 .detail-body { padding: 20px; display: flex; flex-direction: column; gap: 16px; }
 .detail-section { display: flex; flex-direction: column; gap: 6px; }
-.detail-label { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: .06em; }
-.detail-message { background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 6px; padding: 12px; color: var(--text-secondary); font-size: 13px; line-height: 1.5; }
-.detail-value { font-size: 13px; color: var(--text-secondary); }
+.detail-label { font-size: 0.7857rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: .06em; }
+.detail-message { background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 6px; padding: 12px; color: var(--text-secondary); font-size: 0.9286rem; line-height: 1.5; }
+.detail-value { font-size: 0.9286rem; color: var(--text-secondary); }
 
 .timeline { display: flex; flex-direction: column; }
 .timeline-item { display: flex; align-items: center; gap: 10px; padding: 8px 0; position: relative; }
@@ -1351,13 +946,13 @@ const getTimeline = (alert: any) => {
 .tl-blue { background: var(--accent-color); } .tl-yellow { background: #e3b341; }
 .tl-red  { background: var(--danger-color); } .tl-green  { background: var(--success-color); }
 .tl-info { display: flex; flex-direction: column; gap: 2px; }
-.tl-label { font-size: 13px; color: var(--text-secondary); font-weight: 500; }
-.tl-time  { font-size: 11px; color: var(--text-muted); }
+.tl-label { font-size: 0.9286rem; color: var(--text-secondary); font-weight: 500; }
+.tl-time  { font-size: 0.7857rem; color: var(--text-muted); }
 
 .detail-actions { display: flex; gap: 8px; margin-top: 8px; }
 .da-btn {
   flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px;
-  padding: 9px 12px; border-radius: 7px; font-size: 12px; font-weight: 600; cursor: pointer; border: 1px solid; transition: all .15s;
+  padding: 9px 12px; border-radius: 7px; font-size: 0.8571rem; font-weight: 600; cursor: pointer; border: 1px solid; transition: all .15s;
 }
 .da-btn.ack { border-color: #e3b341; color: #e3b341; background: rgba(227,179,65,.08); }
 .da-btn.ack:hover { background: rgba(227,179,65,.2); }
@@ -1372,39 +967,27 @@ const getTimeline = (alert: any) => {
 }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
 .create-form { padding: 20px; display: flex; flex-direction: column; gap: 10px; }
-.create-form label { font-size: 12px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
+.create-form label { font-size: 0.8571rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
 .form-input {
   padding: 8px 12px; border-radius: 6px; border: 1px solid var(--input-border);
-  background: var(--input-bg); color: var(--input-text); font-size: 13px; outline: none; width: 100%;
+  background: var(--input-bg); color: var(--input-text); font-size: 0.9286rem; outline: none; width: 100%;
 }
 .form-input:focus { border-color: var(--accent-color); box-shadow: 0 0 0 3px var(--accent-subtle); }
 .form-input::placeholder { color: var(--text-muted); }
 .create-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 8px; }
 .cancel-btn {
   padding: 8px 16px; border-radius: 6px; background: transparent; border: 1px solid var(--input-border);
-  color: var(--text-tertiary); font-size: 13px; cursor: pointer;
+  color: var(--text-tertiary); font-size: 0.9286rem; cursor: pointer;
 }
 .cancel-btn:hover { background: var(--bg-hover); }
 .submit-btn {
   padding: 8px 20px; border-radius: 6px; background: #238636; border: 1px solid #238636;
-  color: #fff; font-size: 13px; font-weight: 600; cursor: pointer;
+  color: #fff; font-size: 0.9286rem; font-weight: 600; cursor: pointer;
 }
 .submit-btn:hover { background: #2ea043; }
 .submit-btn:disabled { opacity: .5; cursor: default; }
 .page-wrap { width: 100%; min-width: 0; }
-.filter-select {
-  background: var(--input-bg);
-  color: var(--input-text);
-}
-.tz-wrapper {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.tz-label {
-  font-size: 12px;
-  color: var(--text-tertiary);
-  white-space: nowrap;
-}
+.filter-select { background: var(--input-bg); color: var(--input-text); }
+.tz-wrapper { display: flex; align-items: center; gap: 6px; }
+.tz-label { font-size: 0.8571rem; color: var(--text-tertiary); white-space: nowrap; }
 </style>

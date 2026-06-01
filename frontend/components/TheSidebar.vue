@@ -189,18 +189,18 @@ onUnmounted(() => {
   align-items: center;
   justify-content: center;
   font-weight: 800;
-  font-size: 14px;
+  font-size: 1.0000rem;
   color: #fff;
 }
 
 .brand-name {
-  font-size: 15px;
+  font-size: 1.0714rem;
   font-weight: 700;
   color: var(--text-primary);
 }
 
 .brand-sub {
-  font-size: 11px;
+  font-size: 0.7857rem;
   color: var(--text-tertiary);
 }
 
@@ -218,7 +218,7 @@ onUnmounted(() => {
   border-radius: 8px;
   cursor: pointer;
   color: var(--text-tertiary);
-  font-size: 14px;
+  font-size: 1.0000rem;
   text-decoration: none;
   transition: all 0.2s ease;
   margin-bottom: 4px;
@@ -246,7 +246,7 @@ onUnmounted(() => {
 .badge {
   background: #f85149;
   color: #fff;
-  font-size: 11px;
+  font-size: 0.7857rem;
   font-weight: 600;
   min-width: 18px;
   height: 18px;
@@ -287,7 +287,7 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 12px;
+  font-size: 0.8571rem;
   font-weight: 700;
   color: #fff;
   flex-shrink: 0;
@@ -299,7 +299,7 @@ onUnmounted(() => {
 }
 
 .user-name {
-  font-size: 13px;
+  font-size: 0.9286rem;
   font-weight: 600;
   color: var(--text-primary);
   white-space: nowrap;
@@ -309,7 +309,7 @@ onUnmounted(() => {
 
 /* ✅ Role base style */
 .user-role {
-  font-size: 10px;
+  font-size: 0.7143rem;
   font-weight: 600;
   padding: 1px 6px;
   border-radius: 999px;
@@ -386,7 +386,7 @@ onUnmounted(() => {
   border: none;
   color: var(--text-tertiary);
   cursor: pointer;
-  font-size: 13px;
+  font-size: 0.9286rem;
   transition: all 0.15s;
 }
 
