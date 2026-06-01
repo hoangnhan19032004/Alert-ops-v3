@@ -65,10 +65,6 @@
             <div class="proj-name">
               {{ p.name }}
             </div>
-
-            <div class="proj-id">
-              #{{ p.id || 'N/A' }}
-            </div>
           </div>
 
           <div class="proj-header-right">
@@ -591,11 +587,6 @@ const badgeClass = (
   font-size: 1.0714rem;
   font-weight: 700;
   color: var(--text-primary);
-}
-
-.proj-id {
-  font-size: 0.7857rem;
-  color: var(--text-muted);
 }
 
 .proj-header-right {

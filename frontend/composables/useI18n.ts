@@ -234,7 +234,7 @@ export const translations = {
     display: 'Hiển thị',
     alertsPerPage: 'Cảnh báo trên một trang',
     alertsPerPageDesc: 'Bao nhiêu cảnh báo hiển thị trên một trang',
-    language: 'Ngôn ngữ',
+    language: 'Ngôn ngữ & Khu vực',
     languageDesc: 'Chọn ngôn ngữ ưa thích',
     vietnamese: 'Tiếng Việt',
     english: 'English',
